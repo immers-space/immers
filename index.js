@@ -2,11 +2,11 @@ const fs = require('fs')
 const path = require('path')
 const https = require('https')
 const express = require('express')
+const cors = require('cors')
 const { MongoClient } = require('mongodb')
 const ActivitypubExpress = require('activitypub-express')
 
-const port = 8081
-const domain = `localhost:${port}`
+const { port, domain, hub } = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json')))
 const app = express()
 const routes = {
   actor: '/u/:actor',
@@ -30,8 +30,10 @@ const apex = ActivitypubExpress({
 const client = new MongoClient('mongodb://localhost:27017', { useUnifiedTopology: true, useNewUrlParser: true })
 
 app.use(express.urlencoded({ extended: false }))
-app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }), apex)
-// define routes using prepacakged middleware collections
+app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
+app.use(cors({ origin: hub }))
+
+app.use(apex)
 app
   .route(routes.inbox)
   .get(apex.net.inbox.get)

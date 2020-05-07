@@ -1,0 +1,5 @@
+{
+  "port": 8081,
+  "domain": "localhost:8081",
+  "hub": "https://localhost:8080"
+}
