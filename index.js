@@ -97,6 +97,33 @@ app.on('apex-follow', async msg => {
   return publishUpdatedFollowers()
 })
 
+// custom c2s apis
+async function friendsLocations (req, res, next) {
+  const locals = res.locals.apex
+  const friends = await apex.store.db.collection('streams').aggregate([
+    { $match: { '_meta.collection': locals.target.inbox[0], type: { $in: ['Arrive', 'Leave'] } } },
+    { $sort: { _id: -1 } },
+    { $group: { _id: '$actor', loc: { $first: '$$ROOT' } } },
+    { $replaceRoot: { newRoot: '$loc' } },
+    { $lookup: { from: 'objects', localField: 'actor', foreignField: 'id', as: 'actor' } },
+    { $project: { _id: 0, 'actor.publicKey': 0 } }
+  ]).toArray()
+  locals.result = {
+    id: `https://${domain}${req.originalUrl}`,
+    type: 'OrderedCollection',
+    totalItems: friends.length,
+    orderedItems: friends
+  }
+  next()
+}
+
+app.get('/u/:actor/friends', [
+  apex.net.validators.jsonld,
+  apex.net.validators.targetActor,
+  friendsLocations,
+  apex.net.responders.result
+])
+
 const key = fs.readFileSync(path.join(__dirname, 'certs', 'server.key'))
 const cert = fs.readFileSync(path.join(__dirname, 'certs', 'server.cert'))
 
