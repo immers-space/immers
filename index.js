@@ -6,7 +6,8 @@ const cors = require('cors')
 const { MongoClient } = require('mongodb')
 const ActivitypubExpress = require('activitypub-express')
 
-const { port, domain, hub } = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json')))
+const config = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json')))
+const { port, domain, hub, name } = config
 const app = express()
 const routes = {
   actor: '/u/:actor',
@@ -103,7 +104,17 @@ client
   .connect({ useNewUrlParser: true })
   .then(() => {
     apex.store.db = client.db('immers')
-    return apex.store.setup()
+    // Place object representing this node
+    const immer = {
+      id: `https://${domain}/o/immer`,
+      type: 'Place',
+      name,
+      url: `https://${domain}`
+    }
+    return apex.fromJSONLD(immer)
+  })
+  .then(immer => {
+    return apex.store.setup(immer)
   })
   .then(() => {
     return https.createServer({ key, cert }, app).listen(port, () => console.log(`apex app listening on port ${port}`))
