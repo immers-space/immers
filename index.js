@@ -1,3 +1,4 @@
+'use strict'
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
@@ -5,6 +6,8 @@ const express = require('express')
 const cors = require('cors')
 const { MongoClient } = require('mongodb')
 const ActivitypubExpress = require('activitypub-express')
+const socketio = require('socket.io')
+const request = require('request-promise-native')
 
 const config = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json')))
 const { port, domain, hub, name } = config
@@ -101,7 +104,7 @@ app.on('apex-follow', async msg => {
 async function friendsLocations (req, res, next) {
   const locals = res.locals.apex
   const friends = await apex.store.db.collection('streams').aggregate([
-    { $match: { '_meta.collection': locals.target.inbox[0], type: { $in: ['Arrive', 'Leave'] } } },
+    { $match: { '_meta.collection': locals.target.inbox[0], type: { $in: ['Arrive', 'Leave', 'Accept'] } } },
     { $sort: { _id: -1 } },
     { $group: { _id: '$actor', loc: { $first: '$$ROOT' } } },
     { $replaceRoot: { newRoot: '$loc' } },
@@ -126,6 +129,52 @@ app.get('/u/:actor/friends', [
 
 const key = fs.readFileSync(path.join(__dirname, 'certs', 'server.key'))
 const cert = fs.readFileSync(path.join(__dirname, 'certs', 'server.cert'))
+const server = https.createServer({ key, cert }, app)
+
+// streaming updates
+const profilesSockets = new Map()
+const io = socketio(server)
+io.on('connection', socket => {
+  socket.immers = {}
+  socket.on('disconnect', async () => {
+    if (socket.immers.id) {
+      profilesSockets.delete(socket.immers.id)
+    }
+    if (socket.immers.outbox && socket.immers.leave) {
+      request({
+        method: 'POST',
+        url: socket.immers.outbox,
+        headers: {
+          'Content-Type': apex.consts.jsonldOutgoingType
+        },
+        json: true,
+        simple: false,
+        body: await apex.toJSONLD(socket.immers.leave)
+      }).catch(err => console.log(err.message))
+      delete socket.immers.leave
+    }
+  })
+  socket.on('profile', id => {
+    if (!id) return
+    socket.immers.id = id
+    profilesSockets.set(id, socket)
+  })
+  socket.on('entered', msg => {
+    socket.immers.outbox = msg.outbox
+    socket.immers.leave = msg.leave
+  })
+})
+
+function onInboxFriendUpdate (msg) {
+  if (!msg.recipient) return // ignore outbox
+  const liveSocket = profilesSockets.get(msg.recipient.id)
+  if (liveSocket) {
+    liveSocket.emit('friends-update')
+  }
+}
+app.on('apex-arrive', onInboxFriendUpdate)
+app.on('apex-leave', onInboxFriendUpdate)
+app.on('apex-accept', onInboxFriendUpdate)
 
 client
   .connect({ useNewUrlParser: true })
@@ -144,5 +193,5 @@ client
     return apex.store.setup(immer)
   })
   .then(() => {
-    return https.createServer({ key, cert }, app).listen(port, () => console.log(`apex app listening on port ${port}`))
+    return server.listen(port, () => console.log(`apex app listening on port ${port}`))
   })
