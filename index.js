@@ -32,11 +32,13 @@ const apex = ActivitypubExpress({
   // context: ["https://www.w3.org/ns/activitystreams", "https://w3id.org/security/v1", `https://${domain}/ns`]
 })
 const client = new MongoClient('mongodb://localhost:27017', { useUnifiedTopology: true, useNewUrlParser: true })
+const hubCors = cors({ origin: hub })
 
-app.use(express.urlencoded({ extended: false }))
+app.use(express.urlencoded({ extended: true }))
 app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
-app.use(cors({ origin: hub }))
-
+app.use(hubCors)
+// preflight needed for some socketio requests
+app.options('*', hubCors)
 app.use(apex)
 app
   .route(routes.inbox)
