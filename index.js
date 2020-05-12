@@ -121,13 +121,27 @@ async function friendsLocations (req, res, next) {
   }
   next()
 }
-
 app.get('/u/:actor/friends', [
   apex.net.validators.jsonld,
   apex.net.validators.targetActor,
   friendsLocations,
   apex.net.responders.result
 ])
+
+async function remoteActor (req, res, next) {
+  if (req.query.handle) {
+    // find via webfinger
+    const [, username, domain] = /@?([^@]+)@(.+)/.exec(req.query.handle)
+    const wfURI = `https://${domain}/.well-known/webfinger?resource=acct:${username}@${domain}`
+    const wf = await request(wfURI, {
+      json: true
+    })
+    const actorIRI = wf.links.find(l => l.rel === 'self').href
+    res.locals.apex.target = await apex.resolveObject(actorIRI)
+  }
+  next()
+}
+app.get('/proxy/user', apex.net.validators.jsonld, remoteActor, apex.net.responders.target)
 
 const key = fs.readFileSync(path.join(__dirname, 'certs', 'server.key'))
 const cert = fs.readFileSync(path.join(__dirname, 'certs', 'server.cert'))
