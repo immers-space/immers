@@ -54,14 +54,15 @@ app.engine('ejs', ejs.__express)
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, './views'))
 
-app.use(session({ secret: 'keyboard cat', resave: false, saveUninitialized: false }))
-app.use(passport.initialize())
-app.use(passport.session())
 // parsers
 app.use(cookieParser())
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
 
+app.use(session({ secret: 'keyboard cat', resave: false, saveUninitialized: false }))
+app.use(passport.initialize())
+app.use(passport.session())
+app.use(apex)
 // cors
 app.use(hubCors)
 // preflight needed for some socketio requests
@@ -81,8 +82,17 @@ app.get('/dialog/authorize', oauthRoutes.authorization)
 app.post('/dialog/authorize/decision', oauthRoutes.decision)
 app.post('/oauth/token', oauthRoutes.token)
 
+app.get(
+  '/me',
+  passport.authenticate('bearer', { session: false }),
+  function (req, res, next) {
+    req.params.actor = req.user.username
+    next()
+  },
+  apex.net.actor.get
+)
 /// /////////////
-app.use(apex)
+
 app
   .route(routes.inbox)
   .get(apex.net.inbox.get)
