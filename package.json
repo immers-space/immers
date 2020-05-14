@@ -26,9 +26,21 @@
   "homepage": "https://github.com/wmurphyrd/immers#readme",
   "dependencies": {
     "activitypub-express": "0.0.6",
+    "connect-ensure-login": "^0.1.1",
+    "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
+    "ejs": "^3.1.2",
+    "errorhandler": "^1.5.1",
     "express": "^4.17.1",
+    "express-session": "^1.17.1",
     "mongodb": "^3.5.7",
+    "oauth2orize": "^1.11.0",
+    "passport": "^0.4.1",
+    "passport-http": "^0.3.0",
+    "passport-http-bearer": "^1.0.1",
+    "passport-local": "^1.0.0",
+    "passport-local-authenticate": "^1.2.0",
+    "passport-oauth2-client-password": "^0.1.2",
     "socket.io": "^2.3.0"
   },
   "devDependencies": {

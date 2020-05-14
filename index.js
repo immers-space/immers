@@ -3,11 +3,17 @@ const fs = require('fs')
 const path = require('path')
 const https = require('https')
 const express = require('express')
+const session = require('express-session')
+const cookieParser = require('cookie-parser')
 const cors = require('cors')
 const { MongoClient } = require('mongodb')
 const ActivitypubExpress = require('activitypub-express')
 const socketio = require('socket.io')
 const request = require('request-promise-native')
+const ejs = require('ejs')
+const passport = require('passport')
+
+const oauthRoutes = require('./routes/oauth2')
 
 const config = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json')))
 const { port, domain, hub, name } = config
@@ -34,11 +40,48 @@ const apex = ActivitypubExpress({
 const client = new MongoClient('mongodb://localhost:27017', { useUnifiedTopology: true, useNewUrlParser: true })
 const hubCors = cors({ origin: hub })
 
-app.use(express.urlencoded({ extended: true }))
+/// ////////////////////// auth ////////////////////
+
+const errorHandler = require('errorhandler')
+app.use(errorHandler())
+
+// Passport configuration
+require('./src/auth.js')
+
+/// ////////////////////////////////
+
+app.engine('ejs', ejs.__express)
+app.set('view engine', 'ejs')
+app.set('views', path.join(__dirname, './views'))
+
+app.use(session({ secret: 'keyboard cat', resave: false, saveUninitialized: false }))
+app.use(passport.initialize())
+app.use(passport.session())
+// parsers
+app.use(cookieParser())
+app.use(express.urlencoded({ extended: false }))
 app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
+
+// cors
 app.use(hubCors)
 // preflight needed for some socketio requests
 app.options('*', hubCors)
+
+/// ///// auth routes  //////////
+app.get('/login', (req, res) => {
+  res.render('login')
+})
+app.post('/login', passport.authenticate('local', {
+  successReturnToOrRedirect: '/', failureRedirect: '/login'
+}))
+// app.get('/logout', routes.site.logout)
+// app.get('/account', routes.site.account)
+
+app.get('/dialog/authorize', oauthRoutes.authorization)
+app.post('/dialog/authorize/decision', oauthRoutes.decision)
+app.post('/oauth/token', oauthRoutes.token)
+
+/// /////////////
 app.use(apex)
 app
   .route(routes.inbox)
