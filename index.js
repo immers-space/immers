@@ -80,7 +80,6 @@ app.post('/login', passport.authenticate('local', {
 
 app.get('/dialog/authorize', oauthRoutes.authorization)
 app.post('/dialog/authorize/decision', oauthRoutes.decision)
-app.post('/oauth/token', oauthRoutes.token)
 
 app.get(
   '/me',

@@ -2,8 +2,6 @@
 
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
-const BasicStrategy = require('passport-http').BasicStrategy
-const ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy
 const BearerStrategy = require('passport-http-bearer').Strategy
 const db = require('../db')
 
@@ -30,30 +28,6 @@ passport.serializeUser((user, done) => done(null, user.id))
 passport.deserializeUser((id, done) => {
   db.users.findById(id, (error, user) => done(error, user))
 })
-
-/**
- * BasicStrategy & ClientPasswordStrategy
- *
- * These strategies are used to authenticate registered OAuth clients. They are
- * employed to protect the `token` endpoint, which consumers use to obtain
- * access tokens. The OAuth 2.0 specification suggests that clients use the
- * HTTP Basic scheme to authenticate. Use of the client password strategy
- * allows clients to send the same credentials in the request body (as opposed
- * to the `Authorization` header). While this approach is not recommended by
- * the specification, in practice it is quite common.
- */
-function verifyClient (clientId, clientSecret, done) {
-  db.clients.findByClientId(clientId, (error, client) => {
-    if (error) return done(error)
-    if (!client) return done(null, false)
-    if (client.clientSecret !== clientSecret) return done(null, false)
-    return done(null, client)
-  })
-}
-
-passport.use(new BasicStrategy(verifyClient))
-
-passport.use(new ClientPasswordStrategy(verifyClient))
 
 /**
  * BearerStrategy
