@@ -16,19 +16,23 @@ server.grant(oauth2orize.grant.token(authdb.createAccessToken))
 module.exports.authorization = [
   login.ensureLoggedIn(),
   server.authorization(authdb.validateClient, (client, user, done) => {
-    console.log('client needs decision?')
     // Auto-approve
     if (client.isTrusted) return done(null, true)
     // Otherwise ask user
     return done(null, false)
   }),
   (request, response) => {
-    console.log('decision dialog')
     response.render('dialog', { transactionId: request.oauth2.transactionID, user: request.user, client: request.oauth2.client })
   }
 ]
 // decision result
 module.exports.decision = [
   login.ensureLoggedIn(),
-  server.decision()
+  server.decision((req, done) => {
+    // TODO: scopes
+    const params = {}
+    const origin = new URL(req.oauth2.redirectURI)
+    params.origin = `${origin.protocol}//${origin.host}`
+    done(null, params)
+  })
 ]

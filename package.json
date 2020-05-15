@@ -36,6 +36,7 @@
     "mongodb": "^3.5.7",
     "oauth2orize": "^1.11.0",
     "passport": "^0.4.1",
+    "passport-anonymous": "^1.0.1",
     "passport-http": "^0.3.0",
     "passport-http-bearer": "^1.0.1",
     "passport-local": "^1.0.0",

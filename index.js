@@ -38,9 +38,25 @@ const apex = ActivitypubExpress({
   // context: ["https://www.w3.org/ns/activitystreams", "https://w3id.org/security/v1", `https://${domain}/ns`]
 })
 const client = new MongoClient('mongodb://localhost:27017', { useUnifiedTopology: true, useNewUrlParser: true })
-// TODO: include client in cors when token-authenticated
-const hubCors = cors({ origin: hub })
-
+const hubCors = cors(function (req, done) {
+  try {
+    if (req.originalUrl === '/me') {
+      console.log('mecors')
+    }
+    const origin = (req.header('Origin') || '').toLowerCase()
+    if (origin === hub) {
+      return done(null, { origin: true })
+    }
+    if (req.authInfo && origin === req.authInfo.origin) {
+      return done(null, { origin: true })
+    }
+    done(null, { origin: false })
+  } catch (err) { done(err) }
+})
+// auth for public v. private routes, with cors enabled for client origins
+const publ = [passport.authenticate(['bearer', 'anonymous'], { session: false }), hubCors]
+// const publ = [passport.authenticate('bearer', { session: false }), hubCors]
+const priv = [passport.authenticate('bearer', { session: false }), hubCors]
 /// ////////////////////// auth ////////////////////
 
 const errorHandler = require('errorhandler')
@@ -64,10 +80,9 @@ app.use(session({ secret: 'keyboard cat', resave: false, saveUninitialized: fals
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(apex)
-// cors
-app.use(hubCors)
-// preflight needed for some socketio requests
-app.options('*', hubCors)
+
+// cannot check authorized origins in preflight, so open to all
+app.options('*', cors())
 
 /// ///// auth routes  //////////
 app.get('/login', (req, res) => {
@@ -84,7 +99,7 @@ app.post('/dialog/authorize/decision', oauthRoutes.decision)
 
 app.get(
   '/me',
-  passport.authenticate('bearer', { session: false }),
+  priv,
   function (req, res, next) {
     req.params.actor = req.user.handle.split('@')[0]
     next()
@@ -93,18 +108,15 @@ app.get(
 )
 /// /////////////
 
-app
-  .route(routes.inbox)
-  .get(apex.net.inbox.get)
-  .post(apex.net.inbox.post)
-app
-  .route(routes.outbox)
-  .get(apex.net.outbox.get)
-  .post(apex.net.outbox.post)
-app
-  .route(routes.actor)
-  .get(apex.net.actor.get)
-  .post(async function (req, res) {
+app.route(routes.inbox)
+  .get(publ, apex.net.inbox.get)
+  .post(publ, apex.net.inbox.post)
+app.route(routes.outbox)
+  .get(publ, apex.net.outbox.get)
+  .post(priv, apex.net.outbox.post)
+app.route(routes.actor)
+  .get(publ, apex.net.actor.get)
+  .post(priv, async function (req, res) {
     const name = req.params.actor
     console.log(`Creating user ${name}`)
     const actor = await apex.createActor(name, name, 'immers profile')
@@ -115,8 +127,8 @@ app
     return res.sendStatus(500)
   })
 
-app.get(routes.object, apex.net.object.get)
-app.get(routes.activity, apex.net.activityStream.get)
+app.get(routes.object, publ, apex.net.object.get)
+app.get(routes.activity, publ, apex.net.activityStream.get)
 app.get('/.well-known/webfinger', apex.net.webfinger.get)
 /*
 // schema extensions
@@ -175,6 +187,7 @@ async function friendsLocations (req, res, next) {
   next()
 }
 app.get('/u/:actor/friends', [
+  priv,
   apex.net.validators.jsonld,
   apex.net.validators.targetActor,
   friendsLocations,
