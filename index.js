@@ -12,7 +12,7 @@ const socketio = require('socket.io')
 const request = require('request-promise-native')
 const ejs = require('ejs')
 const passport = require('passport')
-
+const authdb = require('./src/authdb')
 const oauthRoutes = require('./routes/oauth2')
 
 const config = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json')))
@@ -38,6 +38,7 @@ const apex = ActivitypubExpress({
   // context: ["https://www.w3.org/ns/activitystreams", "https://w3id.org/security/v1", `https://${domain}/ns`]
 })
 const client = new MongoClient('mongodb://localhost:27017', { useUnifiedTopology: true, useNewUrlParser: true })
+// TODO: include client in cors when token-authenticated
 const hubCors = cors({ origin: hub })
 
 /// ////////////////////// auth ////////////////////
@@ -85,7 +86,7 @@ app.get(
   '/me',
   passport.authenticate('bearer', { session: false }),
   function (req, res, next) {
-    req.params.actor = req.user.username
+    req.params.actor = req.user.handle.split('@')[0]
     next()
   },
   apex.net.actor.get
@@ -259,6 +260,9 @@ client
   })
   .then(immer => {
     return apex.store.setup(immer)
+  })
+  .then(() => {
+    return authdb.setup(apex.store.db)
   })
   .then(() => {
     return server.listen(port, () => console.log(`apex app listening on port ${port}`))

@@ -41,7 +41,8 @@
     "passport-local": "^1.0.0",
     "passport-local-authenticate": "^1.2.0",
     "passport-oauth2-client-password": "^0.1.2",
-    "socket.io": "^2.3.0"
+    "socket.io": "^2.3.0",
+    "uid-safe": "^2.1.5"
   },
   "devDependencies": {
     "standard": "^14.3.3"
