@@ -12,11 +12,9 @@ const socketio = require('socket.io')
 const request = require('request-promise-native')
 const nunjucks = require('nunjucks')
 const passport = require('passport')
-const authdb = require('./src/authdb')
-const oauthRoutes = require('./routes/oauth2')
+const auth = require('./src/auth')
 
-const config = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json')))
-const { port, domain, hub, name } = config
+const { port, domain, name } = require('./config.json')
 const app = express()
 const routes = {
   actor: '/u/:actor',
@@ -38,34 +36,6 @@ const apex = ActivitypubExpress({
   // context: ["https://www.w3.org/ns/activitystreams", "https://w3id.org/security/v1", `https://${domain}/ns`]
 })
 const client = new MongoClient('mongodb://localhost:27017', { useUnifiedTopology: true, useNewUrlParser: true })
-const hubCors = cors(function (req, done) {
-  try {
-    if (req.originalUrl === '/me') {
-      console.log('mecors')
-    }
-    const origin = (req.header('Origin') || '').toLowerCase()
-    if (origin === hub) {
-      return done(null, { origin: true })
-    }
-    if (req.authInfo && origin === req.authInfo.origin) {
-      return done(null, { origin: true })
-    }
-    done(null, { origin: false })
-  } catch (err) { done(err) }
-})
-// auth for public v. private routes, with cors enabled for client origins
-const publ = [passport.authenticate(['bearer', 'anonymous'], { session: false }), hubCors]
-// const publ = [passport.authenticate('bearer', { session: false }), hubCors]
-const priv = [passport.authenticate('bearer', { session: false }), hubCors]
-/// ////////////////////// auth ////////////////////
-
-const errorHandler = require('errorhandler')
-app.use(errorHandler())
-
-// Passport configuration
-require('./src/auth.js')
-
-/// ////////////////////////////////
 
 nunjucks.configure('views', {
   autoescape: true,
@@ -82,10 +52,9 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(apex)
 
+/// auth related routes
 // cannot check authorized origins in preflight, so open to all
 app.options('*', cors())
-
-/// ///// auth routes  //////////
 app.get('/login', (req, res) => {
   res.render('login.njk')
 })
@@ -93,31 +62,23 @@ app.post('/login', passport.authenticate('local', {
   successReturnToOrRedirect: '/', failureRedirect: '/login'
 }))
 // app.get('/logout', routes.site.logout)
-// app.get('/account', routes.site.account)
+app.get('/dialog/authorize', auth.authorization)
+app.post('/dialog/authorize/decision', auth.decision)
+// get actor from token
+app.get('/me', auth.priv, auth.userToActor, apex.net.actor.get)
+// if user is remote, get remote authorization url
+app.get('/auth/user-home', auth.homeImmer)
 
-app.get('/dialog/authorize', oauthRoutes.authorization)
-app.post('/dialog/authorize/decision', oauthRoutes.decision)
-
-app.get(
-  '/me',
-  priv,
-  function (req, res, next) {
-    req.params.actor = req.user.handle.split('@')[0]
-    next()
-  },
-  apex.net.actor.get
-)
-/// /////////////
-
+// AP routes
 app.route(routes.inbox)
-  .get(publ, apex.net.inbox.get)
-  .post(publ, apex.net.inbox.post)
+  .get(auth.publ, apex.net.inbox.get)
+  .post(auth.publ, apex.net.inbox.post)
 app.route(routes.outbox)
-  .get(publ, apex.net.outbox.get)
-  .post(priv, apex.net.outbox.post)
+  .get(auth.publ, apex.net.outbox.get)
+  .post(auth.priv, apex.net.outbox.post)
 app.route(routes.actor)
-  .get(publ, apex.net.actor.get)
-  .post(priv, async function (req, res) {
+  .get(auth.publ, apex.net.actor.get)
+  .post(auth.priv, async function (req, res) {
     const name = req.params.actor
     console.log(`Creating user ${name}`)
     const actor = await apex.createActor(name, name, 'immers profile')
@@ -128,8 +89,8 @@ app.route(routes.actor)
     return res.sendStatus(500)
   })
 
-app.get(routes.object, publ, apex.net.object.get)
-app.get(routes.activity, publ, apex.net.activityStream.get)
+app.get(routes.object, auth.publ, apex.net.object.get)
+app.get(routes.activity, auth.publ, apex.net.activityStream.get)
 app.get('/.well-known/webfinger', apex.net.webfinger.get)
 /*
 // schema extensions
@@ -188,37 +149,12 @@ async function friendsLocations (req, res, next) {
   next()
 }
 app.get('/u/:actor/friends', [
-  priv,
+  auth.priv,
   apex.net.validators.jsonld,
   apex.net.validators.targetActor,
   friendsLocations,
   apex.net.responders.result
 ])
-
-async function homeImmer (req, res, next) {
-  if (!req.query.handle) { return res.status(400).send('Missing user handle') }
-  try {
-    const [,, remoteDomain] = /@?([^@]+)@(.+)/.exec(req.query.handle)
-    if (remoteDomain.toLowerCase() === apex.domain.toLowerCase()) {
-      // no action needed for local actors
-      return res.json({ redirect: false })
-    }
-    let client = await authdb.getRemoteClient(remoteDomain)
-    if (!client) {
-      client = await request(`https://${remoteDomain}/auth/client`, {
-        method: 'POST',
-        body: {
-          clientId: `https://${apex.domain}/o/immer`,
-          redirectUri: `https://${apex.domain}/hub.html`
-        },
-        json: true
-      })
-      await authdb.saveRemoteClient(remoteDomain, client)
-      return res.json({ redirect: `${req.protocol}://${remoteDomain}${req.session.returnTo}` })
-    }
-  } catch (err) { next(err) }
-}
-app.get('/auth/user-home', homeImmer)
 
 app.use('/static', express.static('static'))
 const key = fs.readFileSync(path.join(__dirname, 'certs', 'server.key'))
@@ -287,7 +223,7 @@ client
     return apex.store.setup(immer)
   })
   .then(() => {
-    return authdb.setup(apex.store.db)
+    return auth.authdb.setup(apex.store.db)
   })
   .then(() => {
     return server.listen(port, () => console.log(`apex app listening on port ${port}`))
