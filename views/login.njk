@@ -18,7 +18,7 @@
 
     <div class="aesthetic-windows-95-container">
       <div class="aesthetic-windows-95-container-indent">
-        <form action="/login" method="post">
+        <form action="/auth/login" method="post">
           <div class="form-item">
             <label>Immers handle:</label>
             <input id="handle" class="aesthetic-windows-95-text-input"
@@ -57,7 +57,7 @@
     })
 
     function lookup (handle) {
-      const url = new URL(`https://${window.location.host}/auth/user-home`)
+      const url = new URL(`https://${window.location.host}/auth/home`)
       url.search = new URLSearchParams({ handle }).toString()
       window.fetch(url)
         .then(res => res.json)

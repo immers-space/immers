@@ -55,19 +55,19 @@ app.use(apex)
 /// auth related routes
 // cannot check authorized origins in preflight, so open to all
 app.options('*', cors())
-app.get('/login', (req, res) => {
-  res.render('login.njk')
-})
-app.post('/login', passport.authenticate('local', {
-  successReturnToOrRedirect: '/', failureRedirect: '/login'
+app.get('/auth/login', (req, res) => res.render('login.njk'))
+app.post('/auth/login', passport.authenticate('local', {
+  successReturnToOrRedirect: '/',
+  failureRedirect: '/auth/login'
 }))
-// app.get('/logout', routes.site.logout)
-app.get('/dialog/authorize', auth.authorization)
-app.post('/dialog/authorize/decision', auth.decision)
+// app.get('/auth/logout', routes.site.logout)
+
+app.get('/auth/authorize', auth.authorization)
+app.post('/auth/decision', auth.decision)
 // get actor from token
-app.get('/me', auth.priv, auth.userToActor, apex.net.actor.get)
-// if user is remote, get remote authorization url
-app.get('/auth/user-home', auth.homeImmer)
+app.get('/auth/me', auth.priv, auth.userToActor, apex.net.actor.get)
+// find home from handle; if user is remote, get remote authorization url
+app.get('/auth/home', auth.homeImmer)
 
 // AP routes
 app.route(routes.inbox)

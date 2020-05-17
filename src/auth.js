@@ -82,7 +82,7 @@ module.exports = {
   homeImmer,
   // new client authorization & token request
   authorization: [
-    login.ensureLoggedIn(),
+    login.ensureLoggedIn('/auth/login'),
     server.authorization(authdb.validateClient, (client, user, done) => {
       // Auto-approve
       if (client.isTrusted) return done(null, true)
