@@ -194,21 +194,32 @@ app.get('/u/:actor/friends', [
   apex.net.responders.result
 ])
 
-async function remoteActor (req, res, next) {
-  if (req.query.handle) {
-    // find via webfinger
-    const [, username, domain] = /@?([^@]+)@(.+)/.exec(req.query.handle)
-    const wfURI = `https://${domain}/.well-known/webfinger?resource=acct:${username}@${domain}`
-    const wf = await request(wfURI, {
-      json: true
-    })
-    const actorIRI = wf.links.find(l => l.rel === 'self').href
-    res.locals.apex.target = await apex.resolveObject(actorIRI)
-  }
-  next()
+async function homeImmer (req, res, next) {
+  if (!req.query.handle) { return res.status(400).send('Missing user handle') }
+  try {
+    const [,, remoteDomain] = /@?([^@]+)@(.+)/.exec(req.query.handle)
+    if (remoteDomain.toLowerCase() === apex.domain.toLowerCase()) {
+      // no action needed for local actors
+      return res.json({ redirect: false })
+    }
+    let client = await authdb.getRemoteClient(remoteDomain)
+    if (!client) {
+      client = await request(`https://${remoteDomain}/auth/client`, {
+        method: 'POST',
+        body: {
+          clientId: `https://${apex.domain}/o/immer`,
+          redirectUri: `https://${apex.domain}/hub.html`
+        },
+        json: true
+      })
+      await authdb.saveRemoteClient(remoteDomain, client)
+      return res.json({ redirect: `${req.protocol}://${remoteDomain}${req.session.returnTo}` })
+    }
+  } catch (err) { next(err) }
 }
-app.get('/proxy/user', apex.net.validators.jsonld, remoteActor, apex.net.responders.target)
+app.get('/auth/user-home', homeImmer)
 
+app.use('/static', express.static('static'))
 const key = fs.readFileSync(path.join(__dirname, 'certs', 'server.key'))
 const cert = fs.readFileSync(path.join(__dirname, 'certs', 'server.cert'))
 const server = https.createServer({ key, cert }, app)

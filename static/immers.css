@@ -1,0 +1,91 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body, input {
+  font-family: 'VT323', monospace;
+  font-size: 24px;
+}
+
+h1 {
+  font-family: 'Monoton', cursive;
+  font-size: 80px;
+  margin: 0;
+}
+
+.bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background-image: url('./vapor.png');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  background-color: #a6549d;
+  z-index: -1;
+}
+
+.attribution {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  padding: 5px;
+}
+
+.content {
+ height: 100%;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: space-around;
+}
+
+.content form {
+  margin: 20px;
+  /* transition: all 1s; */
+}
+
+.form-item {
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-item, .form-item label, .form-item input {
+  transition: all 1s ease-in;
+  height: 33px;
+  overflow: hidden;
+}
+
+.form-item label {
+  padding-right: 5px;
+}
+
+.form-item input {
+  width: 350px;
+  text-align: center;
+}
+
+.hidden {
+  visibility: hidden;
+  height: 0;
+}
+
+.hidden label, .hidden input {
+  height: 0;
+}
+
+.fetching {
+  cursor: progress !important;
+}
+
+button[disabled] {
+  color: #888;
+  pointer-events: none;
+}

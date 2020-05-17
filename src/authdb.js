@@ -12,6 +12,16 @@ module.exports = {
       name: 'tokens-ttl',
       expireAfterSeconds: 0
     })
+    await db.collection('clients').createIndex({
+      clientId: 1
+    }, {
+      unique: true
+    })
+    await db.collection('remotes').createIndex({
+      domain: 1
+    }, {
+      unique: true
+    })
     /// //// temp
     await db.collection('users').findOneAndReplace({
       handle: 'will@localhost:8081'
@@ -27,6 +37,7 @@ module.exports = {
       isTrusted: true
     }, { upsert: true })
   },
+  // passport / oauth2orize methods
   serializeClient (client, done) {
     done(null, client._id)
   },
@@ -78,5 +89,18 @@ module.exports = {
       const tokenDoc = await db.collection('tokens').findOne({ token })
       done(null, tokenDoc.user, { scope: '*', origin: tokenDoc.origin })
     } catch (err) { done(err) }
+  },
+  // immers api methods
+  getRemoteClient (domain) {
+    return db.collection('remotes').findOne({ domain })
+  },
+  async saveRemoteClient (domain, client) {
+    const result = db.collection('remotes').insertOne({
+      domain,
+      clientId: client.clientId,
+      redirectUri: client.redirectUri
+    })
+    if (!result.insertedCount) { throw new Error('Error saving remove client') }
   }
+
 }
