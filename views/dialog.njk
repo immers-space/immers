@@ -1,0 +1,22 @@
+{% extends "layout.njk" %}
+
+{% block contentTitle %}Authorization request{% endblock %}
+{% block content %}
+  <div class="aesthetic-windows-95-container-indent">
+    <p>Hi {{ user.username }}!</p>
+    <p><b>{{ client.name }}</b> is requesting access to your account.</p>
+    <p>Do you approve?</p>
+
+    <form action="/dialog/authorize/decision" method="post">
+      <input name="transaction_id" type="hidden" value="{{ transactionId }}" />
+      <div class="form-item">
+        <span class="aesthetic-windows-95-button">
+          <button type="submit" name="allow" id="allow">Allow</button>
+        </span>
+        <span class="aesthetic-windows-95-button">
+          <button type="submit" name="cancel" value="Deny" id="deny">Deny</button>
+        </span>
+      </div>
+    </form>
+  </div>
+{% endblock %}

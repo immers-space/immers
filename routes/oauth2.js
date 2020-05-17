@@ -22,7 +22,7 @@ module.exports.authorization = [
     return done(null, false)
   }),
   (request, response) => {
-    response.render('dialog', { transactionId: request.oauth2.transactionID, user: request.user, client: request.oauth2.client })
+    response.render('dialog.njk', { transactionId: request.oauth2.transactionID, user: request.user, client: request.oauth2.client })
   }
 ]
 // decision result

@@ -1,0 +1,76 @@
+{% extends "layout.njk" %}
+
+{% block contentTitle %}Login to your immers profile{% endblock %}
+{% block content %}
+  <div class="aesthetic-windows-95-tabbed-container">
+    <div class="aesthetic-windows-95-tabbed-container-tabs">
+      <div class="aesthetic-windows-95-tabbed-container-tabs-button is-active">
+        <button>
+          Login
+        </button>
+      </div>
+      <div class="aesthetic-windows-95-tabbed-container-tabs-button">
+        <button>
+          Register
+        </button>
+      </div>
+    </div>
+
+    <div class="aesthetic-windows-95-container">
+      <div class="aesthetic-windows-95-container-indent">
+        <form action="/login" method="post">
+          <div class="form-item">
+            <label>Immers handle:</label>
+            <input id="handle" class="aesthetic-windows-95-text-input"
+                  type="text" name="username"
+                  placeholder="username@your.immer"/><br/>
+          </div>
+          <div id="password" class="form-item hidden">
+            <label>Password:</label>
+            <input class="aesthetic-windows-95-text-input" type="password" name="password" />
+          </div>
+          <div class="form-item">
+            <span id="next" class="aesthetic-windows-95-button">
+              <button type="button">Next</button>
+            </span>
+            <span id="submit" class="aesthetic-windows-95-button hidden">
+              <button type="submit">Login</button>
+            </span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block script%}
+  <script>
+    const handle = document.getElementById('handle')
+    const pwd = document.getElementById('password')
+    const next = document.getElementById('next')
+    const submit = document.getElementById('submit')
+    // lookup user
+    next.addEventListener('click', evt => {
+      document.body.classList.add('fetching')
+      next.querySelector('button').setAttribute('disabled', true)
+      // evt.preventDefault()
+      lookup(handle.value)
+    })
+
+    function lookup (handle) {
+      const url = new URL(`https://${window.location.host}/auth/user-home`)
+      url.search = new URLSearchParams({ handle }).toString()
+      window.fetch(url)
+        .then(res => res.json)
+        .then(res => {
+          if (!res.redirect) {
+            document.body.classList.remove('fetching')
+            pwd.classList.remove('hidden')
+            submit.classList.remove('hidden')
+          } else {
+            // go to auth flow at users home immer, returning to this hub after
+            window.location = res.redirect
+          }
+        })
+    }
+  </script>
+{% endblock %}

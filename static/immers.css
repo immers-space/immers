@@ -89,3 +89,7 @@ button[disabled] {
   color: #888;
   pointer-events: none;
 }
+
+body {
+  display: initial;
+}

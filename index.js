@@ -10,7 +10,7 @@ const { MongoClient } = require('mongodb')
 const ActivitypubExpress = require('activitypub-express')
 const socketio = require('socket.io')
 const request = require('request-promise-native')
-const ejs = require('ejs')
+const nunjucks = require('nunjucks')
 const passport = require('passport')
 const authdb = require('./src/authdb')
 const oauthRoutes = require('./routes/oauth2')
@@ -67,9 +67,10 @@ require('./src/auth.js')
 
 /// ////////////////////////////////
 
-app.engine('ejs', ejs.__express)
-app.set('view engine', 'ejs')
-app.set('views', path.join(__dirname, './views'))
+nunjucks.configure('views', {
+  autoescape: true,
+  express: app
+})
 
 // parsers
 app.use(cookieParser())
@@ -86,7 +87,7 @@ app.options('*', cors())
 
 /// ///// auth routes  //////////
 app.get('/login', (req, res) => {
-  res.render('login')
+  res.render('login.njk')
 })
 app.post('/login', passport.authenticate('local', {
   successReturnToOrRedirect: '/', failureRedirect: '/login'

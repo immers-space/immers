@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html style="background-color: #a6549d;">
+  <head>
+    <title>{% block title %}immers.space{% endblock %}</title>
+    <!-- FOUC protection -->
+    <style>body {display: none;}</style>
+    <link rel="stylesheet" type="text/css" href="/static/aesthetic.css">
+    <link rel="stylesheet" type="text/css" href="/static/immers.css">
+    <link href="https://fonts.googleapis.com/css2?family=Monoton&family=VT323&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="aesthetic-effect-crt bg"></div>
+    <div class="content">
+      {% block header %}
+        <h1 class="aesthetic-50-transparent-color">immers.space</h1>
+      {% endblock %}
+      <div class="aesthetic-windows-95-modal">
+        <div class="aesthetic-windows-95-modal-title-bar">
+          <div class="aesthetic-windows-95-modal-title-bar-text">
+            {% block contentTitle %}{% endblock %}
+          </div>
+        </div>
+        <div class="aesthetic-windows-95-modal-content">
+          <hr />
+          {% block content %}{% endblock %}
+        </div>
+      </div>
+      <h1>&nbsp;</h1> <!-- balances layout with title -->
+    </div>
+    
+    <div class="attribution">
+      <a class="aesthetic-green-color" href="https://www.vecteezy.com/free-vector/vector">Background: Vectors by Vecteezy</a>
+    </div>
+    {% block script %}{% endblock %}
+  </body>
+</html>

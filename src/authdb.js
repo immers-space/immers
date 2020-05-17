@@ -27,11 +27,13 @@ module.exports = {
       handle: 'will@localhost:8081'
     }, {
       handle: 'will@localhost:8081',
+      username: 'will',
       password: 'password'
     }, { upsert: true })
     await db.collection('clients').findOneAndReplace({
       clientId: 'https://localhost:8081/o/immer'
     }, {
+      name: 'Immers Space',
       clientId: 'https://localhost:8081/o/immer',
       redirectUri: 'https://localhost:8080/hub.html',
       isTrusted: true
