@@ -14,7 +14,7 @@ const nunjucks = require('nunjucks')
 const passport = require('passport')
 const auth = require('./src/auth')
 
-const { port, domain, name } = require('./config.json')
+const { port, domain, hub, name } = require('./config.json')
 const app = express()
 const routes = {
   actor: '/u/:actor',
@@ -53,6 +53,8 @@ app.use(passport.session())
 app.use(apex)
 
 /// auth related routes
+// cors for all request from local hub
+app.use(cors({ origin: hub }))
 // cannot check authorized origins in preflight, so open to all
 app.options('*', cors())
 app.get('/auth/login', (req, res) => res.render('login.njk'))
@@ -163,19 +165,46 @@ const server = https.createServer({ key, cert }, app)
 
 // streaming updates
 const profilesSockets = new Map()
-const io = socketio(server)
+const io = socketio(server, {
+  // currently has blanket approval for CORS on all requests
+  // due to api limitation, future version (engine.io v4) will allow more CORS configuration
+  origins: '*:*',
+  // required to support authorization header over CORS
+  handlePreflightRequest: (req, res) => {
+    const headers = {
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      // preflight cors has to be wide open
+      'Access-Control-Allow-Origin': req.headers.origin,
+      'Access-Control-Allow-Credentials': true
+    }
+    res.writeHead(200, headers)
+    res.end()
+  }
+})
+io.use(function (socket, next) {
+  passport.authenticate('bearer', function (err, user, info) {
+    if (err) { return next(err) }
+    if (!user) { return next(new Error('Not authorized')) }
+    socket.authorizedUserId = apex.utils.usernameToIRI(user.handle.split('@')[0])
+    profilesSockets.set(socket.authorizedUserId, socket)
+    // for future use with fine-grained CORS origins
+    socket.hub = info.origin
+    next()
+  })(socket.request, {}, next)
+})
 io.on('connection', socket => {
   socket.immers = {}
   socket.on('disconnect', async () => {
-    if (socket.immers.id) {
-      profilesSockets.delete(socket.immers.id)
+    if (socket.authorizedUserId) {
+      profilesSockets.delete(socket.authorizedUserId)
     }
     if (socket.immers.outbox && socket.immers.leave) {
       request({
         method: 'POST',
         url: socket.immers.outbox,
         headers: {
-          'Content-Type': apex.consts.jsonldOutgoingType
+          'Content-Type': apex.consts.jsonldOutgoingType,
+          Authorization: socket.immers.authorization
         },
         json: true,
         simple: false,
@@ -184,14 +213,10 @@ io.on('connection', socket => {
       delete socket.immers.leave
     }
   })
-  socket.on('profile', id => {
-    if (!id) return
-    socket.immers.id = id
-    profilesSockets.set(id, socket)
-  })
   socket.on('entered', msg => {
     socket.immers.outbox = msg.outbox
     socket.immers.leave = msg.leave
+    socket.immers.authorization = msg.authorization
   })
 })
 
