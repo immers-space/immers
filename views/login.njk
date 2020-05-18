@@ -4,26 +4,26 @@
 {% block content %}
   <div class="aesthetic-windows-95-tabbed-container">
     <div class="aesthetic-windows-95-tabbed-container-tabs">
-      <div class="aesthetic-windows-95-tabbed-container-tabs-button is-active">
-        <button>
+      <div id="show-login" class="aesthetic-windows-95-tabbed-container-tabs-button is-active">
+        <button type="button">
           Login
         </button>
       </div>
-      <div class="aesthetic-windows-95-tabbed-container-tabs-button">
-        <button>
+      <div id="show-register" class="aesthetic-windows-95-tabbed-container-tabs-button">
+        <button type="button">
           Register
         </button>
       </div>
     </div>
 
     <div class="aesthetic-windows-95-container">
-      <div class="aesthetic-windows-95-container-indent">
+      <div id="login-form" class="aesthetic-windows-95-container-indent">
         <form action="/auth/login" method="post">
           <div class="form-item">
             <label>Immers handle:</label>
             <input id="handle" class="aesthetic-windows-95-text-input"
                   type="text" name="username"
-                  placeholder="username@your.immer"/><br/>
+                  placeholder="username@your.immer"/>
           </div>
           <div id="password" class="form-item hidden">
             <label>Password:</label>
@@ -39,11 +39,58 @@
           </div>
         </form>
       </div>
+      <div id="register-form" class="aesthetic-windows-95-container-indent none">
+        <form action="/auth/user" method="post">
+          <div class="form-item">
+            <label>User name:</label>
+            <input class="aesthetic-windows-95-text-input"
+                   type="text" name="preferredUsername"
+                   required pattern="[A-Za-z0-9_-]+" title="Letters, numbers, &amp; dashes only"/>
+          </div>
+          <div class="form-item">
+            <label>Display name:</label>
+            <input id="handle" class="aesthetic-windows-95-text-input"
+                  type="text" name="name"
+                  required/>
+          </div>
+          <div class="form-item">
+            <label>Password:</label>
+            <input class="aesthetic-windows-95-text-input"
+                   type="password" name="password"
+                   required/>
+          </div>
+          <div class="form-item">
+            <span class="aesthetic-windows-95-button">
+              <button type="submit">Sign up</button>
+            </span>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 {% endblock %}
 {% block script%}
   <script>
+    // tab toggle
+    const togLogin = document.getElementById('show-login')
+    const togRegister = document.getElementById('show-register')
+    const tabLogin = document.getElementById('login-form')
+    const tabRegister = document.getElementById('register-form')
+    togLogin.addEventListener('click', evt => {
+      togLogin.classList.add('is-active')
+      tabLogin.classList.remove('none')
+      togRegister.classList.remove('is-active')
+      tabRegister.classList.add('none')
+      evt.preventDefault()
+    })
+    togRegister.addEventListener('click', evt => {
+      togRegister.classList.add('is-active')
+      tabRegister.classList.remove('none')
+      togLogin.classList.remove('is-active')
+      tabLogin.classList.add('none')
+      evt.preventDefault()
+    })
+    // login action
     const handle = document.getElementById('handle')
     const pwd = document.getElementById('password')
     const next = document.getElementById('next')

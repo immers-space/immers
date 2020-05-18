@@ -81,6 +81,10 @@ h1 {
   height: 0;
 }
 
+.none {
+  display: none;
+}
+
 .fetching {
   cursor: progress !important;
 }
@@ -88,6 +92,12 @@ h1 {
 button[disabled] {
   color: #888;
   pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aesthetic-effect-crt::after {
+    animation: none !important;
+  }
 }
 
 body {

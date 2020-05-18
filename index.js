@@ -62,7 +62,20 @@ app.post('/auth/login', passport.authenticate('local', {
   successReturnToOrRedirect: '/',
   failureRedirect: '/auth/login'
 }))
+// TODO:
 // app.get('/auth/logout', routes.site.logout)
+// app.post('/auth/client', auth.registerClient)
+// app.post('/auth/user', auth.registerUser)
+// async function (req, res) {
+//   const name = req.params.actor
+//   console.log(`Creating user ${name}`)
+//   const actor = await apex.createActor(name, name, 'immers profile')
+//   const result = await apex.store.saveObject(actor)
+//   if (result) {
+//     return res.status(201).send(await apex.toJSONLD(actor))
+//   }
+//   return res.sendStatus(500)
+// }
 
 app.get('/auth/authorize', auth.authorization)
 app.post('/auth/decision', auth.decision)
@@ -80,16 +93,6 @@ app.route(routes.outbox)
   .post(auth.priv, apex.net.outbox.post)
 app.route(routes.actor)
   .get(auth.publ, apex.net.actor.get)
-  .post(auth.priv, async function (req, res) {
-    const name = req.params.actor
-    console.log(`Creating user ${name}`)
-    const actor = await apex.createActor(name, name, 'immers profile')
-    const result = await apex.store.saveObject(actor)
-    if (result) {
-      return res.status(201).send(await apex.toJSONLD(actor))
-    }
-    return res.sendStatus(500)
-  })
 
 app.get(routes.object, auth.publ, apex.net.object.get)
 app.get(routes.activity, auth.publ, apex.net.activityStream.get)
