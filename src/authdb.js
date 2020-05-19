@@ -94,6 +94,7 @@ module.exports = {
   async validateAccessToken (token, done) {
     try {
       const tokenDoc = await db.collection('tokens').findOne({ token })
+      if (!tokenDoc) { return done(null, false) }
       done(null, tokenDoc.user, { scope: '*', origin: tokenDoc.origin })
     } catch (err) { done(err) }
   },
