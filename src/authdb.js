@@ -22,11 +22,16 @@ module.exports = {
     }, {
       unique: true
     })
+    await db.collection('remotes').createIndex({
+      username: 1
+    }, {
+      unique: true
+    })
+
     /// //// temp
     await db.collection('users').findOneAndReplace({
-      handle: 'will@localhost:8081'
+      username: 'will'
     }, {
-      handle: 'will@localhost:8081',
       username: 'will',
       password: 'password'
     }, { upsert: true })
@@ -36,7 +41,7 @@ module.exports = {
       name: 'Immers Space',
       clientId: 'https://localhost:8081/o/immer',
       redirectUri: 'https://localhost:8080/hub.html',
-      isTrusted: true
+      isTrusted: false
     }, { upsert: true })
   },
   // passport / oauth2orize methods
@@ -68,10 +73,10 @@ module.exports = {
       done(null, await db.collection('users').findOne({ _id: ObjectId(id) }))
     } catch (err) { done(err) }
   },
-  async validateUser (handle, password, done) {
+  async validateUser (username, password, done) {
     try {
       // todo: bcrypt
-      const user = await db.collection('users').findOne({ handle, password })
+      const user = await db.collection('users').findOne({ username, password })
       return done(null, user)
     } catch (err) { done(err) }
   },

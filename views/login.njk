@@ -19,10 +19,11 @@
     <div class="aesthetic-windows-95-container">
       <div id="login-form" class="aesthetic-windows-95-container-indent">
         <form action="/auth/login" method="post">
+          <input id="username" name="username" type="hidden"/>
           <div class="form-item">
             <label>Immers handle:</label>
             <input id="handle" class="aesthetic-windows-95-text-input"
-                  type="text" name="username"
+                  type="text" name="handle"
                   placeholder="username@your.immer"/>
           </div>
           <div id="password" class="form-item hidden">
@@ -91,6 +92,7 @@
       evt.preventDefault()
     })
     // login action
+    const username = document.getElementById('username')
     const handle = document.getElementById('handle')
     const pwd = document.getElementById('password')
     const next = document.getElementById('next')
@@ -107,13 +109,14 @@
       const url = new URL(`https://${window.location.host}/auth/home`)
       url.search = new URLSearchParams({ handle }).toString()
       window.fetch(url)
-        .then(res => res.json)
+        .then(res => res.json())
         .then(res => {
-          if (!res.redirect) {
-            document.body.classList.remove('fetching')
+          document.body.classList.remove('fetching')
+          if (res.username) {
+            username.value = res.username
             pwd.classList.remove('hidden')
             submit.classList.remove('hidden')
-          } else {
+          } else if (res.redirect) {
             // go to auth flow at users home immer, returning to this hub after
             window.location = res.redirect
           }

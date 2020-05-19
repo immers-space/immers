@@ -46,17 +46,17 @@ const publ = [passport.authenticate(['bearer', 'anonymous'], { session: false })
 const priv = [passport.authenticate('bearer', { session: false }), hubCors]
 
 function userToActor (req, res, next) {
-  req.params.actor = req.user.handle.split('@')[0]
+  req.params.actor = req.user.username
   next()
 }
 
 async function homeImmer (req, res, next) {
   if (!req.query.handle) { return res.status(400).send('Missing user handle') }
   try {
-    const [,, remoteDomain] = /@?([^@]+)@(.+)/.exec(req.query.handle)
+    const [, username, remoteDomain] = /@?([^@]+)@(.+)/.exec(req.query.handle)
     if (remoteDomain.toLowerCase() === domain.toLowerCase()) {
-      // no action needed for local actors
-      return res.json({ redirect: false })
+      // handle converted to local username
+      return res.json({ username })
     }
     let client = await authdb.getRemoteClient(remoteDomain)
     if (!client) {

@@ -81,7 +81,7 @@ app.get('/auth/authorize', auth.authorization)
 app.post('/auth/decision', auth.decision)
 // get actor from token
 app.get('/auth/me', auth.priv, auth.userToActor, apex.net.actor.get)
-// find home from handle; if user is remote, get remote authorization url
+// find username & home from handle; if user is remote, get remote authorization url
 app.get('/auth/home', auth.homeImmer)
 
 // AP routes
@@ -188,7 +188,7 @@ io.use(function (socket, next) {
   passport.authenticate('bearer', function (err, user, info) {
     if (err) { return next(err) }
     if (!user) { return next(new Error('Not authorized')) }
-    socket.authorizedUserId = apex.utils.usernameToIRI(user.handle.split('@')[0])
+    socket.authorizedUserId = apex.utils.usernameToIRI(user.username)
     profilesSockets.set(socket.authorizedUserId, socket)
     // for future use with fine-grained CORS origins
     socket.hub = info.origin
