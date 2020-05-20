@@ -1,6 +1,8 @@
 const { ObjectId } = require('mongodb')
 const uid = require('uid-safe')
+const bcrypt = require('bcrypt')
 const tokenAge = 24 * 60 * 60 * 1000 // one day
+const saltRounds = 10
 let db
 module.exports = {
   async setup (connection) {
@@ -69,9 +71,10 @@ module.exports = {
   },
   async validateUser (username, password, done) {
     try {
-      // todo: bcrypt
-      const user = await db.collection('users').findOne({ username, password })
-      return done(null, user)
+      const user = await db.collection('users').findOne({ username })
+      if (!user) { return done(null, false) }
+      const match = await bcrypt.compare(password, user.passwordHash)
+      done(null, match && user)
     } catch (err) { done(err) }
   },
   async createAccessToken (client, user, ares, done) {
@@ -94,8 +97,8 @@ module.exports = {
   },
   // immers api methods (promises instead of callbacks)
   async createUser (username, password) {
-    const user = { username, password }
-    // TODO: bcrypt
+    const user = { username }
+    user.passwordHash = await bcrypt.hash(password, saltRounds)
     await db.collection('users').insertOne(user)
     return user
   },
