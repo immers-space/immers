@@ -29,12 +29,6 @@ module.exports = {
     })
 
     /// //// temp
-    await db.collection('users').findOneAndReplace({
-      username: 'will'
-    }, {
-      username: 'will',
-      password: 'password'
-    }, { upsert: true })
     await db.collection('clients').findOneAndReplace({
       clientId: 'https://localhost:8081/o/immer'
     }, {
