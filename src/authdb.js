@@ -22,7 +22,7 @@ module.exports = {
     }, {
       unique: true
     })
-    await db.collection('remotes').createIndex({
+    await db.collection('users').createIndex({
       username: 1
     }, {
       unique: true
@@ -98,7 +98,13 @@ module.exports = {
       done(null, tokenDoc.user, { scope: '*', origin: tokenDoc.origin })
     } catch (err) { done(err) }
   },
-  // immers api methods
+  // immers api methods (promises instead of callbacks)
+  async createUser (username, password) {
+    const user = { username, password }
+    // TODO: bcrypt
+    await db.collection('users').insertOne(user)
+    return user
+  },
   getRemoteClient (domain) {
     return db.collection('remotes').findOne({ domain })
   },

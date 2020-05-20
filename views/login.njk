@@ -55,6 +55,13 @@
       </div>
       <div id="register-form" class="aesthetic-windows-95-container-indent none">
         <form action="/auth/user" method="post">
+          <div id="registration-error-cue" class="form-item hidden">
+              <span class="aesthetic-effect-text-glitch"
+                    style="color: #FF6AD5"
+                    data-glitch="That username is already taken">
+                That username is already taken
+              </span>
+          </div>
           <div class="form-item">
             <label>User name:</label>
             <input class="aesthetic-windows-95-text-input"
@@ -85,11 +92,13 @@
 {% endblock %}
 {% block script%}
   <script>
+    const isRegistrationError = new URL(window.location).searchParams.has('taken')
     // tab toggle
     const togLogin = document.getElementById('show-login')
     const togRegister = document.getElementById('show-register')
     const tabLogin = document.getElementById('login-form')
     const tabRegister = document.getElementById('register-form')
+    const registrationErrorCue = document.getElementById('registration-error-cue')
     togLogin.addEventListener('click', evt => {
       togLogin.classList.add('is-active')
       tabLogin.classList.remove('none')
@@ -97,13 +106,18 @@
       tabRegister.classList.add('none')
       evt.preventDefault()
     })
-    togRegister.addEventListener('click', evt => {
+    function toggleRegister (evt) {
       togRegister.classList.add('is-active')
       tabRegister.classList.remove('none')
       togLogin.classList.remove('is-active')
       tabLogin.classList.add('none')
-      evt.preventDefault()
-    })
+      if (evt) { evt.preventDefault() }
+    }
+    togRegister.addEventListener('click',toggleRegister)
+    if (isRegistrationError) {
+      registrationErrorCue.classList.remove('hidden')
+      toggleRegister()
+    }
     // login action
     const username = document.getElementById('username')
     const handle = document.getElementById('handle')

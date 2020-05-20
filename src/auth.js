@@ -50,6 +50,27 @@ function userToActor (req, res, next) {
   next()
 }
 
+async function registerUser (req, res, next) {
+  let user
+  if (!req.body.preferredUsername || !req.body.password) {
+    return res.status(400).send('Invalid username or password')
+  }
+  try {
+    user = await authdb.createUser(req.body.preferredUsername, req.body.password)
+  } catch (err) {
+    if (err.name === 'MongoError' && err.code === 11000) {
+      return res.redirect(`${req.headers.referer}?taken`)
+    }
+    next(err)
+  }
+  req.login(user, err => {
+    if (err) { return next(err) }
+    const url = req.session.returnTo
+    delete req.session.returnTo
+    res.redirect(url || '/')
+  })
+}
+
 async function homeImmer (req, res, next) {
   if (!req.query.handle) { return res.status(400).send('Missing user handle') }
   try {
@@ -79,6 +100,7 @@ module.exports = {
   publ,
   priv,
   userToActor,
+  registerUser,
   homeImmer,
   // new client authorization & token request
   authorization: [

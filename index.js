@@ -66,18 +66,20 @@ app.post('/auth/login', passport.authenticate('local', {
 // TODO:
 // app.get('/auth/logout', routes.site.logout)
 // app.post('/auth/client', auth.registerClient)
-// app.post('/auth/user', auth.registerUser)
-// async function (req, res) {
-//   const name = req.params.actor
-//   console.log(`Creating user ${name}`)
-//   const actor = await apex.createActor(name, name, 'immers profile')
-//   const result = await apex.store.saveObject(actor)
-//   if (result) {
-//     return res.status(201).send(await apex.toJSONLD(actor))
-//   }
-//   return res.sendStatus(500)
-// }
-
+async function registerActor (req, res, next) {
+  const preferredUsername = req.body.preferredUsername
+  const name = req.body.name
+  apex.createActor(preferredUsername, name, 'immers profile')
+    .then(actor => apex.store.saveObject(actor))
+    .then(result => {
+      if (!result) {
+        res.redirect(`${req.headers.referer}?taken`)
+      }
+      next()
+    })
+    .catch(next)
+}
+app.post('/auth/user', registerActor, auth.registerUser)
 app.get('/auth/authorize', auth.authorization)
 app.post('/auth/decision', auth.decision)
 // get actor from token
