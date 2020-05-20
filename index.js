@@ -39,7 +39,8 @@ const client = new MongoClient('mongodb://localhost:27017', { useUnifiedTopology
 
 nunjucks.configure('views', {
   autoescape: true,
-  express: app
+  express: app,
+  watch: app.get('env') === 'development'
 })
 
 // parsers

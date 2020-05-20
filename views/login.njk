@@ -30,12 +30,25 @@
             <label>Password:</label>
             <input class="aesthetic-windows-95-text-input" type="password" name="password" />
           </div>
+          <div id="remote-cue" class="form-item hidden">
+              You will be redirected to your home immer to login
+          </div>
+          <div id="error-cue" class="form-item hidden">
+              <span class="aesthetic-effect-text-glitch"
+                    style="color: #FF6AD5"
+                    data-glitch="Please check your handle and try again">
+                Please check your handle and try again
+              </span>
+          </div>
           <div class="form-item">
             <span id="next" class="aesthetic-windows-95-button">
-              <button type="button">Next</button>
+              <button type="button">Check</button>
             </span>
-            <span id="submit" class="aesthetic-windows-95-button hidden">
+            <span id="submit" class="aesthetic-windows-95-button none">
               <button type="submit">Login</button>
+            </span>
+            <span id="redirect" class="aesthetic-windows-95-button none">
+              <button type="button" onclick="doRedirect">Proceed</button>
             </span>
           </div>
         </form>
@@ -95,32 +108,85 @@
     const username = document.getElementById('username')
     const handle = document.getElementById('handle')
     const pwd = document.getElementById('password')
-    const next = document.getElementById('next')
+    const nextBtn = document.querySelector('#next button')
     const submit = document.getElementById('submit')
-    // lookup user
-    next.addEventListener('click', evt => {
-      document.body.classList.add('fetching')
-      next.querySelector('button').setAttribute('disabled', true)
-      // evt.preventDefault()
-      lookup(handle.value)
+    const remoteCue = document.getElementById('remote-cue')
+    const redirect = document.getElementById('redirect')
+    const errorCue = document.getElementById('error-cue')
+    let currentState
+    function setLoginState (state) {
+      // ignore event handler events
+      if (typeof state !== 'string') { state = null }
+      if (state === 'remote') {
+        remoteCue.classList.remove('hidden')
+        redirect.classList.remove('none')
+      } else {
+        remoteCue.classList.add('hidden')
+        redirect.classList.add('none')
+      }
+      if (state === 'local') {
+        pwd.classList.remove('hidden')
+        submit.classList.remove('none')
+      } else {
+        pwd.classList.add('hidden')
+        submit.classList.add('none')
+      }
+      if (state === 'error') {
+        errorCue.classList.remove('hidden')
+      } else {
+        errorCue.classList.add('hidden')
+      }
+      if (!state && handle.value) {
+        nextBtn.removeAttribute('disabled')
+      } else {
+        nextBtn.setAttribute('disabled', true)
+      }
+      currentState = state
+    }
+    tabLogin.addEventListener('submit', function loginSubmit (event) {
+      if (currentState === 'local') { return } // submit form
+      event.preventDefault()
+      if (currentState === 'remote') {
+        doRedirect()
+      } else {
+        lookup()
+      }
+      return false
     })
+    // lookup user
+    handle.addEventListener('input', setLoginState)
+    nextBtn.addEventListener('click', lookup)
 
-    function lookup (handle) {
+    function lookup () {
+      document.body.classList.add('fetching')
       const url = new URL(`https://${window.location.host}/auth/home`)
-      url.search = new URLSearchParams({ handle }).toString()
+      url.search = new URLSearchParams({ handle: handle.value }).toString()
+      let state
       window.fetch(url)
         .then(res => res.json())
         .then(res => {
-          document.body.classList.remove('fetching')
           if (res.username) {
             username.value = res.username
-            pwd.classList.remove('hidden')
-            submit.classList.remove('hidden')
+            state = 'local'
           } else if (res.redirect) {
             // go to auth flow at users home immer, returning to this hub after
-            window.location = res.redirect
+            window.redirectUri = res.redirect
+            state = 'remote'
+          } else {
+            state = 'error'
           }
         })
+        .catch(err => { state = 'error' })
+        .then(() => {
+          document.body.classList.remove('fetching')
+          setLoginState(state)
+        })
     }
+    function doRedirect () {
+      if (redirectUri) {
+        window.location = redirectUri
+      }
+    }
+    setLoginState()
   </script>
 {% endblock %}

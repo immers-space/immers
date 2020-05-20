@@ -46,6 +46,7 @@
     "uid-safe": "^2.1.5"
   },
   "devDependencies": {
+    "chokidar": "^3.4.0",
     "standard": "^14.3.3"
   }
 }

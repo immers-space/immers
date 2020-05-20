@@ -58,7 +58,7 @@ h1 {
 }
 
 .form-item, .form-item label, .form-item input {
-  transition: all 1s ease-in;
+  transition: all 0.5s ease-in;
   height: 33px;
   overflow: hidden;
 }
@@ -75,6 +75,8 @@ h1 {
 .hidden {
   visibility: hidden;
   height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .hidden label, .hidden input {
@@ -95,7 +97,9 @@ button[disabled] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .aesthetic-effect-crt::after {
+  .aesthetic-effect-crt::after,
+  .aesthetic-effect-text-glitch::before,
+  .aesthetic-effect-text-glitch::after {
     animation: none !important;
   }
 }
