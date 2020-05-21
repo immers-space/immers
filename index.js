@@ -67,7 +67,7 @@ app.post('/auth/login', passport.authenticate('local', {
 // app.get('/auth/logout', routes.site.logout)
 app.post('/auth/client', auth.registerClient)
 async function registerActor (req, res, next) {
-  const preferredUsername = req.body.preferredUsername
+  const preferredUsername = req.body.preferredUsername.toLowerCase()
   const name = req.body.name
   apex.createActor(preferredUsername, name, 'immers profile')
     .then(actor => apex.store.saveObject(actor))

@@ -56,7 +56,7 @@ async function registerUser (req, res, next) {
     return res.status(400).send('Invalid username or password')
   }
   try {
-    user = await authdb.createUser(req.body.preferredUsername, req.body.password)
+    user = await authdb.createUser(req.body.preferredUsername.toLowerCase(), req.body.password)
   } catch (err) {
     if (err.name === 'MongoError' && err.code === 11000) {
       return res.redirect(`${req.headers.referer}?taken`)

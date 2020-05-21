@@ -73,6 +73,7 @@ module.exports = {
   },
   async validateUser (username, password, done) {
     try {
+      username = username.toLowerCase()
       const user = await db.collection('users').findOne({ username })
       if (!user) { return done(null, false) }
       const match = await bcrypt.compare(password, user.passwordHash)
