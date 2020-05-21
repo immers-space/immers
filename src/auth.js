@@ -71,6 +71,22 @@ async function registerUser (req, res, next) {
   })
 }
 
+async function registerClient (req, res, next) {
+  let client
+  if (!req.body.clientId || !req.body.redirectUri) {
+    return res.status(400).send('Invalid clientId or redirectUri')
+  }
+  try {
+    client = await authdb.createClient(req.body.clientId, req.body.redirectUri)
+  } catch (err) {
+    if (err.name === 'MongoError' && err.code === 11000) {
+      return res.status(409).send('Client already registered')
+    }
+    next(err)
+  }
+  return res.json(client)
+}
+
 async function homeImmer (req, res, next) {
   if (!req.query.handle) { return res.status(400).send('Missing user handle') }
   try {
@@ -90,8 +106,8 @@ async function homeImmer (req, res, next) {
         json: true
       })
       await authdb.saveRemoteClient(remoteDomain, client)
-      return res.json({ redirect: `${req.protocol}://${remoteDomain}${req.session.returnTo}` })
     }
+    return res.json({ redirect: `${req.protocol}://${remoteDomain}${req.session.returnTo || '/'}` })
   } catch (err) { next(err) }
 }
 
@@ -101,6 +117,7 @@ module.exports = {
   priv,
   userToActor,
   registerUser,
+  registerClient,
   homeImmer,
   // new client authorization & token request
   authorization: [

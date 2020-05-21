@@ -65,7 +65,7 @@ app.post('/auth/login', passport.authenticate('local', {
 }))
 // TODO:
 // app.get('/auth/logout', routes.site.logout)
-// app.post('/auth/client', auth.registerClient)
+app.post('/auth/client', auth.registerClient)
 async function registerActor (req, res, next) {
   const preferredUsername = req.body.preferredUsername
   const name = req.body.name

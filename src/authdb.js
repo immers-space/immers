@@ -102,6 +102,15 @@ module.exports = {
     await db.collection('users').insertOne(user)
     return user
   },
+  async createClient (clientId, redirectUri) {
+    const client = { clientId }
+    client.redirectUri = Array.isArray(redirectUri)
+      ? redirectUri
+      : [redirectUri]
+    await db.collection('clients')
+      .insertOne(client, { forceServerObjectId: true })
+    return client
+  },
   getRemoteClient (domain) {
     return db.collection('remotes').findOne({ domain })
   },
