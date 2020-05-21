@@ -1,6 +1,8 @@
 const { ObjectId } = require('mongodb')
 const uid = require('uid-safe')
 const bcrypt = require('bcrypt')
+const { domain, hub, name } = require('../config.json')
+
 const tokenAge = 24 * 60 * 60 * 1000 // one day
 const saltRounds = 10
 let db
@@ -30,14 +32,14 @@ module.exports = {
       unique: true
     })
 
-    /// //// temp
+    // trusted client entry for local hub
     await db.collection('clients').findOneAndReplace({
-      clientId: 'https://localhost:8081/o/immer'
+      clientId: `https://${domain}/o/immer`
     }, {
-      name: 'Immers Space',
-      clientId: 'https://localhost:8081/o/immer',
-      redirectUri: 'https://localhost:8080/hub.html',
-      isTrusted: false
+      name,
+      clientId: `https://${domain}/o/immer`,
+      redirectUri: `https://${hub}/hub.html`,
+      isTrusted: true
     }, { upsert: true })
   },
   // passport / oauth2orize methods

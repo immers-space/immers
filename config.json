@@ -1,6 +1,7 @@
 {
   "port": 8081,
   "domain": "localhost:8081",
-  "hub": "https://localhost:8080",
-  "name": "immers.space"
+  "hub": "localhost:8080",
+  "name": "immers.space",
+  "dbName": "immers"
 }

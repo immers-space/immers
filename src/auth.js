@@ -9,7 +9,7 @@ const LocalStrategy = require('passport-local').Strategy
 const BearerStrategy = require('passport-http-bearer').Strategy
 const AnonymousStrategy = require('passport-anonymous').Strategy
 const authdb = require('./authdb')
-const { domain, hub } = require('../config.json')
+const { domain, name, hub } = require('../config.json')
 
 // Configure route login/authorization options
 passport.serializeUser(authdb.serializeUser)
@@ -101,7 +101,7 @@ async function homeImmer (req, res, next) {
         method: 'POST',
         body: {
           clientId: `https://${domain}/o/immer`,
-          redirectUri: `https://${domain}/hub.html`
+          redirectUri: `https://${hub}/hub.html`
         },
         json: true
       })

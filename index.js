@@ -14,7 +14,7 @@ const nunjucks = require('nunjucks')
 const passport = require('passport')
 const auth = require('./src/auth')
 
-const { port, domain, hub, name } = require('./config.json')
+const { port, domain, hub, name, dbName } = require('./config.json')
 const app = express()
 const routes = {
   actor: '/u/:actor',
@@ -240,13 +240,13 @@ app.on('apex-accept', onInboxFriendUpdate)
 client
   .connect({ useNewUrlParser: true })
   .then(() => {
-    apex.store.db = client.db('immers')
+    apex.store.db = client.db(dbName)
     // Place object representing this node
     const immer = {
       id: `https://${domain}/o/immer`,
       type: 'Place',
       name,
-      url: `https://${domain}`
+      url: `https://${hub}`
     }
     return apex.fromJSONLD(immer)
   })
