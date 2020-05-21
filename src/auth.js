@@ -30,12 +30,15 @@ server.grant(oauth2orize.grant.token(authdb.createAccessToken))
 
 // dynamic cors for oauth clients
 const hubCors = cors(function (req, done) {
+  // avoid error in URL constructor for server-to-server requests
+  if (!req.header('Origin')) { return done(null, { origin: false }) }
   try {
-    const origin = (req.header('Origin') || '').toLowerCase()
+    const origin = new URL(req.header('Origin')).host
     if (origin === hub) {
       return done(null, { origin: true })
     }
-    if (req.authInfo && origin === req.authInfo.origin) {
+    if (req.authInfo && origin === new URL(req.authInfo.origin).host) {
+      // CORS for authorized remote clients
       return done(null, { origin: true })
     }
     done(null, { origin: false })

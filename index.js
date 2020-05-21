@@ -52,12 +52,10 @@ app.use(session({ secret: 'keyboard cat', resave: false, saveUninitialized: fals
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(apex)
-
-/// auth related routes
-// cors for all request from local hub
-app.use(cors({ origin: hub }))
 // cannot check authorized origins in preflight, so open to all
 app.options('*', cors())
+
+/// auth related routes
 app.get('/auth/login', (req, res) => res.render('login.njk'))
 app.post('/auth/login', passport.authenticate('local', {
   successReturnToOrRedirect: '/',
