@@ -77,7 +77,7 @@ async function registerClient (req, res, next) {
     return res.status(400).send('Invalid clientId or redirectUri')
   }
   try {
-    client = await authdb.createClient(req.body.clientId, req.body.redirectUri)
+    client = await authdb.createClient(req.body.clientId, req.body.redirectUri, req.body.name)
   } catch (err) {
     if (err.name === 'MongoError' && err.code === 11000) {
       return res.status(409).send('Client already registered')
@@ -100,6 +100,7 @@ async function homeImmer (req, res, next) {
       client = await request(`https://${remoteDomain}/auth/client`, {
         method: 'POST',
         body: {
+          name,
           clientId: `https://${domain}/o/immer`,
           redirectUri: `https://${hub}/hub.html`
         },

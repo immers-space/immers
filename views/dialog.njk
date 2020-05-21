@@ -4,7 +4,7 @@
 {% block content %}
   <div class="aesthetic-windows-95-container-indent">
     <p>Hi {{ user.username }}!</p>
-    <p><b>{{ client.name }}</b> is requesting access to your account.</p>
+    <p><b>{{ client.name }}</b> ({{ client.redirectUri }}) is requesting access to your account.</p>
     <p>Do you approve?</p>
 
     <form action="/auth/decision" method="post">

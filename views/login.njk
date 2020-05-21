@@ -48,7 +48,7 @@
               <button type="submit">Login</button>
             </span>
             <span id="redirect" class="aesthetic-windows-95-button none">
-              <button type="button" onclick="doRedirect">Proceed</button>
+              <button type="button">Proceed</button>
             </span>
           </div>
         </form>
@@ -167,7 +167,6 @@
       }
       return false
     })
-    // lookup user
     handle.addEventListener('input', setLoginState)
     nextBtn.addEventListener('click', lookup)
 
@@ -201,6 +200,8 @@
         window.location = redirectUri
       }
     }
+    redirect.addEventListener('click', doRedirect)
+
     setLoginState()
   </script>
 {% endblock %}
