@@ -105,7 +105,7 @@ async function homeImmer (req, res, next) {
         body: {
           name,
           clientId: `https://${domain}/o/immer`,
-          redirectUri: `https://${hub}/hub.html`
+          redirectUri: `https://${hub}`
         },
         json: true
       })

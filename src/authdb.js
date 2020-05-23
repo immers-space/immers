@@ -38,7 +38,7 @@ module.exports = {
     }, {
       name,
       clientId: `https://${domain}/o/immer`,
-      redirectUri: `https://${hub}/hub.html`,
+      redirectUri: `https://${hub}`,
       isTrusted: true
     }, { upsert: true })
   },
@@ -55,7 +55,7 @@ module.exports = {
     try {
       // allow hub room id to be appended to registered Uri
       const url = new URL(redirectUriFull)
-      const redirectUri = `${url.protocol}//${url.host}${url.pathname}`
+      const redirectUri = `${url.protocol}//${url.host}`
       const client = await db.collection('clients').findOne({ clientId, redirectUri })
       if (!client) {
         return done(null, false)
