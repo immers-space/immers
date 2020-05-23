@@ -76,7 +76,7 @@ async function registerUser (req, res, next) {
 
 async function registerClient (req, res, next) {
   let client
-  if (!req.body.clientId || !req.body.redirectUri) {
+  if (!req.body.clientId || !req.body.redirectUri || !req.body.name) {
     return res.status(400).send('Invalid clientId or redirectUri')
   }
   try {
