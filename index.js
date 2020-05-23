@@ -14,7 +14,7 @@ const nunjucks = require('nunjucks')
 const passport = require('passport')
 const auth = require('./src/auth')
 
-const { port, domain, hub, name, dbName } = require('./config.json')
+const { port, domain, hub, name, dbName, keyPath, certPath, caPath } = require('./config.json')
 const app = express()
 const routes = {
   actor: '/u/:actor',
@@ -163,9 +163,12 @@ app.get('/u/:actor/friends', [
 ])
 
 app.use('/static', express.static('static'))
-const key = fs.readFileSync(path.join(__dirname, 'certs', 'server.key'))
-const cert = fs.readFileSync(path.join(__dirname, 'certs', 'server.cert'))
-const server = https.createServer({ key, cert }, app)
+const sslOptions = {
+  key: fs.readFileSync(path.join(__dirname, keyPath)),
+  cert: fs.readFileSync(path.join(__dirname, certPath)),
+  ca: caPath ? fs.readFileSync(path.join(__dirname, caPath)) : undefined
+}
+const server = https.createServer(sslOptions, app)
 
 // streaming updates
 const profilesSockets = new Map()

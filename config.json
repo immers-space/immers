@@ -3,5 +3,7 @@
   "domain": "localhost:8081",
   "hub": "localhost:8080",
   "name": "immers.space",
-  "dbName": "immers"
+  "dbName": "immers",
+  "keyPath": "certs/server.key",
+  "certPath": "certs/server.cert"
 }
