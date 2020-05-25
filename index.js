@@ -13,10 +13,8 @@ const socketio = require('socket.io')
 const request = require('request-promise-native')
 const nunjucks = require('nunjucks')
 const passport = require('passport')
-const { NodeIO } = require('@gltf-transform/core')
 const auth = require('./src/auth')
 
-const gltfIo = new NodeIO(fs, path)
 const { port, domain, hub, name, dbName, keyPath, certPath, caPath } = require('./config.json')
 const app = express()
 const routes = {
