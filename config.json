@@ -5,5 +5,6 @@
   "name": "immers.space",
   "dbName": "immers",
   "keyPath": "certs/server.key",
-  "certPath": "certs/server.cert"
+  "certPath": "certs/server.cert",
+  "storagePath": "uploads"
 }

@@ -13,11 +13,12 @@ const socketio = require('socket.io')
 const request = require('request-promise-native')
 const nunjucks = require('nunjucks')
 const passport = require('passport')
-const { NodeIO } = require('@gltf-transform/core')
 const auth = require('./src/auth')
 
-const gltfIo = new NodeIO(fs, path)
-const { port, domain, hub, name, dbName, keyPath, certPath, caPath } = require('./config.json')
+const { port, domain, hub, name, dbName, keyPath, certPath, caPath, storagePath } = require('./config.json')
+const storagePathFull = path.isAbsolute(storagePath)
+  ? storagePath
+  : path.join(__dirname, storagePath)
 const app = express()
 const routes = {
   actor: '/u/:actor',
@@ -27,7 +28,9 @@ const routes = {
   outbox: '/outbox/:actor',
   followers: '/followers/:actor',
   following: '/following/:actor',
-  liked: '/liked/:actor'
+  liked: '/liked/:actor',
+  avatar: '/avatar/:actor',
+  friends: '/friends/:actor'
 }
 const apex = ActivitypubExpress({
   domain,
@@ -71,7 +74,13 @@ async function registerActor (req, res, next) {
   const preferredUsername = req.body.preferredUsername.toLowerCase()
   const name = req.body.name
   apex.createActor(preferredUsername, name, 'immers profile')
-    .then(actor => apex.store.saveObject(actor))
+    .then(actor => {
+      actor.endpoints = {
+        friends: `https://${domain}${routes.friends.replace(':actor', preferredUsername)}`,
+        avatar: `https://${domain}${routes.avatar.replace(':actor', preferredUsername)}`
+      }
+      return apex.store.saveObject(actor)
+    })
     .then(result => {
       if (!result) {
         res.redirect(`${req.headers.referer}?taken`)
@@ -166,14 +175,21 @@ app.get('/u/:actor/friends', [
 ])
 
 function uploadAvatar (req, res, next) {
-  const fname = `${new ObjectId().toString()}.glb`
-  fs.writeFile(path.join(__dirname, 'uploads', fname), req.body, function (err) {
+  if (!res.locals.apex.target) { next() }
+  const actor = res.locals.apex.target
+  const fname = `${actor.preferredUsername}.glb`
+  fs.writeFile(path.join(storagePathFull, fname), req.body, function (err) {
     if (err) { return next(err) }
-    res.send(`https://${domain}/uploads/${fname}`)
+    res.send(`${actor.endpoints.avatar}/${fname}`)
   })
 }
-app.post('/upload', bodyParser.raw({ type: 'application/octet-stream', limit: '50mb' }), auth.priv, uploadAvatar)
-app.use('/uploads', auth.publ, express.static('uploads'))
+app.post(routes.avatar, [
+  bodyParser.raw({ type: 'application/octet-stream', limit: '50mb' }),
+  auth.priv,
+  apex.net.validators.targetActor,
+  uploadAvatar
+])
+app.use(routes.avatar, auth.publ, express.static(storagePathFull))
 
 app.use('/static', express.static('static'))
 const sslOptions = {
