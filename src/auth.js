@@ -126,9 +126,16 @@ module.exports = {
   // new client authorization & token request
   authorization: [
     login.ensureLoggedIn('/auth/login'),
-    server.authorization(authdb.validateClient, (client, user, done) => {
+    server.authorization(authdb.validateClient, (client, user, scope, type, req, done) => {
       // Auto-approve
-      if (client.isTrusted) return done(null, true)
+      if (client.isTrusted) {
+        const params = {}
+        const origin = new URL(req.redirectURI)
+        params.origin = `${origin.protocol}//${origin.host}`
+        // express protocol does not include colon
+        params.issuer = `https://${domain}`
+        return done(null, true, params)
+      }
       // Otherwise ask user
       return done(null, false)
     }),
@@ -144,6 +151,8 @@ module.exports = {
       const params = {}
       const origin = new URL(req.oauth2.redirectURI)
       params.origin = `${origin.protocol}//${origin.host}`
+      // express protocol does not include colon
+      params.issuer = `https://${domain}`
       done(null, params)
     })
   ]

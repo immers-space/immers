@@ -88,7 +88,7 @@ module.exports = {
       const expiry = new Date(Date.now() + tokenAge)
       await db.collection('tokens')
         .insertOne({ token, user, clientId, expiry, tokenType, origin: ares.origin })
-      return done(null, token, { token_type: tokenType })
+      return done(null, token, { token_type: tokenType, issuer: ares.issuer })
     } catch (err) { done(err) }
   },
   async validateAccessToken (token, done) {
