@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
     "start:prod": "NODE_ENV=production node index.js",
-    "https-redirect": "NODE_ENV=production node node_modules/http-redirect/index.js"
+    "https-redirect": "NODE_ENV=production node node_modules/https-redirector/index.js"
   },
   "repository": {
     "type": "git",
