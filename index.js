@@ -4,6 +4,7 @@ const path = require('path')
 const https = require('https')
 const express = require('express')
 const session = require('express-session')
+const MongoSessionStore = require('connect-mongodb-session')(session)
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
 const { MongoClient } = require('mongodb')
@@ -15,6 +16,7 @@ const passport = require('passport')
 const auth = require('./src/auth')
 
 const { port, domain, hub, name, dbName, keyPath, certPath, caPath } = require('./config.json')
+const { sessionSecret } = require('./secrets.json')
 const app = express()
 const routes = {
   actor: '/u/:actor',
@@ -47,8 +49,12 @@ nunjucks.configure('views', {
 app.use(cookieParser())
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
-
-app.use(session({ secret: 'keyboard cat', resave: false, saveUninitialized: false }))
+const sessionStore = new MongoSessionStore({
+  uri: 'mongodb://localhost:27017',
+  databaseName: dbName,
+  collection: 'sessions'
+})
+app.use(session({ secret: sessionSecret, resave: false, saveUninitialized: false, store: sessionStore }))
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(apex)
