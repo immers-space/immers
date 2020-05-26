@@ -5,9 +5,8 @@ const https = require('https')
 const express = require('express')
 const session = require('express-session')
 const cookieParser = require('cookie-parser')
-const bodyParser = require('body-parser')
 const cors = require('cors')
-const { MongoClient, ObjectId } = require('mongodb')
+const { MongoClient } = require('mongodb')
 const ActivitypubExpress = require('activitypub-express')
 const socketio = require('socket.io')
 const request = require('request-promise-native')
@@ -162,16 +161,6 @@ app.get('/u/:actor/friends', [
   friendsLocations,
   apex.net.responders.result
 ])
-
-function uploadAvatar (req, res, next) {
-  const fname = `${new ObjectId().toString()}.glb`
-  fs.writeFile(path.join(__dirname, 'uploads', fname), req.body, function (err) {
-    if (err) { return next(err) }
-    res.send(`https://${domain}/uploads/${fname}`)
-  })
-}
-app.post('/upload', bodyParser.raw({ type: 'application/octet-stream', limit: '50mb' }), auth.priv, uploadAvatar)
-app.use('/uploads', auth.publ, express.static('uploads'))
 
 app.use('/static', express.static('static'))
 app.get('/', (req, res) => res.redirect(`${req.protocol}://${hub}`))
