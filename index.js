@@ -174,6 +174,7 @@ app.post('/upload', bodyParser.raw({ type: 'application/octet-stream', limit: '5
 app.use('/uploads', auth.publ, express.static('uploads'))
 
 app.use('/static', express.static('static'))
+app.get('/', (req, res) => res.redirect(`${req.protocol}://${hub}`))
 const sslOptions = {
   key: fs.readFileSync(path.join(__dirname, keyPath)),
   cert: fs.readFileSync(path.join(__dirname, certPath)),

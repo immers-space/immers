@@ -30,6 +30,9 @@ sudo apt-get install authbind
 sudo touch /etc/authbind/byport/443
 sudo chown myuser /etc/authbind/byport/443
 sudo chmod 755 /etc/authbind/byport/443
+sudo touch /etc/authbind/byport/80
+sudo chown myuser /etc/authbind/byport/80
+sudo chmod 755 /etc/authbind/byport/80
 ```
 
 SSL via certbot (replace domain name, username)

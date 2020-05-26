@@ -4,7 +4,10 @@
   "description": "ActivityPub server for the metaverse",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "start:prod": "NODE_ENV=production node index.js",
+    "https-redirect": "NODE_ENV=production node node_modules/http-redirect/index.js"
   },
   "repository": {
     "type": "git",
@@ -33,6 +36,7 @@
     "errorhandler": "^1.5.1",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
+    "https-redirector": "^1.0.0",
     "mongodb": "^3.5.7",
     "nunjucks": "^3.2.1",
     "oauth2orize": "^1.11.0",
