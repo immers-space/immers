@@ -10,7 +10,7 @@ body, input {
 }
 
 h1 {
-  font-family: 'Monoton', cursive;
+  font-family: 'MedievalSharp', cursive;
   font-size: 80px;
   margin: 0;
 }
@@ -21,12 +21,12 @@ h1 {
   left: 0;
   bottom: 0;
   right: 0;
-  background-image: url('./vapor.png');
+  background-image: url('./castle.png');
   background-position: center center;
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: cover;
-  background-color: #a6549d;
+  background-color: #5d8dc4;
   z-index: -1;
 }
 
