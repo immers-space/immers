@@ -46,7 +46,8 @@ sessionSecret | Secret key for session cookie encryption
 * Start server with pm2 & authbind
 
 ```
-authbind --deep pm2 start index.js --name="immer"
+authbind --deep pm2 start npm --name="redirector" -- run https-redirect
+authbind --deep pm2 start npm --name="immer" -- run start:prod
 ```
 
 ### Hubs cloud setup
