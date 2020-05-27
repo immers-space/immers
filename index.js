@@ -62,7 +62,7 @@ app.use(apex)
 app.options('*', cors())
 
 /// auth related routes
-app.get('/auth/login', (req, res) => res.render('login.njk'))
+app.get('/auth/login', (req, res) => res.render('login.njk', { domain }))
 app.post('/auth/login', passport.authenticate('local', {
   successReturnToOrRedirect: '/',
   failureRedirect: '/auth/login'
