@@ -69,7 +69,12 @@ h1 {
 
 .form-item input {
   width: 350px;
-  text-align: center;
+  padding-left: 5px;
+}
+
+#registration-domain-cue {
+  position: absolute;
+  right: 5px;
 }
 
 .hidden {
@@ -85,6 +90,10 @@ h1 {
 
 .none {
   display: none;
+}
+
+.relative {
+  position: relative;
 }
 
 .fetching {
