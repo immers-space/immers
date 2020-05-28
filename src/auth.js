@@ -4,18 +4,81 @@ const passport = require('passport')
 const oauth2orize = require('oauth2orize')
 const login = require('connect-ensure-login')
 const request = require('request-promise-native')
+const nodemailer = require('nodemailer')
 const cors = require('cors')
-const LocalStrategy = require('passport-local').Strategy
+const EasyNoPassword = require('easy-no-password').Strategy
 const BearerStrategy = require('passport-http-bearer').Strategy
 const AnonymousStrategy = require('passport-anonymous').Strategy
 const authdb = require('./authdb')
-const { domain, name, hub } = require('../config.json')
+const { domain, name, hub, smtpHost, smptPort, smtpFrom } = require('../config.json')
+const { easySecret, smtpUser, smptPassword } = require('../secrets.json')
+let transporter
+if (process.env === 'production') {
+  transporter = nodemailer.createTransport({
+    host: smtpHost,
+    port: smptPort,
+    secure: smptPort === 465,
+    auth: {
+      user: smtpUser,
+      pass: smptPassword
+    }
+  })
+} else {
+  nodemailer.createTestAccount().then(testAccount => {
+    transporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass
+      }
+    })
+  })
+}
 
 // Configure route login/authorization options
 passport.serializeUser(authdb.serializeUser)
 passport.deserializeUser(authdb.deserializeUser)
-// login with username/password during authentication request
-passport.use(new LocalStrategy(authdb.validateUser))
+// login via email
+passport.use(new EasyNoPassword(
+  { secret: easySecret },
+  function (req) {
+    // Check if we are in "stage 1" (requesting a token) or "stage 2" (verifying a token)
+    if (req.body && req.body.username) {
+      return { stage: 1, username: req.body.username }
+    } else if (req.query && req.query.username && req.query.token) {
+      return { stage: 2, username: req.query.username, token: req.query.token }
+    } else {
+      return null
+    }
+  },
+  // send email callback
+  async function (username, token, done) {
+    try {
+      const user = await authdb.getUserByName(username)
+      if (!user) { throw new Error('User not found') }
+      const url = `https://${domain}/auth/logintoken?username=${username}&token=${token}`
+      const info = await transporter.sendMail({
+        from: `"${name}" <${smtpFrom}>`,
+        to: user.email,
+        subject: `Your ${name} login link`,
+        text: `Use this link to login ${url}`,
+        html: `Use this link to login <a href="${url}">${url}</a>`
+      })
+      if (process.env !== 'production') {
+        console.log(nodemailer.getTestMessageUrl(info))
+      }
+      done()
+    } catch (err) { done(err) }
+  },
+  // post-verification callback to get user for login
+  function (username, done) {
+    authdb.getUserByName(username)
+      .then(user => done(null, user))
+      .catch(done)
+  }
+))
 // token use
 passport.use(new BearerStrategy(authdb.validateAccessToken))
 // allow passthrough for routes with public info
@@ -48,30 +111,30 @@ const hubCors = cors(function (req, done) {
 const publ = [passport.authenticate(['bearer', 'anonymous'], { session: false }), hubCors]
 const priv = [passport.authenticate('bearer', { session: false }), hubCors]
 
+function logout (req, res, next) {
+  req.logout()
+  next()
+}
+
 function userToActor (req, res, next) {
   req.params.actor = req.user.username
   next()
 }
 
 async function registerUser (req, res, next) {
-  let user
-  if (!req.body.preferredUsername || !req.body.password) {
+  if (!req.body.username || !req.body.email) {
     return res.status(400).send('Invalid username or password')
   }
   try {
-    user = await authdb.createUser(req.body.preferredUsername.toLowerCase(), req.body.password)
+    await authdb.createUser(req.body.username.toLowerCase(), req.body.email)
   } catch (err) {
     if (err.name === 'MongoError' && err.code === 11000) {
-      return res.redirect(`${req.headers.referer}?taken`)
+      return res.json({ taken: true })
     }
     next(err)
   }
-  req.login(user, err => {
-    if (err) { return next(err) }
-    const url = req.session.returnTo
-    delete req.session.returnTo
-    res.redirect(url || '/')
-  })
+  // pass to easy strategy for password email
+  next()
 }
 
 async function registerClient (req, res, next) {
@@ -91,12 +154,13 @@ async function registerClient (req, res, next) {
 }
 
 async function homeImmer (req, res, next) {
-  if (!req.query.handle) { return res.status(400).send('Missing user handle') }
+  if (!req.body.handle) { return res.status(400).send('Missing user handle') }
   try {
-    const [, username, remoteDomain] = /@?([^@]+)@(.+)/.exec(req.query.handle)
+    const [, username, remoteDomain] = /@?([^@]+)@(.+)/.exec(req.body.handle)
     if (remoteDomain.toLowerCase() === domain.toLowerCase()) {
-      // handle converted to local username
-      return res.json({ username })
+      // pass username to easy strategy for login email
+      req.body.username = username
+      return next()
     }
     let client = await authdb.getRemoteClient(remoteDomain)
     if (!client) {
@@ -119,10 +183,17 @@ module.exports = {
   authdb,
   publ,
   priv,
+  logout,
   userToActor,
   registerUser,
   registerClient,
   homeImmer,
+  // new user registration followed by email login
+  registration: [
+    registerUser,
+    passport.authenticate('easy'),
+    (req, res) => { return res.json({ emailed: true }) }
+  ],
   // new client authorization & token request
   authorization: [
     login.ensureLoggedIn('/auth/login'),
