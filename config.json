@@ -4,6 +4,8 @@
   "hub": "localhost:8080",
   "name": "immers.space",
   "dbName": "immers",
+  "smtpHost": "smtp.sendgrid.net",
+  "smptPort": 587,
   "keyPath": "certs/server.key",
   "certPath": "certs/server.cert"
 }

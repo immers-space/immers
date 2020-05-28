@@ -1,10 +1,8 @@
 const { ObjectId } = require('mongodb')
 const uid = require('uid-safe')
-const bcrypt = require('bcrypt')
 const { domain, hub, name } = require('../config.json')
 
 const tokenAge = 24 * 60 * 60 * 1000 // one day
-const saltRounds = 10
 let db
 module.exports = {
   async setup (connection) {
@@ -27,7 +25,7 @@ module.exports = {
       unique: true
     })
     await db.collection('users').createIndex({
-      username: 1
+      email: 1
     }, {
       unique: true
     })
@@ -71,15 +69,6 @@ module.exports = {
       done(null, await db.collection('users').findOne({ _id: ObjectId(id) }))
     } catch (err) { done(err) }
   },
-  async validateUser (username, password, done) {
-    try {
-      username = username.toLowerCase()
-      const user = await db.collection('users').findOne({ username })
-      if (!user) { return done(null, false) }
-      const match = await bcrypt.compare(password, user.passwordHash)
-      done(null, match && user)
-    } catch (err) { done(err) }
-  },
   async createAccessToken (client, user, ares, done) {
     try {
       const tokenType = 'Bearer'
@@ -99,11 +88,12 @@ module.exports = {
     } catch (err) { done(err) }
   },
   // immers api methods (promises instead of callbacks)
-  async createUser (username, password) {
-    const user = { username }
-    user.passwordHash = await bcrypt.hash(password, saltRounds)
-    await db.collection('users').insertOne(user)
-    return user
+  getUserByName (username) {
+    username = username.toLowerCase()
+    return db.collection('users').findOne({ username })
+  },
+  createUser (username, email) {
+    return db.collection('users').insertOne({ username, email })
   },
   async createClient (clientId, redirectUri, name) {
     const client = { clientId, name }
