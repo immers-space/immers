@@ -77,7 +77,7 @@ async function registerActor (req, res, next) {
     .then(actor => apex.store.saveObject(actor))
     .then(result => {
       if (!result) {
-        res.redirect(`${req.headers.referer}?taken`)
+        return res.redirect(`${req.headers.referer}?taken`)
       }
       next()
     })
