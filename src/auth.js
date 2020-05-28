@@ -13,7 +13,7 @@ const authdb = require('./authdb')
 const { domain, name, hub, smtpHost, smptPort, smtpFrom } = require('../config.json')
 const { easySecret, smtpUser, smtpPassword } = require('../secrets.json')
 let transporter
-if (process.env === 'production') {
+if (process.env.NODE_ENV === 'production') {
   transporter = nodemailer.createTransport({
     host: smtpHost,
     port: smptPort,
@@ -66,7 +66,7 @@ passport.use(new EasyNoPassword(
         text: `Use this link to login ${url}`,
         html: `Use this link to login <a href="${url}">${url}</a>`
       })
-      if (process.env !== 'production') {
+      if (process.env.NODE_ENV !== 'production') {
         console.log(nodemailer.getTestMessageUrl(info))
       }
       done()
