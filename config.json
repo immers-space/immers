@@ -4,8 +4,8 @@
   "hub": "localhost:8080",
   "name": "My Immer",
   "dbName": "immers",
-  "smtpHost": "smpt.example.com",
-  "smptPort": 587,
+  "smtpHost": "smtp.example.com",
+  "smtpPort": 587,
   "smtpFrom": "noreply@mail.localhost",
   "keyPath": "certs/server.key",
   "certPath": "certs/server.cert"

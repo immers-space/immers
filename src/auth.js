@@ -10,14 +10,14 @@ const EasyNoPassword = require('easy-no-password').Strategy
 const BearerStrategy = require('passport-http-bearer').Strategy
 const AnonymousStrategy = require('passport-anonymous').Strategy
 const authdb = require('./authdb')
-const { domain, name, hub, smtpHost, smptPort, smtpFrom } = require('../config.json')
+const { domain, name, hub, smtpHost, smtpPort, smtpFrom } = require('../config.json')
 const { easySecret, smtpUser, smtpPassword } = require('../secrets.json')
 let transporter
 if (process.env.NODE_ENV === 'production') {
   transporter = nodemailer.createTransport({
     host: smtpHost,
-    port: smptPort,
-    secure: smptPort === 465,
+    port: smtpPort,
+    secure: smtpPort === 465,
     auth: {
       user: smtpUser,
       pass: smtpPassword
