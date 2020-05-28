@@ -63,8 +63,7 @@ passport.use(new EasyNoPassword(
         from: `"${name}" <${smtpFrom}>`,
         to: user.email,
         subject: `Your ${name} login link`,
-        text: `Use this link to login ${url}`,
-        html: `Use this link to login <a href="${url}">${url}</a>`
+        text: `Use this link to login to your immers provile at ${name}: ${url}`
       })
       if (process.env.NODE_ENV !== 'production') {
         console.log(nodemailer.getTestMessageUrl(info))
