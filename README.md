@@ -5,6 +5,13 @@ ActivityPub server for immers.space - a decentralized virtual reality metaverse 
 
 ## Installation & setup
 
+### Domains
+
+For the best user experience, install your hubs-cloud on a subdomain (e.g. hub.yourdomain.com) when
+running the hubs-cloud setup and then use the main domain (e.g. yourdomain.com) for your immer.
+This way users only need to use the main domain in the immers handle (user@yourdomain.com).
+Attempts to navigate to the main domain will be redirected to the hub homepage automatically.
+
 ### Immers server deploy
 
 Setup a web server with MongoDB (v4.x), NodeJS (v12.x), pm2, authbind, and Let's Encrypt certbot. [See detailed instructions for these steps if needed](./server-setup.md).
@@ -33,6 +40,9 @@ domain | Immers server [host](https://developer.mozilla.org/en-US/docs/Web/API/L
 hub | Hubs cloud [host](https://developer.mozilla.org/en-US/docs/Web/API/Location/host)
 name | Name of your immer
 dbName | Database name to use with MongoDb
+smtpHost | Mail service domain
+smtpPort | Mail delivery port
+smtpFrom | From address for emails (match mail domain configured in hubs)
 keyPath | Relative path to SSL private key (`privkey.pem`)
 certPath | Relative path to SSL certificate (`cert.pem`)
 caPath | Relative path to SSL certificate authority (`chain.pem`)
@@ -42,6 +52,9 @@ caPath | Relative path to SSL certificate authority (`chain.pem`)
 Key | Value
 --- | ---
 sessionSecret | Secret key for session cookie encryption
+easySecret | Secret key for login token encryption
+smtpUser | Username for mail service
+smtpPassword | Password for mail service
 
 * Start server with pm2 & authbind
 

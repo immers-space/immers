@@ -10,7 +10,7 @@ const EasyNoPassword = require('easy-no-password').Strategy
 const BearerStrategy = require('passport-http-bearer').Strategy
 const AnonymousStrategy = require('passport-anonymous').Strategy
 const authdb = require('./authdb')
-const { domain, name, hub, smtpHost, smptPort } = require('../config.json')
+const { domain, name, hub, smtpHost, smptPort, smtpFrom } = require('../config.json')
 const { easySecret, smtpUser, smptPassword } = require('../secrets.json')
 let transporter
 if (process.env === 'production') {
@@ -60,7 +60,7 @@ passport.use(new EasyNoPassword(
       if (!user) { throw new Error('User not found') }
       const url = `https://${domain}/auth/logintoken?username=${username}&token=${token}`
       const info = await transporter.sendMail({
-        from: `"${name}" <noreply@${domain}>`,
+        from: `"${name}" <${smtpFrom}>`,
         to: user.email,
         subject: `Your ${name} login link`,
         text: `Use this link to login ${url}`,

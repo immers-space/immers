@@ -2,10 +2,11 @@
   "port": 8081,
   "domain": "localhost:8081",
   "hub": "localhost:8080",
-  "name": "immers.space",
+  "name": "My Immer",
   "dbName": "immers",
-  "smtpHost": "smtp.sendgrid.net",
+  "smtpHost": "smpt.example.com",
   "smptPort": 587,
+  "smtpFrom": "noreply@mail.localhost",
   "keyPath": "certs/server.key",
   "certPath": "certs/server.cert"
 }
