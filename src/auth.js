@@ -11,7 +11,7 @@ const BearerStrategy = require('passport-http-bearer').Strategy
 const AnonymousStrategy = require('passport-anonymous').Strategy
 const authdb = require('./authdb')
 const { domain, name, hub, smtpHost, smptPort, smtpFrom } = require('../config.json')
-const { easySecret, smtpUser, smptPassword } = require('../secrets.json')
+const { easySecret, smtpUser, smtpPassword } = require('../secrets.json')
 let transporter
 if (process.env === 'production') {
   transporter = nodemailer.createTransport({
@@ -20,7 +20,7 @@ if (process.env === 'production') {
     secure: smptPort === 465,
     auth: {
       user: smtpUser,
-      pass: smptPassword
+      pass: smtpPassword
     }
   })
 } else {
