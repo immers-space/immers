@@ -15,7 +15,7 @@ const nunjucks = require('nunjucks')
 const passport = require('passport')
 const auth = require('./src/auth')
 
-const { port, domain, hub, name, dbName, keyPath, certPath, caPath } = require('./config.json')
+const { port, domain, hub, homepage, name, dbName, keyPath, certPath, caPath } = require('./config.json')
 const { sessionSecret } = require('./secrets.json')
 const app = express()
 const routes = {
@@ -172,7 +172,7 @@ app.get('/u/:actor/friends', [
 ])
 
 app.use('/static', express.static('static'))
-app.get('/', (req, res) => res.redirect(`${req.protocol}://${hub}`))
+app.get('/', (req, res) => res.redirect(`${req.protocol}://${homepage || hub}`))
 const sslOptions = {
   key: fs.readFileSync(path.join(__dirname, keyPath)),
   cert: fs.readFileSync(path.join(__dirname, certPath)),
