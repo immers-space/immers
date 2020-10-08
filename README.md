@@ -79,11 +79,35 @@ pm2 save
   (temporary measure cross-hub for avatar sharing)
 
 ## Local dev
+
+immers
+
+* Clone and install immers
+```
+git clone https://github.com/immers-space/immers.git
+cd immers
+npm ci
+```
 * Install a self-signed certificate
-`sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/server.key -out certs/server.cert`
-* Install mongodb
-* Run immer with `npm run dev` and run hub with either `npm run dev` (use Hubs dev networking servers) or `npm run start` (to connect to your hubs cloud networking server).
+```
+mkdir certs
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/server.key -out certs/server.cert
+```
+* Install [mongodb](https://docs.mongodb.com/manual/installation/)
+* Run immer with `npm run dev` 
+
+hubs
+
+* Clone and install our fork
+```
+git clone https://github.com/immers-space/hubs.git
+cd hubs
+git checkout immers-integration
+npm ci
+```
+* Run hub with either `npm run dev` (use Hubs dev networking servers) or `npm run start` (to connect to your hubs cloud networking server).
 * Visit hub at `https://localhost:8080`, create a room, and you will be redirected to login or register with your immer.
-You'll encounter and need to bypass certificate warnings for both the hub and immer domains
+You'll encounter and need to bypass certificate warnings for both the hub and immer domains.
+To get e-mail confirmation links, check the immers console for a link to read the email
 
 Default immers server is `https://localhost:8081`, override with entry `IMMERS_SERVER` in hubs repo root folder `.env` file.
