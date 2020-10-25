@@ -31,7 +31,7 @@ sudo cp -RL /etc/letsencrypt/live/example.com/. certs/
 sudo chown -R myuser certs/.
 ```
 
-* Edit `config.json` to configure immers server
+* Copy `config-template.json` to `config.json` and edit to configure immers server
 
 Key | Value
 --- | ---
@@ -48,7 +48,7 @@ keyPath | Relative path to SSL private key (`privkey.pem`)
 certPath | Relative path to SSL certificate (`cert.pem`)
 caPath | Relative path to SSL certificate authority (`chain.pem`)
 
-* Create `secrets.json`
+* Copy `secrets-emplate.json` to `secrets.json` and edit to configure secrets
 
 Key | Value
 --- | ---
