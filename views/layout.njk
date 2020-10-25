@@ -2,6 +2,9 @@
 <html style="background-color: #a6549d;">
   <head>
     <title>{% block title %}immers.space{% endblock %}</title>
+    {% if monetizationPointer %}
+    <meta name="monetization" content="{{ monetizationPointer }}">
+    {% endif %}
     <!-- FOUC protection -->
     <style>body {display: none;}</style>
     <link rel="stylesheet" type="text/css" href="/static/aesthetic.css">

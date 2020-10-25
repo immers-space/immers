@@ -47,6 +47,7 @@ smtpFrom | From address for emails (match mail domain configured in hubs)
 keyPath | Relative path to SSL private key (`privkey.pem`)
 certPath | Relative path to SSL certificate (`cert.pem`)
 caPath | Relative path to SSL certificate authority (`chain.pem`)
+monetizationPointer | Optional. Adding a payment pointer here activates Web Monetization
 
 * Copy `secrets-emplate.json` to `secrets.json` and edit to configure secrets
 
