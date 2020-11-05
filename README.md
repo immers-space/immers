@@ -49,7 +49,7 @@ certPath | Relative path to SSL certificate (`cert.pem`)
 caPath | Relative path to SSL certificate authority (`chain.pem`)
 monetizationPointer | Optional. Adding a payment pointer here activates Web Monetization
 
-* Copy `secrets-emplate.json` to `secrets.json` and edit to configure secrets
+* Copy `secrets-template.json` to `secrets.json` and edit to configure secrets
 
 Key | Value
 --- | ---
