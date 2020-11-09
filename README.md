@@ -39,6 +39,7 @@ port | Port number for immers sever (usually 443)
 domain | Immers server [host](https://developer.mozilla.org/en-US/docs/Web/API/Location/host)
 hub | Hubs cloud [host](https://developer.mozilla.org/en-US/docs/Web/API/Location/host)
 homepage | Optonal, redirect root html requests to this url (defaults to `hub`)
+reticulum | Optional, reticulum server url if different from `hub` (for local dev)
 name | Name of your immer
 dbName | Database name to use with MongoDb
 smtpHost | Mail service domain
@@ -57,6 +58,7 @@ sessionSecret | Secret key for session cookie encryption
 easySecret | Secret key for login token encryption
 smtpUser | Username for mail service
 smtpPassword | Password for mail service
+hubAcessToken | **TODO:** how to get this
 
 * Start server with pm2 & authbind
 

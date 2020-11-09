@@ -2,6 +2,7 @@
   "port": 8081,
   "domain": "localhost:8081",
   "hub": "localhost:8080",
+  "reticulum": null,
   "homepage": null,
   "name": "My Immer",
   "dbName": "immers",

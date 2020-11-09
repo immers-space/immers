@@ -14,6 +14,7 @@ const request = require('request-promise-native')
 const nunjucks = require('nunjucks')
 const passport = require('passport')
 const auth = require('./src/auth')
+const hubsApi = require('./src/hubs')
 
 const {
   port,
@@ -181,6 +182,9 @@ app.get('/u/:actor/friends', [
   friendsLocations,
   apex.net.responders.result
 ])
+
+// interacting with Hubs reticulum server
+app.post('/hubs/room', [auth.publ, hubsApi.createRoom])
 
 app.use('/static', express.static('static'))
 app.get('/', (req, res) => res.redirect(`${req.protocol}://${homepage || hub}`))
