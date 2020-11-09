@@ -2,3 +2,4 @@ node_modules
 certs
 .vscode
 secrets.json
+config.json

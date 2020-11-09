@@ -15,7 +15,18 @@ const nunjucks = require('nunjucks')
 const passport = require('passport')
 const auth = require('./src/auth')
 
-const { port, domain, hub, homepage, name, dbName, keyPath, certPath, caPath } = require('./config.json')
+const {
+  port,
+  domain,
+  hub,
+  homepage,
+  name,
+  dbName,
+  keyPath,
+  certPath,
+  caPath,
+  monetizationPointer
+} = require('./config.json')
 const { sessionSecret } = require('./secrets.json')
 const app = express()
 const routes = {
@@ -62,7 +73,7 @@ app.use(apex)
 app.options('*', cors())
 
 /// auth related routes
-app.get('/auth/login', (req, res) => res.render('login.njk', { domain }))
+app.get('/auth/login', (req, res) => res.render('login.njk', { domain, monetizationPointer }))
 // local users - send login email; remote users - find redirect url
 app.post('/auth/login', auth.homeImmer, passport.authenticate('easy'), (req, res) => {
   return res.json({ emailed: true })

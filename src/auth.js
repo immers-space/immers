@@ -10,7 +10,7 @@ const EasyNoPassword = require('easy-no-password').Strategy
 const BearerStrategy = require('passport-http-bearer').Strategy
 const AnonymousStrategy = require('passport-anonymous').Strategy
 const authdb = require('./authdb')
-const { domain, name, hub, smtpHost, smtpPort, smtpFrom } = require('../config.json')
+const { domain, name, hub, smtpHost, smtpPort, smtpFrom, monetizationPointer } = require('../config.json')
 const { easySecret, smtpUser, smtpPassword } = require('../secrets.json')
 let transporter
 if (process.env.NODE_ENV === 'production') {
@@ -210,7 +210,13 @@ module.exports = {
       return done(null, false)
     }),
     (request, response) => {
-      response.render('dialog.njk', { transactionId: request.oauth2.transactionID, user: request.user, client: request.oauth2.client })
+      const data = {
+        transactionId: request.oauth2.transactionID,
+        user: request.user,
+        client: request.oauth2.client,
+        monetizationPointer
+      }
+      response.render('dialog.njk', data)
     }
   ],
   // process result of auth dialog form
