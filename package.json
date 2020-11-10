@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/wmurphyrd/immers#readme",
   "dependencies": {
-    "activitypub-express": "0.0.8",
+    "activitypub-express": "^0.2.0",
     "connect-ensure-login": "^0.1.1",
     "connect-mongodb-session": "^2.3.2",
     "cookie-parser": "^1.4.5",

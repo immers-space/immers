@@ -145,9 +145,8 @@ jsonld.documentLoader = customLoader;
 */
 
 // auto-accept follows
-app.on('apex-follow', async msg => {
-  console.log('apex-follow')
-  if (!msg.recipient) return // ignore outbox follows
+app.on('apex-inbox', async msg => {
+  if (msg.activity.type !== 'Follow') return
   console.log(`${msg.actor} followed ${msg.recipient.id}`)
   const accept = await apex.buildActivity('Accept', msg.recipient.id, msg.actor, { object: msg.activity.id })
   const publishUpdatedFollowers = await apex.acceptFollow(msg.recipient, msg.activity)
@@ -249,15 +248,15 @@ io.on('connection', socket => {
 })
 
 function onInboxFriendUpdate (msg) {
-  if (!msg.recipient) return // ignore outbox
-  const liveSocket = profilesSockets.get(msg.recipient.id)
-  if (liveSocket) {
-    liveSocket.emit('friends-update')
+  const type = msg.activity.type
+  if (type === 'Arrive' || type === 'Leave' || type === 'Accept') {
+    const liveSocket = profilesSockets.get(msg.recipient.id)
+    if (liveSocket) {
+      liveSocket.emit('friends-update')
+    }
   }
 }
-app.on('apex-arrive', onInboxFriendUpdate)
-app.on('apex-leave', onInboxFriendUpdate)
-app.on('apex-accept', onInboxFriendUpdate)
+app.on('apex-inbox', onInboxFriendUpdate)
 
 client
   .connect({ useNewUrlParser: true })
