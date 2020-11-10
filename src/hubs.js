@@ -4,10 +4,25 @@ const { hubAccessToken } = require('../secrets.json')
 const apiServer = reticulum || hub
 
 module.exports = {
-  createRoom
+  createRoom,
+  occupancy
 }
 
-function createRoom (req, res, next) {
+export function occupancy (req, res, next) {
+  const room = req.params.id
+  request({
+    url: `https://${apiServer}/api/v1/hubs/${room}`,
+    method: 'PATCH',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer '
+    },
+    body: JSON.stringify({ hub: { room_size: 5 } })
+  })
+}
+
+function createRoom (req, res) {
   if (!req.body || !req.body.hub || !req.body.hub.name) {
     res.status(400).send('body.hub.name required')
   }
