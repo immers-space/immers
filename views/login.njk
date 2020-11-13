@@ -64,13 +64,16 @@
             <label>User name:</label>
             <input class="aesthetic-windows-95-text-input"
                    type="text" name="username"
-                   required pattern="[A-Za-z0-9_-]+" title="Letters, numbers, &amp; dashes only"/>
+                   required pattern="^[A-Za-z0-9-]{3,32}$"
+                   title="Letters, numbers, &amp; dashes only, between 3 and 32 characters"/>
             <label id="registration-domain-cue" class="aesthetic-50-transparent-color">@{{ domain }}</label>
           </div>
           <div class="form-item">
             <label>Display name:</label>
             <input id="handle" class="aesthetic-windows-95-text-input"
                   type="text" name="name"
+                  pattern="^[A-Za-z0-9 -]{3,32}$"
+                  title="Letters, numbers, spaces, &amp; dashes only, between 3 and 32 characters"
                   required/>
           </div>
           <div class="form-item">
@@ -243,26 +246,23 @@
         },
         body: JSON.stringify(Object.fromEntries(new FormData(registrationForm)))
       })
-        .then(result => {
-          if (!result.ok) {
-            throw new Error(result.statusText)
-          }
-          return result.json()
-        })
+        .then(result => result.json())
         .then(obj => {
-          if (obj.emailed) {
-            registrationEmailedCue.classList.remove('hidden')
-          }
           if (obj.taken) {
             registrationTakenCue.classList.remove('hidden')
+            registrationTakenCue.firstElementChild.dataset.glitch = obj.error
+            registrationTakenCue.firstElementChild.textContent = obj.error
             registrationSubmitBtn.removeAttribute('disabled')
+          } else if (obj.emailed) {
+            registrationEmailedCue.classList.remove('hidden')
+          } else {
+            throw new Error(obj.error)
           }
         })
         .catch(err => {
           console.log(err.message)
           registrationErrorCue.classList.remove('hidden')
           registrationSubmitBtn.removeAttribute('disabled')
-
         })
         .then(() => {
           document.body.classList.remove('fetching')
