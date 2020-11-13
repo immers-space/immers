@@ -14,6 +14,11 @@
           Register
         </button>
       </div>
+      <div id="show-vr" class="aesthetic-windows-95-tabbed-container-tabs-button">
+        <button type="button">
+          VR
+        </button>
+      </div>
     </div>
 
     <div class="aesthetic-windows-95-container">
@@ -107,6 +112,19 @@
           </div>
         </form>
       </div>
+      <div id="vr-form" class="aesthetic-windows-95-container-indent none">
+        If you're in VR, it's easier to login with your phone or computer.
+        <ol>
+          <li>Go to the immer or room you want to visit on your phone or computer</li>
+          <li>Login to your immers profile</li>
+          <li>When you return to the room lobby, click "Enter on Standalone VR"</li>
+          <li>It will display a shortlink and code you can use to connect in VR</li>
+        </ol>
+      </div>
+    </div>
+    <div>
+      Are you in VR? There's an easier way to login.
+      <a id="show-vr-hint" href="#">Show more...</a>
     </div>
   </div>
 {% endblock %}
@@ -118,13 +136,18 @@
     // tab toggle
     const togLogin = document.getElementById('show-login')
     const togRegister = document.getElementById('show-register')
+    const togVr = document.getElementById('show-vr')
     const tabLogin = document.getElementById('login-form')
     const tabRegister = document.getElementById('register-form')
+    const tabVr = document.getElementById('vr-form')
+    const hintVr = document.getElementById('show-vr-hint')
     togLogin.addEventListener('click', evt => {
       togLogin.classList.add('is-active')
       tabLogin.classList.remove('none')
       togRegister.classList.remove('is-active')
       tabRegister.classList.add('none')
+      togVr.classList.remove('is-active')
+      tabVr.classList.add('none')
       evt.preventDefault()
     })
     function toggleRegister (evt) {
@@ -132,9 +155,22 @@
       tabRegister.classList.remove('none')
       togLogin.classList.remove('is-active')
       tabLogin.classList.add('none')
+      togVr.classList.remove('is-active')
+      tabVr.classList.add('none')
       if (evt) { evt.preventDefault() }
     }
     togRegister.addEventListener('click',toggleRegister)
+    function toggleVr (evt) {
+      togVr.classList.add('is-active')
+      tabVr.classList.remove('none')
+      togLogin.classList.remove('is-active')
+      tabLogin.classList.add('none')
+      togRegister.classList.remove('is-active')
+      tabRegister.classList.add('none')
+      if (evt) { evt.preventDefault() }
+    }
+    togVr.addEventListener('click', toggleVr)
+    hintVr.addEventListener('click', toggleVr)
 
     // login action
     const handle = document.getElementById('handle')
