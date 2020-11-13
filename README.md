@@ -31,13 +31,14 @@ sudo cp -RL /etc/letsencrypt/live/example.com/. certs/
 sudo chown -R myuser certs/.
 ```
 
-* Edit `config.json` to configure immers server
+* Copy `config-template.json` to `config.json` and edit to configure immers server
 
 Key | Value
 --- | ---
 port | Port number for immers sever (usually 443)
 domain | Immers server [host](https://developer.mozilla.org/en-US/docs/Web/API/Location/host)
 hub | Hubs cloud [host](https://developer.mozilla.org/en-US/docs/Web/API/Location/host)
+homepage | Optonal, redirect root html requests to this url (defaults to `hub`)
 name | Name of your immer
 dbName | Database name to use with MongoDb
 smtpHost | Mail service domain
@@ -46,8 +47,9 @@ smtpFrom | From address for emails (match mail domain configured in hubs)
 keyPath | Relative path to SSL private key (`privkey.pem`)
 certPath | Relative path to SSL certificate (`cert.pem`)
 caPath | Relative path to SSL certificate authority (`chain.pem`)
+monetizationPointer | Optional. Adding a payment pointer here activates Web Monetization
 
-* Create `secrets.json`
+* Copy `secrets-template.json` to `secrets.json` and edit to configure secrets
 
 Key | Value
 --- | ---
@@ -60,7 +62,10 @@ smtpPassword | Password for mail service
 
 ```
 authbind --deep pm2 start npm --name="redirector" -- run https-redirect
-authbind --deep pm2 start npm --name="immer" -- run start:prod
+authbind --deep pm2 start npm --name="immer" -- run start
+# one-time setup for autorestart
+pm2 startup
+pm2 save
 ```
 
 ### Hubs cloud setup
@@ -75,5 +80,35 @@ authbind --deep pm2 start npm --name="immer" -- run start:prod
   (temporary measure cross-hub for avatar sharing)
 
 ## Local dev
+
+immers
+
+* Clone and install immers
+```
+git clone https://github.com/immers-space/immers.git
+cd immers
+npm ci
+```
+* Install a self-signed certificate
+```
+mkdir certs
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/server.key -out certs/server.cert
+```
+* Install [mongodb](https://docs.mongodb.com/manual/installation/)
+* Run immer with `npm run dev` 
+
+hubs
+
+* Clone and install our fork
+```
+git clone https://github.com/immers-space/hubs.git
+cd hubs
+git checkout immers-integration
+npm ci
+```
+* Run hub with either `npm run dev` (use Hubs dev networking servers) or `npm run start` (to connect to your hubs cloud networking server).
+* Visit hub at `https://localhost:8080`, create a room, and you will be redirected to login or register with your immer.
+You'll encounter and need to bypass certificate warnings for both the hub and immer domains.
+To get e-mail confirmation links, check the immers console for a link to read the email
 
 Default immers server is `https://localhost:8081`, override with entry `IMMERS_SERVER` in hubs repo root folder `.env` file.

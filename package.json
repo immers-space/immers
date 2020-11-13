@@ -1,12 +1,12 @@
 {
   "name": "immers",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "ActivityPub server for the metaverse",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "start:prod": "NODE_ENV=production node index.js",
+    "dev": "NODE_TLS_REJECT_UNAUTHORIZED=0 node index.js",
+    "start": "NODE_ENV=production node index.js",
     "https-redirect": "NODE_ENV=production node node_modules/https-redirector/index.js"
   },
   "repository": {
@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/wmurphyrd/immers#readme",
   "dependencies": {
-    "activitypub-express": "0.0.8",
+    "activitypub-express": "^0.2.0",
     "connect-ensure-login": "^0.1.1",
     "connect-mongodb-session": "^2.3.2",
     "cookie-parser": "^1.4.5",

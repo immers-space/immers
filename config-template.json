@@ -2,11 +2,13 @@
   "port": 8081,
   "domain": "localhost:8081",
   "hub": "localhost:8080",
+  "homepage": null,
   "name": "My Immer",
   "dbName": "immers",
   "smtpHost": "smtp.example.com",
   "smtpPort": 587,
   "smtpFrom": "noreply@mail.localhost",
   "keyPath": "certs/server.key",
-  "certPath": "certs/server.cert"
+  "certPath": "certs/server.cert",
+  "monetizationPointer": null
 }

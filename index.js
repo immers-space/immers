@@ -15,7 +15,18 @@ const nunjucks = require('nunjucks')
 const passport = require('passport')
 const auth = require('./src/auth')
 
-const { port, domain, hub, name, dbName, keyPath, certPath, caPath } = require('./config.json')
+const {
+  port,
+  domain,
+  hub,
+  homepage,
+  name,
+  dbName,
+  keyPath,
+  certPath,
+  caPath,
+  monetizationPointer
+} = require('./config.json')
 const { sessionSecret } = require('./secrets.json')
 const app = express()
 const routes = {
@@ -62,7 +73,7 @@ app.use(apex)
 app.options('*', cors())
 
 /// auth related routes
-app.get('/auth/login', (req, res) => res.render('login.njk', { domain }))
+app.get('/auth/login', (req, res) => res.render('login.njk', { domain, monetizationPointer }))
 // local users - send login email; remote users - find redirect url
 app.post('/auth/login', auth.homeImmer, passport.authenticate('easy'), (req, res) => {
   return res.json({ emailed: true })
@@ -134,9 +145,8 @@ jsonld.documentLoader = customLoader;
 */
 
 // auto-accept follows
-app.on('apex-follow', async msg => {
-  console.log('apex-follow')
-  if (!msg.recipient) return // ignore outbox follows
+app.on('apex-inbox', async msg => {
+  if (msg.activity.type !== 'Follow') return
   console.log(`${msg.actor} followed ${msg.recipient.id}`)
   const accept = await apex.buildActivity('Accept', msg.recipient.id, msg.actor, { object: msg.activity.id })
   const publishUpdatedFollowers = await apex.acceptFollow(msg.recipient, msg.activity)
@@ -172,7 +182,7 @@ app.get('/u/:actor/friends', [
 ])
 
 app.use('/static', express.static('static'))
-app.get('/', (req, res) => res.redirect(`${req.protocol}://${hub}`))
+app.get('/', (req, res) => res.redirect(`${req.protocol}://${homepage || hub}`))
 const sslOptions = {
   key: fs.readFileSync(path.join(__dirname, keyPath)),
   cert: fs.readFileSync(path.join(__dirname, certPath)),
@@ -238,15 +248,15 @@ io.on('connection', socket => {
 })
 
 function onInboxFriendUpdate (msg) {
-  if (!msg.recipient) return // ignore outbox
-  const liveSocket = profilesSockets.get(msg.recipient.id)
-  if (liveSocket) {
-    liveSocket.emit('friends-update')
+  const type = msg.activity.type
+  if (type === 'Arrive' || type === 'Leave' || type === 'Accept') {
+    const liveSocket = profilesSockets.get(msg.recipient.id)
+    if (liveSocket) {
+      liveSocket.emit('friends-update')
+    }
   }
 }
-app.on('apex-arrive', onInboxFriendUpdate)
-app.on('apex-leave', onInboxFriendUpdate)
-app.on('apex-accept', onInboxFriendUpdate)
+app.on('apex-inbox', onInboxFriendUpdate)
 
 client
   .connect({ useNewUrlParser: true })
