@@ -73,7 +73,17 @@ app.use(apex)
 app.options('*', cors())
 
 /// auth related routes
-app.get('/auth/login', (req, res) => res.render('login.njk', { domain, monetizationPointer }))
+app.get('/auth/login', (req, res) => {
+  const data = { domain, monetizationPointer }
+  if (req.session) {
+    // passed from auth.authorize flow
+    data.shortlink_domain = req.session.hub_shortlink_domain
+    data.entry_code = req.session.hub_entry_code
+    delete req.session.hub_shortlink_domain
+    delete req.session.hub_entry_code
+  }
+  res.render('login.njk', data)
+})
 // local users - send login email; remote users - find redirect url
 app.post('/auth/login', auth.homeImmer, passport.authenticate('easy'), (req, res) => {
   return res.json({ emailed: true })

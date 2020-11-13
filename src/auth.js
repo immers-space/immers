@@ -236,6 +236,14 @@ module.exports = {
   ],
   // new client authorization & token request
   authorization: [
+    (req, res, next) => {
+      // saves shortlink info to VR instructions in login page
+      if (req.session && req.query.shortlink_domain && req.query.entry_code) {
+        req.session.hub_shortlink_domain = req.query.shortlink_domain
+        req.session.hub_entry_code = req.query.entry_code
+      }
+      next()
+    },
     login.ensureLoggedIn('/auth/login'),
     server.authorization(authdb.validateClient, (client, user, scope, type, req, done) => {
       // Auto-approve

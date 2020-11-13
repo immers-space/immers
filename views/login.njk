@@ -115,10 +115,27 @@
       <div id="vr-form" class="aesthetic-windows-95-container-indent none">
         If you're in VR, it's easier to login with your phone or computer.
         <ol>
+        {% if shortlink_domain and entry_code %}
+          <li>
+            Go to
+            <a href="https://{{ shortlink_domain }}">{{ shortlink_domain }}</a>
+            on your phone or computer
+          </li>
+          <li>Enter code {{ entry_code }}</li>
+        {% else %}
           <li>Go to the immer or room you want to visit on your phone or computer</li>
+        {% endif %}
           <li>Login to your immers profile</li>
           <li>When you return to the room lobby, click "Enter on Standalone VR"</li>
+        {% if shortlink_domain %}
+          <li>
+            Back in VR, go to
+            <a href="https://{{ shortlink_domain }}">{{ shortlink_domain }}</a>
+          </li>
+          <li>Click 'ABC' and enter the letter code shown on your phone or computer</li>
+        {% else %}
           <li>It will display a shortlink and code you can use to connect in VR</li>
+        {% endif %}
         </ol>
       </div>
     </div>
