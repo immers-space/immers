@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "NODE_TLS_REJECT_UNAUTHORIZED=0 node index.js",
-    "start": "NODE_ENV=production node index.js",
-    "https-redirect": "NODE_ENV=production node node_modules/https-redirector/index.js"
+    "dev": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 node index.js",
+    "start": "cross-env NODE_ENV=production node index.js",
+    "https-redirect": "cross-env NODE_ENV=production node node_modules/https-redirector/index.js"
   },
   "repository": {
     "type": "git",
@@ -33,6 +33,7 @@
     "connect-mongodb-session": "^2.3.2",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
+    "cross-env": "^7.0.2",
     "easy-no-password": "^1.2.0",
     "email-validator": "^2.0.4",
     "express": "^4.17.1",
