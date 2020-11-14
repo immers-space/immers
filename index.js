@@ -73,7 +73,17 @@ app.use(apex)
 app.options('*', cors())
 
 /// auth related routes
-app.get('/auth/login', (req, res) => res.render('login.njk', { domain, monetizationPointer }))
+app.get('/auth/login', (req, res) => {
+  const data = { domain, monetizationPointer }
+  if (req.session) {
+    // passed from auth.authorize flow
+    data.shortlink_domain = req.session.hub_shortlink_domain
+    data.entry_code = req.session.hub_entry_code
+    delete req.session.hub_shortlink_domain
+    delete req.session.hub_entry_code
+  }
+  res.render('login.njk', data)
+})
 // local users - send login email; remote users - find redirect url
 app.post('/auth/login', auth.homeImmer, passport.authenticate('easy'), (req, res) => {
   return res.json({ emailed: true })
@@ -87,19 +97,15 @@ app.get('/auth/logintoken', passport.authenticate('easy', {
 app.post('/auth/client', auth.registerClient)
 
 async function registerActor (req, res, next) {
-  const preferredUsername = req.body.username.toLowerCase()
+  const preferredUsername = req.body.username
   const name = req.body.name
-  apex.createActor(preferredUsername, name, 'immers profile')
-    .then(actor => apex.store.saveObject(actor))
-    .then(result => {
-      if (!result) {
-        return res.json({ taken: true })
-      }
-      next()
-    })
-    .catch(next)
+  try {
+    const actor = await apex.createActor(preferredUsername, name, 'immers profile')
+    await apex.store.saveObject(actor)
+    next()
+  } catch (err) { next(err) }
 }
-app.post('/auth/user', auth.logout, registerActor, auth.registration)
+app.post('/auth/user', auth.validateNewUser, auth.logout, registerActor, auth.registration)
 app.get('/auth/authorize', auth.authorization)
 app.post('/auth/decision', auth.decision)
 // get actor from token
