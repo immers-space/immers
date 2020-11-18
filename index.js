@@ -63,9 +63,19 @@ app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes
 const sessionStore = new MongoSessionStore({
   uri: 'mongodb://localhost:27017',
   databaseName: dbName,
-  collection: 'sessions'
+  collection: 'sessions',
+  maxAge: 365 * 24 * 60 * 60 * 1000
 })
-app.use(session({ secret: sessionSecret, resave: false, saveUninitialized: false, store: sessionStore }))
+app.use(session({
+  secret: sessionSecret,
+  resave: true,
+  saveUninitialized: false,
+  store: sessionStore,
+  cookie: {
+    maxAge: 365 * 24 * 60 * 60 * 1000,
+    secure: true
+  }
+}))
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(apex)
