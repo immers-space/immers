@@ -92,6 +92,10 @@ module.exports = {
     username = username.toLowerCase()
     return db.collection('users').findOne({ username })
   },
+  getUserByEmail (email) {
+    email = email.toLowerCase()
+    return db.collection('users').findOne({ email })
+  },
   createUser (username, email) {
     return db.collection('users').insertOne({ username, email })
   },

@@ -12,6 +12,9 @@ const AnonymousStrategy = require('passport-anonymous').Strategy
 const authdb = require('./authdb')
 const { domain, name, hub, smtpHost, smtpPort, smtpFrom, monetizationPointer } = require('../config.json')
 const { easySecret, smtpUser, smtpPassword } = require('../secrets.json')
+const emailCheck = require('email-validator')
+const handleCheck = '^[A-Za-z0-9-]{3,32}$'
+const nameCheck = '^[A-Za-z0-9 -]{3,32}$'
 let transporter
 if (process.env.NODE_ENV === 'production') {
   transporter = nodemailer.createTransport({
@@ -121,18 +124,55 @@ function userToActor (req, res, next) {
 }
 
 async function registerUser (req, res, next) {
-  if (!req.body.username || !req.body.email) {
-    return res.status(400).send('Invalid username or password')
-  }
   try {
-    await authdb.createUser(req.body.username.toLowerCase(), req.body.email)
-  } catch (err) {
-    if (err.name === 'MongoError' && err.code === 11000) {
-      return res.json({ taken: true })
-    }
-    next(err)
+    await authdb.createUser(req.body.username, req.body.email)
+  } catch (err) { next(err) }
+  // pass to easy strategy for confirmation email
+  next()
+}
+
+async function validateNewUser (req, res, next) {
+  // check validity
+  let validMessage = ''
+  if (!emailCheck.validate(req.body.email)) {
+    validMessage += 'Invalid email. '
+  } else {
+    req.body.email = req.body.email.toLowerCase()
   }
-  // pass to easy strategy for password email
+
+  if (!RegExp(handleCheck).test(req.body.username)) {
+    validMessage += `Username must match ${handleCheck}. `
+  } else {
+    req.body.username = req.body.username.toLowerCase()
+  }
+
+  if (!RegExp(nameCheck).test(req.body.name)) {
+    validMessage += `Display name must match ${nameCheck}. `
+  }
+
+  if (validMessage) {
+    return res.status(400).format({
+      text: () => res.send(validMessage),
+      json: () => res.json({ error: validMessage })
+    })
+  }
+  // check availability
+  let availableMessage = ''
+  if (await authdb.getUserByEmail(req.body.email)) {
+    availableMessage += 'Email already registered. '
+  }
+
+  if (await authdb.getUserByName(req.body.username)) {
+    availableMessage += 'Username already registered. '
+  }
+
+  if (availableMessage) {
+    return res.status(409).format({
+      text: () => res.send(availableMessage),
+      json: () => res.json({ error: availableMessage, taken: true })
+    })
+  }
+
   next()
 }
 
@@ -185,6 +225,7 @@ module.exports = {
   logout,
   userToActor,
   registerUser,
+  validateNewUser,
   registerClient,
   homeImmer,
   // new user registration followed by email login
@@ -195,6 +236,14 @@ module.exports = {
   ],
   // new client authorization & token request
   authorization: [
+    (req, res, next) => {
+      // saves shortlink info to VR instructions in login page
+      if (req.session && req.query.shortlink_domain && req.query.entry_code) {
+        req.session.hub_shortlink_domain = req.query.shortlink_domain
+        req.session.hub_entry_code = req.query.entry_code
+      }
+      next()
+    },
     login.ensureLoggedIn('/auth/login'),
     server.authorization(authdb.validateClient, (client, user, scope, type, req, done) => {
       // Auto-approve
