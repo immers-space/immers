@@ -1,22 +1,37 @@
 <!DOCTYPE html>
 <html style="background-color: #a6549d;">
   <head>
-    <title>{% block title %}immers.space{% endblock %}</title>
+    <title>{% block title %}{{ name }}{% endblock %}</title>
     {% if monetizationPointer %}
     <meta name="monetization" content="{{ monetizationPointer }}">
     {% endif %}
-    <!-- FOUC protection -->
-    <style>body {display: none;}</style>
     <link rel="stylesheet" type="text/css" href="/static/aesthetic.css">
     <link rel="stylesheet" type="text/css" href="/static/immers.css">
-    <link href="https://fonts.googleapis.com/css2?family=Monoton&family=VT323&display=swap" rel="stylesheet">
+    <style>
+      {% if googleFont %}
+      #body h1 { font-family: '{{ googleFont }}', monospace; }
+      {% endif %}
+      {% if backgroundImage %}
+      #body .bg { background-image: url('{{ backgroundImage }}'); }
+      {% endif %}
+      {% if backgroundColor %}
+      #body .bg { background-color: {{ backgroundColor }}; }
+      {% endif %}
+      /* FOUC protection */
+      body {display: none;}
+    </style>
+  {% if googleFont %}
+    <link href="https://fonts.googleapis.com/css2?family={{ googleFont }}&family=VT323&display=swap" rel="stylesheet">
+  {% else %}
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  {% endif %}
     {% block head %}{% endblock %}
   </head>
-  <body>
+  <body id="body">
     <div class="aesthetic-effect-crt bg"></div>
     <div class="content">
       {% block header %}
-        <h1 class="aesthetic-50-transparent-color">immers.space</h1>
+        <h1 class="aesthetic-50-transparent-color">{{ name }}</h1>
       {% endblock %}
       <div class="aesthetic-windows-95-modal">
         <div class="aesthetic-windows-95-modal-title-bar">
@@ -33,7 +48,11 @@
     </div>
     
     <div class="attribution">
-      <a class="aesthetic-green-color" href="https://www.vecteezy.com/free-vector/vector">Background: Vectors by Vecteezy</a>
+      {% if imageAttributtionText %}
+      <a class="aesthetic-green-color" href="{{ imageAttributionUrl }}">
+        Background: {{ imageAttributtionText }}
+      </a>
+      {% endif %}
     </div>
     {% block script %}{% endblock %}
   </body>

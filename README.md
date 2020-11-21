@@ -48,6 +48,12 @@ keyPath | Relative path to SSL private key (`privkey.pem`)
 certPath | Relative path to SSL certificate (`cert.pem`)
 caPath | Relative path to SSL certificate authority (`chain.pem`)
 monetizationPointer | Optional. Adding a payment pointer here activates Web Monetization
+theme | Object containing optional theme properties
+theme.googleFont | Font family name from to fetch from Google Fonts
+theme.backgroundColor | CSS color,
+theme.backgroundImage | Image file,
+theme.imageAttributionText | Attribution for backgroundImage, if needed,
+theme.imageAttributionUrl | Attribution for backgroundImage, if needed
 
 * Copy `secrets-template.json` to `secrets.json` and edit to configure secrets
 

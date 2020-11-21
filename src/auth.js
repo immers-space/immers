@@ -10,7 +10,16 @@ const EasyNoPassword = require('easy-no-password').Strategy
 const BearerStrategy = require('passport-http-bearer').Strategy
 const AnonymousStrategy = require('passport-anonymous').Strategy
 const authdb = require('./authdb')
-const { domain, name, hub, smtpHost, smtpPort, smtpFrom, monetizationPointer } = require('../config.json')
+const {
+  domain,
+  name,
+  hub,
+  smtpHost,
+  smtpPort,
+  smtpFrom,
+  monetizationPointer,
+  theme
+} = require('../config.json')
 const { easySecret, smtpUser, smtpPassword } = require('../secrets.json')
 const emailCheck = require('email-validator')
 const handleCheck = '^[A-Za-z0-9-]{3,32}$'
@@ -263,7 +272,9 @@ module.exports = {
         transactionId: request.oauth2.transactionID,
         user: request.user,
         client: request.oauth2.client,
-        monetizationPointer
+        name,
+        monetizationPointer,
+        ...theme
       }
       response.render('dialog.njk', data)
     }
