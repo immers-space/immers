@@ -10,7 +10,7 @@ body, input {
 }
 
 h1 {
-  font-family: 'Monoton', cursive;
+  font-family: 'VT323', monospace;
   font-size: 80px;
   margin: 0;
 }
@@ -21,7 +21,6 @@ h1 {
   left: 0;
   bottom: 0;
   right: 0;
-  background-image: url('./vapor.png');
   background-position: center center;
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -113,6 +112,6 @@ button[disabled] {
   }
 }
 
-body {
+#body {
   display: initial;
 }

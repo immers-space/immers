@@ -25,7 +25,8 @@ const {
   keyPath,
   certPath,
   caPath,
-  monetizationPointer
+  monetizationPointer,
+  theme
 } = require('./config.json')
 const { sessionSecret } = require('./secrets.json')
 const app = express()
@@ -84,7 +85,7 @@ app.options('*', cors())
 
 /// auth related routes
 app.get('/auth/login', (req, res) => {
-  const data = { domain, monetizationPointer }
+  const data = { name, domain, monetizationPointer, ...theme }
   if (req.session) {
     // passed from auth.authorize flow
     data.shortlink_domain = req.session.hub_shortlink_domain
