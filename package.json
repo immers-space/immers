@@ -29,6 +29,7 @@
   "homepage": "https://github.com/wmurphyrd/immers#readme",
   "dependencies": {
     "activitypub-express": "^0.2.0",
+    "aesthetic-css": "^1.0.1",
     "classnames": "^2.2.6",
     "connect-ensure-login": "^0.1.1",
     "connect-mongodb-session": "^2.3.2",

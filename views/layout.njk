@@ -1,17 +1,18 @@
 <!DOCTYPE html>
-<html style="background-color: #a6549d;">
+<html style="background-color: {{ backgroundColor }};">
   <head>
   <script>
     window._serverData = {
-      domain: '{{ domain }}'
+      domain: '{{ domain }}',
+      name: '{{ name }}',
+      imageAttributionUrl: '{{ imageAttributionUrl }}',
+      imageAttributionText: '{{ imageAttributionText }}'
     }
   </script>
     <title>{% block title %}{{ name }}{% endblock %}</title>
     {% if monetizationPointer %}
     <meta name="monetization" content="{{ monetizationPointer }}">
     {% endif %}
-    <link rel="stylesheet" type="text/css" href="/static/aesthetic.css">
-    <link rel="stylesheet" type="text/css" href="/static/immers.css">
     <style>
       {% if googleFont %}
       #body h1 { font-family: '{{ googleFont }}', monospace; }
@@ -22,8 +23,6 @@
       {% if backgroundColor %}
       #body .bg { background-color: {{ backgroundColor }}; }
       {% endif %}
-      /* FOUC protection */
-      body {display: none;}
     </style>
   {% if googleFont %}
     <link href="https://fonts.googleapis.com/css2?family={{ googleFont }}&family=VT323&display=swap" rel="stylesheet">
@@ -33,32 +32,7 @@
     {% block head %}{% endblock %}
   </head>
   <body id="body">
-    <div class="aesthetic-effect-crt bg"></div>
-    <div class="content">
-      {% block header %}
-        <h1 class="aesthetic-50-transparent-color">{{ name }}</h1>
-      {% endblock %}
-      <div class="aesthetic-windows-95-modal">
-        <div class="aesthetic-windows-95-modal-title-bar">
-          <div class="aesthetic-windows-95-modal-title-bar-text">
-            {% block contentTitle %}{% endblock %}
-          </div>
-        </div>
-        <div class="aesthetic-windows-95-modal-content">
-          <hr />
-          {% block content %}{% endblock %}
-        </div>
-      </div>
-      <h1>&nbsp;</h1> <!-- balances layout with title -->
-    </div>
-    
-    <div class="attribution">
-      {% if imageAttributtionText %}
-      <a class="aesthetic-green-color" href="{{ imageAttributionUrl }}">
-        Background: {{ imageAttributtionText }}
-      </a>
-      {% endif %}
-    </div>
+    {% block content %}{% endblock %}
     {% block script %}{% endblock %}
   </body>
 </html>

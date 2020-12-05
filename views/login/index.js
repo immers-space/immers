@@ -4,6 +4,7 @@ import Tab from '../components/Tab'
 import c from 'classnames'
 import GlitchError from '../components/GlitchError'
 import HandleInput from '../components/HandleInput'
+import Layout from '../components/Layout'
 
 class Login extends React.Component {
   constructor () {
@@ -251,4 +252,7 @@ class Login extends React.Component {
 }
 
 const mountNode = document.getElementById('app')
-ReactDOM.render(<Login />, mountNode)
+ReactDOM.render(
+  <Layout contentTitle='Login to your immers profile'>
+    <Login />
+  </Layout>, mountNode)
