@@ -86,7 +86,7 @@ app.options('*', cors())
 /// auth related routes
 app.get('/auth/login', (req, res) => {
   const data = { name, domain, monetizationPointer, ...theme }
-  res.render('dist/login.html', data)
+  res.render('dist/login/login.html', data)
 })
 // local users - send login email; remote users - find redirect url
 app.post('/auth/login', auth.homeImmer, passport.authenticate('easy'), (req, res) => {

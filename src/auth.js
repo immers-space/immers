@@ -262,13 +262,14 @@ module.exports = {
     (request, response) => {
       const data = {
         transactionId: request.oauth2.transactionID,
-        user: request.user,
-        client: request.oauth2.client,
+        username: request.user.username,
+        clientName: request.oauth2.client.name,
+        redirectUri: request.oauth2.client.redirectUri,
         name,
         monetizationPointer,
         ...theme
       }
-      response.render('views/dialog.njk', data)
+      response.render('dist/dialog/dialog.html', data)
     }
   ],
   // process result of auth dialog form
