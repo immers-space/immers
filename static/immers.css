@@ -29,6 +29,11 @@ h1 {
   z-index: -1;
 }
 
+.error {
+  color: #FF6AD5;
+}
+
+
 .attribution {
   position: fixed;
   right: 0;
@@ -67,8 +72,14 @@ h1 {
 }
 
 .form-item input {
-  width: 350px;
+  width: 399px;
   padding-left: 5px;
+  margin-right: 9px;
+}
+
+.form-item input.handle {
+  width: 190px;
+  margin-right: 0;
 }
 
 #registration-domain-cue {

@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html style="background-color: #a6549d;">
   <head>
+  <script>
+    window._serverData = {
+      domain: '{{ domain }}'
+    }
+  </script>
     <title>{% block title %}{{ name }}{% endblock %}</title>
     {% if monetizationPointer %}
     <meta name="monetization" content="{{ monetizationPointer }}">

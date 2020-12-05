@@ -51,7 +51,7 @@ const apex = ActivitypubExpress({
 })
 const client = new MongoClient('mongodb://localhost:27017', { useUnifiedTopology: true, useNewUrlParser: true })
 
-nunjucks.configure('views', {
+nunjucks.configure({
   autoescape: true,
   express: app,
   watch: app.get('env') === 'development'
@@ -93,7 +93,7 @@ app.get('/auth/login', (req, res) => {
     delete req.session.hub_shortlink_domain
     delete req.session.hub_entry_code
   }
-  res.render('login.njk', data)
+  res.render('dist/login.html', data)
 })
 // local users - send login email; remote users - find redirect url
 app.post('/auth/login', auth.homeImmer, passport.authenticate('easy'), (req, res) => {
@@ -199,6 +199,7 @@ app.get('/u/:actor/friends', [
 ])
 
 app.use('/static', express.static('static'))
+app.use('/dist', express.static('dist'))
 app.get('/', (req, res) => res.redirect(`${req.protocol}://${homepage || hub}`))
 const sslOptions = {
   key: fs.readFileSync(path.join(__dirname, keyPath)),

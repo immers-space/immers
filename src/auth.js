@@ -276,7 +276,7 @@ module.exports = {
         monetizationPointer,
         ...theme
       }
-      response.render('dialog.njk', data)
+      response.render('views/dialog.njk', data)
     }
   ],
   // process result of auth dialog form
