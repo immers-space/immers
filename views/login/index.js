@@ -22,12 +22,15 @@ class Login extends React.Component {
       usernameError: false,
       takenError: false,
       registrationError: false,
-      canSubmitHandle: false
+      registrationEmailed: false,
+      canSubmitHandle: false,
+      canSubmitRegistration: true
     }
     this.handleHandleInput = this.handleHandleInput.bind(this)
     this.handleLookup = this.handleLookup.bind(this)
     this.handleRedirect = this.handleRedirect.bind(this)
     this.handleLogin = this.handleLogin.bind(this)
+    this.handleRegister = this.handleRegister.bind(this)
   }
 
   setLoginState (status) {
@@ -94,7 +97,55 @@ class Login extends React.Component {
   handleLogin (e) {
     e.preventDefault()
     if (this.state.isRemote) return this.handleRedirect()
-    this.handleLookup()
+    if (this.state.canSubmitHandle) this.handleLookup()
+  }
+
+  handleRegister (e) {
+    const registrationForm = e.target
+    let status
+    let takenMessage
+    e.preventDefault()
+    this.setState({
+      fetching: true,
+      emailed: false,
+      takenError: false,
+      registrationError: false,
+      canSubmitRegistration: false
+    })
+    window.fetch('/auth/user', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(Object.fromEntries(new window.FormData(registrationForm)))
+    })
+      .then(result => result.json())
+      .then(obj => {
+        if (obj.taken) {
+          status = 'taken'
+          takenMessage = obj.error
+        } else if (obj.emailed) {
+          status = 'emailed'
+        } else {
+          throw new Error(obj.error)
+        }
+      })
+      .catch(err => {
+        console.log(err.message)
+        status = 'error'
+      })
+      .then(() => {
+        this.setState({
+          fetching: false,
+          canSubmitRegistration: status !== 'emailed',
+          registrationEmailed: status === 'emailed',
+          registrationError: status === 'error',
+          takenError: status === 'taken',
+          takenMessage
+        })
+      })
+    return false
   }
 
   render () {
@@ -153,8 +204,8 @@ class Login extends React.Component {
             </div>}
           {this.state.tab === 'Register' &&
             <div id='register-form' className='aesthetic-windows-95-container-indent'>
-              <form action='/auth/user' method='post'>
-                <HandleInput immer={this.state.data.domain} />
+              <form action='/auth/user' method='post' onSubmit={this.handleRegister}>
+                <HandleInput immer={this.state.data.domain} onChange={this.handleHandleInput} />
                 <div className='form-item'>
                   <label>Display name:</label>
                   <input
@@ -174,18 +225,20 @@ class Login extends React.Component {
                   />
                 </div>
                 <GlitchError show={this.state.takenError}>
-                  Username or email is already in use
+                  {this.state.takenMessage}
                 </GlitchError>
                 <GlitchError show={this.state.registrationError}>
                   An error occured. Please try again.
                 </GlitchError>
-                <div className={c({ 'form-item': true, hidden: !this.state.emailed })}>
+                <div className={c({ 'form-item': true, hidden: !this.state.registrationEmailed })}>
                   Account created. Please check your email for a verification link.<br />
                   You may close this tab.
                 </div>
                 <div className='form-item'>
                   <span className='aesthetic-windows-95-button'>
-                    <button id='registration-submit-btn' type='submit'>Sign up</button>
+                    <button type='submit' disabled={!this.state.canSubmitRegistration}>
+                      Sign up
+                    </button>
                   </span>
                 </div>
               </form>

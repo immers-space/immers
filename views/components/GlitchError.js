@@ -6,7 +6,7 @@ export default function GlitchError (props) {
     <div className={c({ 'form-item': true, hidden: !props.show })}>
       <span
         className='aesthetic-effect-text-glitch error'
-        data-glitch='Unable to login. Please try again.'
+        data-glitch={props.children}
       >
         {props.children}
       </span>
