@@ -79,9 +79,32 @@ h1 {
   margin-right: 9px;
 }
 
+.form-item input.with-feedback {
+  padding-right: 30px;
+  width: 370px;
+}
+
+.form-item-feedback {
+  position: absolute;
+  right: 15px;
+  top: 5px;
+  opacity: 0.5;
+  cursor: pointer;
+}
+
 .form-item input.handle {
   width: 190px;
   margin-right: 0;
+}
+
+.form-item.emoji {
+  height: 430px;
+  justify-content: center;
+  padding-top: 0;
+}
+
+.form-item.emoji.hidden {
+  height: 0;
 }
 
 #registration-domain-cue {
