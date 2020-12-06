@@ -4,21 +4,22 @@ import Tab from '../components/Tab'
 import c from 'classnames'
 import GlitchError from '../components/GlitchError'
 import HandleInput from '../components/HandleInput'
+import PasswordInput from '../components/PasswordInput'
 import Layout from '../components/Layout'
 
 class Login extends React.Component {
   constructor () {
     super()
+    const qParams = new URLSearchParams(window.location.search)
     this.state = {
       currentState: undefined,
       data: window._serverData || {},
       tabs: ['Login', 'Register'],
       tab: 'Login',
       username: '',
-      // immer: '',
+      immer: '',
       handle: '',
-      tokenError: false,
-      emailed: false,
+      passwordError: qParams.has('passwordfail'),
       isRemote: false,
       usernameError: false,
       takenError: false,
@@ -35,18 +36,20 @@ class Login extends React.Component {
   }
 
   setLoginState (status) {
+    const { username, immer } = this.state
     this.setState(state => ({
       isRemote: status === 'remote',
-      emailed: status === 'local',
+      local: status === 'local',
       usernameError: status === 'error',
-      canSubmitHandle: !status && !!this.state.handle
+      canSubmitHandle: !status && !!(username && immer),
+      passwordError: false
     }))
   }
 
   handleHandleInput (username, immer) {
     this.setState({
       username,
-      handle: username && immer ? `${username}@${immer}` : ''
+      immer
     }, () => this.setLoginState())
   }
 
@@ -54,20 +57,19 @@ class Login extends React.Component {
     this.setState({ fetching: true, canSubmitHandle: false })
     let state
     let redirectUri
-    window.fetch('/auth/login', {
-      method: 'POST',
+    const { immer } = this.state
+    const search = new URLSearchParams({ immer }).toString()
+    window.fetch(`/auth/home?${search}`, {
       headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ handle: this.state.handle })
+        Accept: 'application/json'
+      }
     })
       .then(res => {
         if (!res.ok) { throw new Error(res.statusText) }
         return res.json()
       })
       .then(res => {
-        if (res.emailed) {
+        if (res.local) {
           state = 'local'
         } else if (res.redirect) {
           // go to auth flow at users home immer, returning to this hub after
@@ -94,8 +96,11 @@ class Login extends React.Component {
     window.location = this.state.redirectUri
   }
 
-  // hidden submit button makes enter work in the login form's various states
+  // makes enter work in the login form's various states
   handleLogin (e) {
+    if (this.state.local) {
+      return true
+    }
     e.preventDefault()
     if (this.state.isRemote) return this.handleRedirect()
     if (this.state.canSubmitHandle) this.handleLookup()
@@ -108,7 +113,7 @@ class Login extends React.Component {
     e.preventDefault()
     this.setState({
       fetching: true,
-      emailed: false,
+      local: false,
       takenError: false,
       registrationError: false,
       canSubmitRegistration: false
@@ -168,22 +173,20 @@ class Login extends React.Component {
         <div className='aesthetic-windows-95-container'>
           {this.state.tab === 'Login' &&
             <div id='login-form' className='aesthetic-windows-95-container-indent'>
-              <form>
-                <GlitchError show={this.state.tokenError}>
-                  Unable to login. Please try again.
-                </GlitchError>
+              <form method='post' onSubmit={this.handleLogin}>
                 <HandleInput onChange={this.handleHandleInput} />
-                <div className={c({ 'form-item': true, hidden: !this.state.emailed })}>
-                  Please check your email for a login link.<br />You may close this tab.
-                </div>
+                <PasswordInput hide={!this.state.local} />
                 <div className={c({ 'form-item': true, hidden: !this.state.isRemote })}>
                   You will be redirected to your home immer to login
                 </div>
                 <GlitchError show={this.state.usernameError}>
                   Please check your handle and try again
                 </GlitchError>
+                <GlitchError show={this.state.passwordError}>
+                  Username and/or password incorrect
+                </GlitchError>
                 <div className='form-item'>
-                  <span id='next' className='aesthetic-windows-95-button'>
+                  <span className={c({ 'aesthetic-windows-95-button': true, none: this.state.local })}>
                     <button
                       type='button' disabled={!this.state.canSubmitHandle}
                       onClick={this.handleLookup}
@@ -191,8 +194,8 @@ class Login extends React.Component {
                       Check
                     </button>
                   </span>
-                  <span id='submit' className='aesthetic-windows-95-button none'>
-                    <button type='submit' onClick={this.handleLogin}>Login</button>
+                  <span className={c({ 'aesthetic-windows-95-button': true, none: !this.state.local })}>
+                    <button type='submit'>Login</button>
                   </span>
                   <span
                     id='redirect' onClick={this.handleRedirect}

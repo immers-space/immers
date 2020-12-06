@@ -1,7 +1,9 @@
 const { ObjectId } = require('mongodb')
 const uid = require('uid-safe')
+const bcrypt = require('bcrypt')
 const { domain, hub, name } = require('../config.json')
 
+const saltRounds = 10
 const tokenAge = 24 * 60 * 60 * 1000 // one day
 let db
 module.exports = {
@@ -25,7 +27,7 @@ module.exports = {
       unique: true
     })
     await db.collection('users').createIndex({
-      email: 1
+      username: 1
     }, {
       unique: true
     })
@@ -41,6 +43,15 @@ module.exports = {
     }, { upsert: true })
   },
   // passport / oauth2orize methods
+  async validateUser (username, password, done) {
+    try {
+      username = username.toLowerCase()
+      const user = await db.collection('users').findOne({ username })
+      if (!user || !user.passwordHash) { return done(null, false) }
+      const match = await bcrypt.compare(password, user.passwordHash)
+      done(null, match && user)
+    } catch (err) { done(err) }
+  },
   serializeClient (client, done) {
     done(null, client._id)
   },
@@ -96,8 +107,14 @@ module.exports = {
     email = email.toLowerCase()
     return db.collection('users').findOne({ email })
   },
-  createUser (username, email) {
-    return db.collection('users').insertOne({ username, email })
+  createUser (username, password, email) {
+    const user = { username, email }
+    return bcrypt.hash(password, saltRounds).then(passwordHash => {
+      user.passwordHash = passwordHash
+      return db.collection('users').insertOne(user)
+    }).then(() => {
+      return user
+    })
   },
   async createClient (clientId, redirectUri, name) {
     const client = { clientId, name }

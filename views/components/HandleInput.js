@@ -35,7 +35,7 @@ export default class HandleInput extends React.Component {
             id='immer' className='aesthetic-windows-95-text-input handle'
             type='text' name='immer'
             placeholder='your.immer'
-            required pattern='.+\..+'
+            required pattern='localhost(:\d+)?|.+\..+'
             title='Valid domain name, including .'
             value={this.props.immer} disabled={!!this.props.immer}
           />

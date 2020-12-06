@@ -7,6 +7,7 @@ const request = require('request-promise-native')
 const nodemailer = require('nodemailer')
 const cors = require('cors')
 const EasyNoPassword = require('easy-no-password').Strategy
+const LocalStrategy = require('passport-local').Strategy
 const BearerStrategy = require('passport-http-bearer').Strategy
 const AnonymousStrategy = require('passport-anonymous').Strategy
 const authdb = require('./authdb')
@@ -90,6 +91,8 @@ passport.use(new EasyNoPassword(
       .catch(done)
   }
 ))
+// login password
+passport.use(new LocalStrategy(authdb.validateUser))
 // token use
 passport.use(new BearerStrategy(authdb.validateAccessToken))
 // allow passthrough for routes with public info
@@ -134,10 +137,9 @@ function userToActor (req, res, next) {
 
 async function registerUser (req, res, next) {
   try {
-    await authdb.createUser(req.body.username, req.body.email)
+    const user = await authdb.createUser(req.body.username, req.body.email)
+    req.login(user, next)
   } catch (err) { next(err) }
-  // pass to easy strategy for confirmation email
-  next()
 }
 
 async function validateNewUser (req, res, next) {
@@ -201,14 +203,12 @@ async function registerClient (req, res, next) {
   return res.json(client)
 }
 
-async function homeImmer (req, res, next) {
-  if (!req.body.handle) { return res.status(400).send('Missing user handle') }
+async function checkImmer (req, res, next) {
+  if (!req.query.immer) { return res.status(400).send('Missing user handle') }
   try {
-    const [, username, remoteDomain] = /@?([^@]+)@(.+)/.exec(req.body.handle)
+    const remoteDomain = req.query.immer
     if (remoteDomain.toLowerCase() === domain.toLowerCase()) {
-      // pass username to easy strategy for login email
-      req.body.username = username
-      return next()
+      return res.json({ local: true })
     }
     let client = await authdb.getRemoteClient(remoteDomain)
     if (!client) {
@@ -236,7 +236,7 @@ module.exports = {
   registerUser,
   validateNewUser,
   registerClient,
-  homeImmer,
+  checkImmer,
   // new user registration followed by email login
   registration: [
     registerUser,

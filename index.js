@@ -88,13 +88,13 @@ app.get('/auth/login', (req, res) => {
   const data = { name, domain, monetizationPointer, ...theme }
   res.render('dist/login/login.html', data)
 })
-// local users - send login email; remote users - find redirect url
-app.post('/auth/login', auth.homeImmer, passport.authenticate('easy'), (req, res) => {
-  return res.json({ emailed: true })
-})
-app.get('/auth/logintoken', passport.authenticate('easy', {
+//
+// find username & home from handle; if user is remote, get remote authorization url
+app.get('/auth/home', auth.checkImmer)
+// local users - check password
+app.post('/auth/login', passport.authenticate('local', {
   successReturnToOrRedirect: '/',
-  failureRedirect: '/auth/login?tokenfail'
+  failureRedirect: '/auth/login?passwordfail'
 }))
 // TODO:
 // app.get('/auth/logout', routes.site.logout)
