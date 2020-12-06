@@ -24,7 +24,7 @@ class Login extends React.Component {
       usernameError: false,
       takenError: false,
       registrationError: false,
-      registrationEmailed: false,
+      registrationSuccess: false,
       canSubmitHandle: false,
       canSubmitRegistration: true
     }
@@ -131,8 +131,10 @@ class Login extends React.Component {
         if (obj.taken) {
           status = 'taken'
           takenMessage = obj.error
-        } else if (obj.emailed) {
-          status = 'emailed'
+        } else if (obj.redirect) {
+          // successfully registered & logged in
+          status = 'success'
+          window.setTimeout(() => { window.location = obj.redirect }, 2000)
         } else {
           throw new Error(obj.error)
         }
@@ -144,8 +146,8 @@ class Login extends React.Component {
       .then(() => {
         this.setState({
           fetching: false,
-          canSubmitRegistration: status !== 'emailed',
-          registrationEmailed: status === 'emailed',
+          canSubmitRegistration: status !== 'success',
+          registrationSuccess: status === 'success',
           registrationError: status === 'error',
           takenError: status === 'taken',
           takenMessage
@@ -228,15 +230,15 @@ class Login extends React.Component {
                     required
                   />
                 </div>
+                <PasswordInput />
                 <GlitchError show={this.state.takenError}>
                   {this.state.takenMessage}
                 </GlitchError>
                 <GlitchError show={this.state.registrationError}>
                   An error occured. Please try again.
                 </GlitchError>
-                <div className={c({ 'form-item': true, hidden: !this.state.registrationEmailed })}>
-                  Account created. Please check your email for a verification link.<br />
-                  You may close this tab.
+                <div className={c({ 'form-item': true, hidden: !this.state.registrationSuccess })}>
+                  Account created. Redirecting to destination.
                 </div>
                 <div className='form-item'>
                   <span className='aesthetic-windows-95-button'>

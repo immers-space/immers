@@ -137,7 +137,11 @@ function userToActor (req, res, next) {
 
 async function registerUser (req, res, next) {
   try {
-    const user = await authdb.createUser(req.body.username, req.body.email)
+    const { username, password, email } = req.body
+    const user = await authdb.createUser(username, password, email)
+    if (!user) {
+      throw new Error('Unable to create user')
+    }
     req.login(user, next)
   } catch (err) { next(err) }
 }
@@ -237,11 +241,9 @@ module.exports = {
   validateNewUser,
   registerClient,
   checkImmer,
-  // new user registration followed by email login
   registration: [
     registerUser,
-    passport.authenticate('easy'),
-    (req, res) => { return res.json({ emailed: true }) }
+    respondRedirect
   ],
   // new client authorization & token request
   authorization: [
@@ -285,4 +287,14 @@ module.exports = {
       done(null, params)
     })
   ]
+}
+
+// misc utils
+function respondRedirect (req, res) {
+  let redirect = `https://${hub}`
+  if (req.session && req.session.returnTo) {
+    redirect = req.session.returnTo
+    delete req.session.returnTo
+  }
+  return res.json({ redirect })
 }
