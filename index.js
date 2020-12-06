@@ -84,21 +84,30 @@ app.use(apex)
 app.options('*', cors())
 
 /// auth related routes
-app.get('/auth/login', (req, res) => {
-  const data = { name, domain, monetizationPointer, ...theme }
-  res.render('dist/login/login.html', data)
-})
-//
+app.route('/auth/login')
+  .get((req, res) => {
+    const data = { name, domain, monetizationPointer, ...theme }
+    res.render('dist/login/login.html', data)
+  })
+  .post(passport.authenticate('local', {
+    successReturnToOrRedirect: '/',
+    failureRedirect: '/auth/login?passwordfail'
+  }))
 // find username & home from handle; if user is remote, get remote authorization url
 app.get('/auth/home', auth.checkImmer)
-// local users - check password
-app.post('/auth/login', passport.authenticate('local', {
-  successReturnToOrRedirect: '/',
-  failureRedirect: '/auth/login?passwordfail'
-}))
 // TODO:
 // app.get('/auth/logout', routes.site.logout)
 app.post('/auth/client', auth.registerClient)
+
+app.post('/auth/forgot', passport.authenticate('easy'), (req, res) => {
+  return res.json({ emailed: true })
+})
+app.route('/auth/reset')
+  .get(passport.authenticate('easy'), (req, res) => {
+    const data = { name, domain, monetizationPointer, ...theme }
+    res.render('dist/reset/reset.html', data)
+  })
+  .post(auth.changePasswordAndReturn)
 
 async function registerActor (req, res, next) {
   const preferredUsername = req.body.username

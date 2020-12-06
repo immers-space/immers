@@ -31,6 +31,11 @@ module.exports = {
     }, {
       unique: true
     })
+    await db.collection('users').createIndex({
+      email: 1
+    }, {
+      unique: true
+    })
 
     // trusted client entry for local hub
     await db.collection('clients').findOneAndReplace({
@@ -107,14 +112,18 @@ module.exports = {
     email = email.toLowerCase()
     return db.collection('users').findOne({ email })
   },
-  createUser (username, password, email) {
+  async createUser (username, password, email) {
     const user = { username, email }
-    return bcrypt.hash(password, saltRounds).then(passwordHash => {
-      user.passwordHash = passwordHash
-      return db.collection('users').insertOne(user)
-    }).then(() => {
-      return user
-    })
+    const passwordHash = await bcrypt.hash(password, saltRounds)
+    user.passwordHash = passwordHash
+    await db.collection('users').insertOne(user)
+    return user
+  },
+  async setPassword (username, password) {
+    const passwordHash = await bcrypt.hash(password, saltRounds)
+    const result = await db.collection('users')
+      .updateOne({ username }, { $set: { passwordHash } })
+    return result.modifiedCount
   },
   async createClient (clientId, redirectUri, name) {
     const client = { clientId, name }

@@ -36,6 +36,6 @@ class Dialog extends React.Component {
 
 const mountNode = document.getElementById('app')
 ReactDOM.render(
-  <Layout contentTitle='Login to your immers profile'>
-    <Dialog contentTitle='Authorization request' />
+  <Layout contentTitle='Authorization request'>
+    <Dialog />
   </Layout>, mountNode)

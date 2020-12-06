@@ -58,8 +58,8 @@ passport.use(new EasyNoPassword(
   { secret: easySecret },
   function (req) {
     // Check if we are in "stage 1" (requesting a token) or "stage 2" (verifying a token)
-    if (req.body && req.body.username) {
-      return { stage: 1, username: req.body.username }
+    if (req.body && req.body.email) {
+      return { stage: 1, username: req.body.email }
     } else if (req.query && req.query.username && req.query.token) {
       return { stage: 2, username: req.query.username, token: req.query.token }
     } else {
@@ -67,16 +67,17 @@ passport.use(new EasyNoPassword(
     }
   },
   // send email callback
-  async function (username, token, done) {
+  async function (email, token, done) {
     try {
-      const user = await authdb.getUserByName(username)
+      const user = await authdb.getUserByEmail(email)
       if (!user) { throw new Error('User not found') }
-      const url = `https://${domain}/auth/logintoken?username=${username}&token=${token}`
+      const safeEmail = encodeURIComponent(email)
+      const url = `https://${domain}/auth/reset?username=${safeEmail}&token=${token}`
       const info = await transporter.sendMail({
         from: `"${name}" <${smtpFrom}>`,
         to: user.email,
-        subject: `Your ${name} login link`,
-        text: `Use this link to login to your immers provile at ${name}: ${url}`
+        subject: `${user.username}: your ${name} password reset link`,
+        text: `${user.username}, please use this link to reset you ${name} profile password: ${url}`
       })
       if (process.env.NODE_ENV !== 'production') {
         console.log(nodemailer.getTestMessageUrl(info))
@@ -85,8 +86,8 @@ passport.use(new EasyNoPassword(
     } catch (err) { done(err) }
   },
   // post-verification callback to get user for login
-  function (username, done) {
-    authdb.getUserByName(username)
+  function (email, done) {
+    authdb.getUserByEmail(email)
       .then(user => done(null, user))
       .catch(done)
   }
@@ -144,6 +145,21 @@ async function registerUser (req, res, next) {
     }
     req.login(user, next)
   } catch (err) { next(err) }
+}
+
+function changePassword (req, res, next) {
+  if (!req.user) {
+    res.sendStatus(403)
+  }
+  if (!req.body.password) {
+    res.status(400).send('Missing password')
+  }
+  authdb.setPassword(req.user.username, req.body.password)
+    .then(ok => {
+      if (!ok) throw new Error('Unable to change password')
+      next()
+    })
+    .catch(next)
 }
 
 async function validateNewUser (req, res, next) {
@@ -238,6 +254,12 @@ module.exports = {
   logout,
   userToActor,
   registerUser,
+  changePassword,
+  changePasswordAndReturn: [
+    login.ensureLoggedIn('/auth/login'),
+    changePassword,
+    returnTo
+  ],
   validateNewUser,
   registerClient,
   checkImmer,
@@ -297,4 +319,13 @@ function respondRedirect (req, res) {
     delete req.session.returnTo
   }
   return res.json({ redirect })
+}
+
+function returnTo (req, res) {
+  let redirect = `https://${hub}`
+  if (req.session && req.session.returnTo) {
+    redirect = req.session.returnTo
+    delete req.session.returnTo
+  }
+  res.redirect(redirect)
 }

@@ -6,6 +6,7 @@ import GlitchError from '../components/GlitchError'
 import HandleInput from '../components/HandleInput'
 import PasswordInput from '../components/PasswordInput'
 import Layout from '../components/Layout'
+import EmailInput from '../components/EmailInput'
 
 class Login extends React.Component {
   constructor () {
@@ -14,7 +15,7 @@ class Login extends React.Component {
     this.state = {
       currentState: undefined,
       data: window._serverData || {},
-      tabs: ['Login', 'Register'],
+      tabs: ['Login', 'Register', 'Reset password'],
       tab: 'Login',
       username: '',
       immer: '',
@@ -26,13 +27,15 @@ class Login extends React.Component {
       registrationError: false,
       registrationSuccess: false,
       canSubmitHandle: false,
-      canSubmitRegistration: true
+      canSubmitRegistration: true,
+      canSubmitForgot: true
     }
     this.handleHandleInput = this.handleHandleInput.bind(this)
     this.handleLookup = this.handleLookup.bind(this)
     this.handleRedirect = this.handleRedirect.bind(this)
     this.handleLogin = this.handleLogin.bind(this)
     this.handleRegister = this.handleRegister.bind(this)
+    this.handleForgot = this.handleForgot.bind(this)
   }
 
   setLoginState (status) {
@@ -156,6 +159,45 @@ class Login extends React.Component {
     return false
   }
 
+  handleForgot (e) {
+    const forgotForm = e.target
+    let status
+    e.preventDefault()
+    this.setState({
+      fetching: true,
+      canSubmitForgot: false
+    })
+    window.fetch('/auth/forgot', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(Object.fromEntries(new window.FormData(forgotForm)))
+    })
+      .then(result => result.json())
+      .then(obj => {
+        if (obj.emailed) {
+          status = 'emailed'
+        } else {
+          throw new Error(obj.error)
+        }
+      })
+      .catch(err => {
+        console.log(err.message)
+        status = 'error'
+      })
+      .then(() => {
+        this.setState({
+          fetching: false,
+          canSubmitForgot: status !== 'emailed',
+          emailed: status === 'emailed',
+          forgotError: status === 'error'
+        })
+      })
+    return false
+  }
+
   render () {
     const topClass = c({
       'aesthetic-windows-95-tabbed-container': true,
@@ -222,14 +264,7 @@ class Login extends React.Component {
                     required
                   />
                 </div>
-                <div className='form-item'>
-                  <label>E-mail address:</label>
-                  <input
-                    className='aesthetic-windows-95-text-input'
-                    type='email' name='email'
-                    required
-                  />
-                </div>
+                <EmailInput />
                 <PasswordInput />
                 <GlitchError show={this.state.takenError}>
                   {this.state.takenMessage}
@@ -244,6 +279,26 @@ class Login extends React.Component {
                   <span className='aesthetic-windows-95-button'>
                     <button type='submit' disabled={!this.state.canSubmitRegistration}>
                       Sign up
+                    </button>
+                  </span>
+                </div>
+              </form>
+            </div>}
+          {this.state.tab === 'Reset password' &&
+            <div className='aesthetic-windows-95-container-indent'>
+              <p>Enter your email to request a password reset link.</p>
+              <form action='/auth/forgot' method='post' onSubmit={this.handleForgot}>
+                <EmailInput />
+                <GlitchError show={this.state.forgotError}>
+                  Something went wrong. Please try again.
+                </GlitchError>
+                <div className={c({ 'form-item': true, hidden: !this.state.emailed })}>
+                  Email sent. You may close this tab.
+                </div>
+                <div className='form-item'>
+                  <span className='aesthetic-windows-95-button'>
+                    <button type='submit' disabled={!this.state.canSubmitForgot}>
+                      Request
                     </button>
                   </span>
                 </div>
