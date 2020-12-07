@@ -140,6 +140,10 @@ button[disabled] {
   pointer-events: none;
 }
 
+.password-wrapper {
+  scroll-margin: 30px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .aesthetic-effect-crt::after,
   .aesthetic-effect-text-glitch::before,

@@ -219,7 +219,7 @@ class Login extends React.Component {
             <div id='login-form' className='aesthetic-windows-95-container-indent'>
               <form method='post' onSubmit={this.handleLogin}>
                 <HandleInput onChange={this.handleHandleInput} />
-                <PasswordInput hide={!this.state.local} />
+                <PasswordInput hide={!this.state.local} autofocus />
                 <div className={c({ 'form-item': true, hidden: !this.state.isRemote })}>
                   You will be redirected to your home immer to login
                 </div>
