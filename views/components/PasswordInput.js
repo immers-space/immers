@@ -62,6 +62,7 @@ export default class PasswordInput extends React.Component {
               title='Between 3 and 32 characters'
               value={this.state.password}
               onChange={(e) => { this.setState({ password: e.target.value }) }}
+              autoFocus={this.props.autoFocus}
             />
             <span
               className='form-item-feedback'
@@ -87,14 +88,11 @@ export default class PasswordInput extends React.Component {
 
   componentDidMount () {
     document.addEventListener('mousedown', this.handleClickOutside)
-    if (this.props.autofocus && !this.props.hide) {
-      this.inputRef.current.focus()
-    }
   }
 
   componentDidUpdate (prev) {
-    if (this.props.autofocus && !this.props.hide && prev.hide) {
-      // needs the delay to work due to css transition
+    if (this.props.autoFocus && !this.props.hide && prev.hide) {
+      // autoFocus needs the delay to work due to css transition
       window.setTimeout(() => {
         this.inputRef.current.focus()
       }, 100)
