@@ -12,6 +12,17 @@ class Login extends React.Component {
   constructor () {
     super()
     const qParams = new URLSearchParams(window.location.search)
+    this.initialState = {
+      local: false,
+      isRemote: false,
+      usernameError: false,
+      takenError: false,
+      registrationError: false,
+      registrationSuccess: false,
+      canSubmitHandle: false,
+      canSubmitRegistration: true,
+      canSubmitForgot: true
+    }
     this.state = {
       currentState: undefined,
       data: window._serverData || {},
@@ -21,14 +32,7 @@ class Login extends React.Component {
       immer: '',
       handle: '',
       passwordError: qParams.has('passwordfail'),
-      isRemote: false,
-      usernameError: false,
-      takenError: false,
-      registrationError: false,
-      registrationSuccess: false,
-      canSubmitHandle: false,
-      canSubmitRegistration: true,
-      canSubmitForgot: true
+      ...this.initialState
     }
     this.handleHandleInput = this.handleHandleInput.bind(this)
     this.handleLookup = this.handleLookup.bind(this)
@@ -47,6 +51,11 @@ class Login extends React.Component {
       canSubmitHandle: !status && !!(username && immer),
       passwordError: false
     }))
+  }
+
+  handleTab (tab) {
+    // reset when switching tabs to avoid invalid states
+    this.setState({ tab, ...this.initialState })
   }
 
   handleHandleInput (username, immer) {
@@ -208,7 +217,7 @@ class Login extends React.Component {
         <div className='aesthetic-windows-95-tabbed-container-tabs'>
           {this.state.tabs.map(tab => {
             return (
-              <div key={tab} onClick={() => this.setState({ tab })}>
+              <div key={tab} onClick={() => this.handleTab(tab)}>
                 <Tab active={this.state.tab === tab}>{tab}</Tab>
               </div>
             )
