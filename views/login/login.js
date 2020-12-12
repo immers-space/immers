@@ -69,8 +69,8 @@ class Login extends React.Component {
     this.setState({ fetching: true, canSubmitHandle: false })
     let state
     let redirectUri
-    const { immer } = this.state
-    const search = new URLSearchParams({ immer }).toString()
+    const { username, immer } = this.state
+    const search = new URLSearchParams({ username, immer }).toString()
     window.fetch(`/auth/home?${search}`, {
       headers: {
         Accept: 'application/json'

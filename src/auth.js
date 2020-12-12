@@ -224,15 +224,15 @@ async function registerClient (req, res, next) {
 }
 
 async function checkImmer (req, res, next) {
-  if (!req.query.immer) { return res.status(400).send('Missing user handle') }
+  const { username, immer } = req.query
+  if (!(username && immer)) { return res.status(400).send('Missing user handle') }
   try {
-    const remoteDomain = req.query.immer
-    if (remoteDomain.toLowerCase() === domain.toLowerCase()) {
+    if (immer.toLowerCase() === domain.toLowerCase()) {
       return res.json({ local: true })
     }
-    let client = await authdb.getRemoteClient(remoteDomain)
+    let client = await authdb.getRemoteClient(immer)
     if (!client) {
-      client = await request(`https://${remoteDomain}/auth/client`, {
+      client = await request(`https://${immer}/auth/client`, {
         method: 'POST',
         body: {
           name,
@@ -241,34 +241,28 @@ async function checkImmer (req, res, next) {
         },
         json: true
       })
-      await authdb.saveRemoteClient(remoteDomain, client)
+      await authdb.saveRemoteClient(immer, client)
     }
     /* returnTo is /auth/authorize with client_id and
-     * redirect_uri for the destination immer + room id + (optional) user handle
+     * redirect_uri for the destination immer + room id + optional user handle
      * so users are sent home to login and authorize the destination immer as a client,
      * then come back the same room on the desination with their token
      */
-    return res.json({ redirect: `${req.protocol}://${remoteDomain}${req.session.returnTo || '/'}` })
+    const url = new URL(`${req.protocol}://${immer}${req.session.returnTo || '/'}`)
+    const search = new URLSearchParams(url.search)
+    // handle may or may not be included depending on path here, ensure it is
+    search.set('me', `${username}[${immer}]`)
+    url.search = search.toString()
+    return res.json({ redirect: url.toString() })
   } catch (err) { next(err) }
 }
 
 function stashHandle (req, res, next) {
-  /* to save repeated handle entry, a hub can pass along the user's handle
-   * when linking between hubs (e.g. friends list links). Extract it from
-   * redirect_uri (hub link), store it in session for access during login
-   * redirect, and remove it from redirect_uri so it doesn't pollute the user's
-   * address bar after login
+  /* To save repeated handle entry, an immer can pass along handle when
+   * redirecting for auth. Store it in session for access during login
    */
-  if (req.query.redirect_uri && req.session) {
-    const url = new URL(req.query.redirect_uri)
-    const search = new URLSearchParams(url.search)
-    // can pass user's handle when linking between hubs
-    if (search.has('me')) {
-      req.session.handle = search.get('me')
-      search.delete('me')
-      url.search = search.toString()
-      req.query.redirect_uri = url.toString()
-    }
+  if (req.query.me && req.session) {
+    req.session.handle = req.query.me
   }
   next()
 }
