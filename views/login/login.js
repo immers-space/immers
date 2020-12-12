@@ -9,9 +9,10 @@ import Layout from '../components/Layout'
 import EmailInput from '../components/EmailInput'
 
 class Login extends React.Component {
-  constructor () {
-    super()
+  constructor (props) {
+    super(props)
     const qParams = new URLSearchParams(window.location.search)
+    const data = window._serverData || {}
     this.initialState = {
       local: false,
       isRemote: false,
@@ -24,13 +25,12 @@ class Login extends React.Component {
       canSubmitForgot: true
     }
     this.state = {
+      data,
       currentState: undefined,
-      data: window._serverData || {},
       tabs: ['Login', 'Register', 'Reset password'],
       tab: 'Login',
-      username: '',
-      immer: '',
-      handle: '',
+      username: data.username || '',
+      immer: data.immer || '',
       passwordError: qParams.has('passwordfail'),
       ...this.initialState
     }
@@ -69,8 +69,8 @@ class Login extends React.Component {
     this.setState({ fetching: true, canSubmitHandle: false })
     let state
     let redirectUri
-    const { immer } = this.state
-    const search = new URLSearchParams({ immer }).toString()
+    const { username, immer } = this.state
+    const search = new URLSearchParams({ username, immer }).toString()
     window.fetch(`/auth/home?${search}`, {
       headers: {
         Accept: 'application/json'
@@ -227,7 +227,10 @@ class Login extends React.Component {
           {this.state.tab === 'Login' &&
             <div id='login-form' className='aesthetic-windows-95-container-indent'>
               <form method='post' onSubmit={this.handleLogin}>
-                <HandleInput onChange={this.handleHandleInput} />
+                <HandleInput
+                  onChange={this.handleHandleInput}
+                  username={this.state.username} immer={this.state.immer}
+                />
                 <PasswordInput hide={!this.state.local} autoFocus />
                 <div className={c({ 'form-item': true, hidden: !this.state.isRemote })}>
                   You will be redirected to your home immer to login
@@ -262,7 +265,11 @@ class Login extends React.Component {
           {this.state.tab === 'Register' &&
             <div id='register-form' className='aesthetic-windows-95-container-indent'>
               <form action='/auth/user' method='post' onSubmit={this.handleRegister}>
-                <HandleInput immer={this.state.data.domain} onChange={this.handleHandleInput} />
+                <HandleInput
+                  onChange={this.handleHandleInput}
+                  username={this.state.username}
+                  immer={this.state.data.domain} lockImmer
+                />
                 <div className='form-item'>
                   <label>Display name:</label>
                   <input
@@ -315,8 +322,14 @@ class Login extends React.Component {
             </div>}
         </div>
       </div>
-
     )
+  }
+
+  componentDidMount () {
+    // if handle pre-filled, click lookup button
+    if (this.state.username && this.state.immer) {
+      this.handleLookup()
+    }
   }
 }
 

@@ -14,6 +14,7 @@ const request = require('request-promise-native')
 const nunjucks = require('nunjucks')
 const passport = require('passport')
 const auth = require('./src/auth')
+const { parseHandle } = require('./src/utils')
 
 const {
   port,
@@ -87,6 +88,10 @@ app.options('*', cors())
 app.route('/auth/login')
   .get((req, res) => {
     const data = { name, domain, monetizationPointer, ...theme }
+    if (req.session && req.session.handle) {
+      Object.assign(data, parseHandle(req.session.handle))
+      delete req.session.handle
+    }
     res.render('dist/login/login.html', data)
   })
   .post(passport.authenticate('local', {
@@ -119,6 +124,8 @@ async function registerActor (req, res, next) {
   } catch (err) { next(err) }
 }
 app.post('/auth/user', auth.validateNewUser, auth.logout, registerActor, auth.registration)
+// users are sent here from Hub to get access token, but it may interrupt with redirect
+// to login and further redirect to login at their home immer if they are remote
 app.get('/auth/authorize', auth.authorization)
 app.post('/auth/decision', auth.decision)
 // get actor from token

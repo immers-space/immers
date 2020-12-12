@@ -11,7 +11,7 @@ export default function Layout (props) {
       <div className='aesthetic-effect-crt bg' />
       <div className='content'>
         <h1 className='aesthetic-50-transparent-color'>{title}</h1>
-        <div className='aesthetic-windows-95-modal'>
+        <div className='aesthetic-windows-95-modal main-content'>
           <div className='aesthetic-windows-95-modal-title-bar'>
             <div className='aesthetic-windows-95-modal-title-bar-text'>
               {props.contentTitle}

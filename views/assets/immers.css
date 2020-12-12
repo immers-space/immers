@@ -41,6 +41,7 @@ h1 {
   right: 0;
   bottom: 0;
   padding: 5px;
+  z-index: 0;
 }
 
 .content {
@@ -51,22 +52,34 @@ h1 {
  justify-content: space-around;
 }
 
+.main-content {
+  z-index: 5;
+  min-width: 670px;
+  flex-shrink: 0;
+}
+
 .content form {
   margin: 20px;
   /* transition: all 1s; */
 }
 
 .form-item {
-  padding: 10px;
+  height: 60px;
+  padding: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .form-item, .form-item label, .form-item input {
-  transition: all 0.5s ease-in;
-  height: 33px;
+  transition: all 0.5s ease-in-out;
   overflow: hidden;
+  box-sizing: border-box;
+}
+
+.form-item input, .form-item label {
+  height: 35px;
+  margin: 1px;
 }
 
 .form-item label {
@@ -74,14 +87,14 @@ h1 {
 }
 
 .form-item input {
-  width: 399px;
+  width: 400px;
   padding-left: 5px;
-  margin-right: 9px;
+  margin-right: 10px;
+  flex-shrink: 0;
 }
 
 .form-item input.with-feedback {
   padding-right: 30px;
-  width: 370px;
 }
 
 .form-item-feedback {
@@ -93,14 +106,14 @@ h1 {
 }
 
 .form-item input.handle {
-  width: 190px;
+  width: 195px;
   margin-right: 0;
+  margin-left: 0;
 }
 
 .form-item.emoji {
   height: 430px;
   justify-content: center;
-  padding-top: 0;
 }
 
 .form-item.emoji.hidden {
@@ -142,6 +155,24 @@ button[disabled] {
 
 .password-wrapper {
   scroll-margin: 30px;
+}
+
+.reveal-pass {
+  position: absolute;
+  top: 0;
+  width: 365px;
+  background-color: #FFFE;
+  margin: 3px 6px;
+}
+
+.reveal-pass .emoji-mart-emoji {
+  vertical-align: middle;
+}
+
+/* to make alignment easier */
+.handle-bracket {
+  display: inline-block;
+  width: 10px;
 }
 
 @media (prefers-reduced-motion: reduce) {

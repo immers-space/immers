@@ -1,8 +1,11 @@
 {
   "name": "immers",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "ActivityPub server for the metaverse",
   "main": "index.js",
+  "engines": {
+    "node": ">=12.16.2"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:server": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 node index.js",
@@ -45,6 +48,7 @@
     "emoji-mart": "^3.0.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
+    "grapheme-splitter": "^1.0.4",
     "https-redirector": "^1.0.0",
     "mongodb": "^3.5.7",
     "nodemailer": "^6.4.6",
