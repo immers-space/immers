@@ -243,8 +243,29 @@ async function checkImmer (req, res, next) {
       })
       await authdb.saveRemoteClient(remoteDomain, client)
     }
+    /* returnTo is /auth/authorize with client_id and
+     * redirect_uri for the destination immer + room id
+     * so users are sent home to login and authorize the destination immer as a client,
+     * then come back the same room on the desination with their token
+     */
     return res.json({ redirect: `${req.protocol}://${remoteDomain}${req.session.returnTo || '/'}` })
   } catch (err) { next(err) }
+}
+
+function stashHandle (req, res, next) {
+  // save in session so we can pick it up in the ensureLoggedIn redirect
+  if (req.query.redirect_uri && req.session) {
+    const url = new URL(req.query.redirect_uri)
+    const search = new URLSearchParams(url.search)
+    // can pass user's handle when linking between hubs
+    if (search.has('me')) {
+      req.session.handle = search.get('me')
+      search.delete('me')
+      url.search = search.toString()
+      req.query.redirect_uri = url.toString()
+    }
+  }
+  next()
 }
 
 module.exports = {
@@ -269,6 +290,7 @@ module.exports = {
   ],
   // new client authorization & token request
   authorization: [
+    stashHandle,
     login.ensureLoggedIn('/auth/login'),
     server.authorization(authdb.validateClient, (client, user, scope, type, req, done) => {
       // Auto-approve

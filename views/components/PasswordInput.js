@@ -10,8 +10,8 @@ store.setHandlers({
 })
 
 export default class PasswordInput extends React.Component {
-  constructor () {
-    super()
+  constructor (props) {
+    super(props)
     this.wrapperRef = React.createRef()
     this.inputRef = React.createRef()
     this.state = {

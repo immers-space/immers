@@ -3,6 +3,7 @@
   "version": "0.2.1",
   "description": "ActivityPub server for the metaverse",
   "main": "index.js",
+  "engines" : { "node" : ">=12.16.2" },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:server": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 node index.js",

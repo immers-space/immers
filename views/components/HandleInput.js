@@ -1,11 +1,11 @@
 import React from 'react'
 
 export default class HandleInput extends React.Component {
-  constructor () {
-    super()
+  constructor (props) {
+    super(props)
     this.state = {
-      username: '',
-      immer: ''
+      username: props.username || '',
+      immer: props.immer || ''
     }
     this.handleInput = this.handleInput.bind(this)
   }
@@ -28,6 +28,7 @@ export default class HandleInput extends React.Component {
             placeholder='username'
             required pattern='^[A-Za-z0-9-]{3,32}$'
             title='Letters, numbers, &amp; dashes only, between 3 and 32 characters'
+            value={this.state.username}
           />
           [
           <input
@@ -37,11 +38,18 @@ export default class HandleInput extends React.Component {
             placeholder='your.immer'
             required pattern='localhost(:\d+)?|.+\..+'
             title='Valid domain name, including .'
-            value={this.props.immer} disabled={!!this.props.immer}
+            value={this.state.immer} disabled={this.props.lockImmer}
           />
           ]
         </div>
       </div>
     )
+  }
+
+  componentDidUpdate () {
+    const { username, immer } = this.props
+    if (username !== this.state.username || immer !== this.state.immer) {
+      this.setState({ username, immer })
+    }
   }
 }
