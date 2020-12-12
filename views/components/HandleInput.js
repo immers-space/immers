@@ -30,7 +30,7 @@ export default class HandleInput extends React.Component {
             title='Letters, numbers, &amp; dashes only, between 3 and 32 characters'
             value={this.state.username}
           />
-          [
+          <span className='handle-bracket'>[</span>
           <input
             onChange={this.handleInput}
             id='immer' className='aesthetic-windows-95-text-input handle'
@@ -40,7 +40,7 @@ export default class HandleInput extends React.Component {
             title='Valid domain name, including .'
             value={this.state.immer} disabled={this.props.lockImmer}
           />
-          ]
+          <span>]</span>
         </div>
       </div>
     )

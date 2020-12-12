@@ -265,7 +265,11 @@ class Login extends React.Component {
           {this.state.tab === 'Register' &&
             <div id='register-form' className='aesthetic-windows-95-container-indent'>
               <form action='/auth/user' method='post' onSubmit={this.handleRegister}>
-                <HandleInput immer={this.state.data.domain} lockImmer onChange={this.handleHandleInput} />
+                <HandleInput
+                  onChange={this.handleHandleInput}
+                  username={this.state.username}
+                  immer={this.state.data.domain} lockImmer
+                />
                 <div className='form-item'>
                   <label>Display name:</label>
                   <input
@@ -322,6 +326,7 @@ class Login extends React.Component {
   }
 
   componentDidMount () {
+    // if handle pre-filled, click lookup button
     if (this.state.username && this.state.immer) {
       this.handleLookup()
     }

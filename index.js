@@ -90,6 +90,7 @@ app.route('/auth/login')
     const data = { name, domain, monetizationPointer, ...theme }
     if (req.session && req.session.handle) {
       Object.assign(data, parseHandle(req.session.handle))
+      delete req.session.handle
     }
     res.render('dist/login/login.html', data)
   })

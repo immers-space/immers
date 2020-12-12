@@ -41,6 +41,7 @@ h1 {
   right: 0;
   bottom: 0;
   padding: 5px;
+  z-index: 0;
 }
 
 .content {
@@ -51,22 +52,31 @@ h1 {
  justify-content: space-around;
 }
 
+.main-content {
+  z-index: 5;
+}
+
 .content form {
   margin: 20px;
   /* transition: all 1s; */
 }
 
 .form-item {
-  padding: 10px;
+  height: 40px;
+  padding: 5px 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .form-item, .form-item label, .form-item input {
-  transition: all 0.5s ease-in;
-  height: 33px;
+  transition: all 0.5s ease-in-out;
   overflow: hidden;
+}
+
+.form-item input, .form-item label {
+  height: 35px;
+  margin: 1px;
 }
 
 .form-item label {
@@ -74,9 +84,9 @@ h1 {
 }
 
 .form-item input {
-  width: 399px;
+  width: 398px;
   padding-left: 5px;
-  margin-right: 9px;
+  margin-right: 10px;
 }
 
 .form-item input.with-feedback {
@@ -93,8 +103,9 @@ h1 {
 }
 
 .form-item input.handle {
-  width: 190px;
-  margin-right: 0;
+  width: 189px;
+  margin-right: 1px;
+  margin-left: 1px;
 }
 
 .form-item.emoji {
@@ -142,6 +153,24 @@ button[disabled] {
 
 .password-wrapper {
   scroll-margin: 30px;
+}
+
+.reveal-pass {
+  position: absolute;
+  top: 0;
+  width: 365px;
+  background-color: #FFFE;
+  margin: 3px 6px;
+}
+
+.reveal-pass .emoji-mart-emoji {
+  vertical-align: middle;
+}
+
+/* to make alignment easier */
+.handle-bracket {
+  display: inline-block;
+  width: 10px;
 }
 
 @media (prefers-reduced-motion: reduce) {

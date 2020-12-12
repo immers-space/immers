@@ -244,7 +244,7 @@ async function checkImmer (req, res, next) {
       await authdb.saveRemoteClient(remoteDomain, client)
     }
     /* returnTo is /auth/authorize with client_id and
-     * redirect_uri for the destination immer + room id
+     * redirect_uri for the destination immer + room id + (optional) user handle
      * so users are sent home to login and authorize the destination immer as a client,
      * then come back the same room on the desination with their token
      */
@@ -253,7 +253,12 @@ async function checkImmer (req, res, next) {
 }
 
 function stashHandle (req, res, next) {
-  // save in session so we can pick it up in the ensureLoggedIn redirect
+  /* to save repeated handle entry, a hub can pass along the user's handle
+   * when linking between hubs (e.g. friends list links). Extract it from
+   * redirect_uri (hub link), store it in session for access during login
+   * redirect, and remove it from redirect_uri so it doesn't pollute the user's
+   * address bar after login
+   */
   if (req.query.redirect_uri && req.session) {
     const url = new URL(req.query.redirect_uri)
     const search = new URLSearchParams(url.search)

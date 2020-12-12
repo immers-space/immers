@@ -1,7 +1,10 @@
 import React from 'react'
 import c from 'classnames'
 import 'emoji-mart/css/emoji-mart.css'
-import { Picker, store } from 'emoji-mart'
+import { Picker, store, getEmojiDataFromNative, Emoji } from 'emoji-mart'
+import data from 'emoji-mart/data/all.json'
+import GraphemeSplitter from 'grapheme-splitter'
+const splitter = new GraphemeSplitter()
 
 // disable emoji-mart history storage
 store.setHandlers({
@@ -36,12 +39,34 @@ export default class PasswordInput extends React.Component {
   }
 
   handleFocus () {
-    this.setState({ showPicker: true })
-    // timeout the transition delay so it has full height to calculate scroll
-    window.setTimeout(() => {
-      this.wrapperRef.current
-        .scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 500)
+    // avoid repeated scroll changes when interacting with picker
+    if (!this.state.showPicker) {
+      this.setState({ showPicker: true })
+      // timeout the transition delay so it has full height to calculate scroll
+      window.setTimeout(() => {
+        this.wrapperRef.current
+          .scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 500)
+    }
+  }
+
+  renderPassword (pass) {
+    const chars = splitter.splitGraphemes(pass)
+    return chars.map((char, i) => {
+      const emoji = getEmojiDataFromNative(char, 'apple', data)
+      if (emoji) {
+        return (
+          <Emoji
+            key={`${i}`}
+            emoji={emoji}
+            set='apple'
+            skin={emoji.skin || 1}
+            size={24}
+          />
+        )
+      }
+      return <span key={`${i}`}>{char}</span>
+    })
   }
 
   render () {
@@ -57,7 +82,7 @@ export default class PasswordInput extends React.Component {
             <input
               id='password' className='aesthetic-windows-95-text-input with-feedback'
               ref={this.inputRef}
-              type={this.state.reveal ? 'text' : 'password'} name='password'
+              type='password' name='password'
               required pattern='.{3,32}'
               title='Between 3 and 32 characters'
               value={this.state.password}
@@ -71,6 +96,9 @@ export default class PasswordInput extends React.Component {
             >
               {this.state.reveal ? '🔒' : '👁️'}
             </span>
+            <div className='reveal-pass' onMouseDown={e => e.preventDefault()}>
+              {this.state.reveal && this.renderPassword(this.state.password)}
+            </div>
           </div>
         </div>
         <div
@@ -78,7 +106,7 @@ export default class PasswordInput extends React.Component {
         >
           <Picker
             onSelect={this.handleEmojiSelect}
-            exclude={['recent']} emojiSize={36} perLine={11} native
+            exclude={['recent']} emojiSize={36} perLine={11}
             title='Emoji Password' emoji='closed_lock_with_key'
           />
         </div>
