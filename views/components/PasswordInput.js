@@ -39,14 +39,8 @@ export default class PasswordInput extends React.Component {
   }
 
   handleFocus () {
-    // avoid repeated scroll changes when interacting with picker
     if (!this.state.showPicker) {
       this.setState({ showPicker: true })
-      // timeout the transition delay so it has full height to calculate scroll
-      window.setTimeout(() => {
-        this.wrapperRef.current
-          .scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }, 500)
     }
   }
 

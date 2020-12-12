@@ -243,8 +243,7 @@ async function checkImmer (req, res, next) {
       })
       await authdb.saveRemoteClient(immer, client)
     }
-    /* returnTo is /auth/authorize with client_id and
-     * redirect_uri for the destination immer + room id + optional user handle
+    /* returnTo is /auth/authorize with client_id and redirect_uri for the destination immer
      * so users are sent home to login and authorize the destination immer as a client,
      * then come back the same room on the desination with their token
      */

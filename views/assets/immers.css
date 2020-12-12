@@ -54,6 +54,8 @@ h1 {
 
 .main-content {
   z-index: 5;
+  min-width: 670px;
+  flex-shrink: 0;
 }
 
 .content form {
@@ -62,8 +64,8 @@ h1 {
 }
 
 .form-item {
-  height: 40px;
-  padding: 5px 10px;
+  height: 60px;
+  padding: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -72,6 +74,7 @@ h1 {
 .form-item, .form-item label, .form-item input {
   transition: all 0.5s ease-in-out;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .form-item input, .form-item label {
@@ -84,14 +87,14 @@ h1 {
 }
 
 .form-item input {
-  width: 398px;
+  width: 400px;
   padding-left: 5px;
   margin-right: 10px;
+  flex-shrink: 0;
 }
 
 .form-item input.with-feedback {
   padding-right: 30px;
-  width: 370px;
 }
 
 .form-item-feedback {
@@ -103,15 +106,14 @@ h1 {
 }
 
 .form-item input.handle {
-  width: 189px;
-  margin-right: 1px;
-  margin-left: 1px;
+  width: 195px;
+  margin-right: 0;
+  margin-left: 0;
 }
 
 .form-item.emoji {
   height: 430px;
   justify-content: center;
-  padding-top: 0;
 }
 
 .form-item.emoji.hidden {

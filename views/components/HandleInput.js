@@ -40,7 +40,7 @@ export default class HandleInput extends React.Component {
             title='Valid domain name, including .'
             value={this.state.immer} disabled={this.props.lockImmer}
           />
-          <span>]</span>
+          <span className='handle-bracket'>]</span>
         </div>
       </div>
     )
