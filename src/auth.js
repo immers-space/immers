@@ -7,6 +7,7 @@ const request = require('request-promise-native')
 const nodemailer = require('nodemailer')
 const cors = require('cors')
 const EasyNoPassword = require('easy-no-password').Strategy
+const LocalStrategy = require('passport-local').Strategy
 const BearerStrategy = require('passport-http-bearer').Strategy
 const AnonymousStrategy = require('passport-anonymous').Strategy
 const authdb = require('./authdb')
@@ -57,8 +58,8 @@ passport.use(new EasyNoPassword(
   { secret: easySecret },
   function (req) {
     // Check if we are in "stage 1" (requesting a token) or "stage 2" (verifying a token)
-    if (req.body && req.body.username) {
-      return { stage: 1, username: req.body.username }
+    if (req.body && req.body.email) {
+      return { stage: 1, username: req.body.email }
     } else if (req.query && req.query.username && req.query.token) {
       return { stage: 2, username: req.query.username, token: req.query.token }
     } else {
@@ -66,16 +67,17 @@ passport.use(new EasyNoPassword(
     }
   },
   // send email callback
-  async function (username, token, done) {
+  async function (email, token, done) {
     try {
-      const user = await authdb.getUserByName(username)
+      const user = await authdb.getUserByEmail(email)
       if (!user) { throw new Error('User not found') }
-      const url = `https://${domain}/auth/logintoken?username=${username}&token=${token}`
+      const safeEmail = encodeURIComponent(email)
+      const url = `https://${domain}/auth/reset?username=${safeEmail}&token=${token}`
       const info = await transporter.sendMail({
         from: `"${name}" <${smtpFrom}>`,
         to: user.email,
-        subject: `Your ${name} login link`,
-        text: `Use this link to login to your immers provile at ${name}: ${url}`
+        subject: `${user.username}: your ${name} password reset link`,
+        text: `${user.username}, please use this link to reset you ${name} profile password: ${url}`
       })
       if (process.env.NODE_ENV !== 'production') {
         console.log(nodemailer.getTestMessageUrl(info))
@@ -84,12 +86,14 @@ passport.use(new EasyNoPassword(
     } catch (err) { done(err) }
   },
   // post-verification callback to get user for login
-  function (username, done) {
-    authdb.getUserByName(username)
+  function (email, done) {
+    authdb.getUserByEmail(email)
       .then(user => done(null, user))
       .catch(done)
   }
 ))
+// login password
+passport.use(new LocalStrategy(authdb.validateUser))
 // token use
 passport.use(new BearerStrategy(authdb.validateAccessToken))
 // allow passthrough for routes with public info
@@ -134,10 +138,28 @@ function userToActor (req, res, next) {
 
 async function registerUser (req, res, next) {
   try {
-    await authdb.createUser(req.body.username, req.body.email)
+    const { username, password, email } = req.body
+    const user = await authdb.createUser(username, password, email)
+    if (!user) {
+      throw new Error('Unable to create user')
+    }
+    req.login(user, next)
   } catch (err) { next(err) }
-  // pass to easy strategy for confirmation email
-  next()
+}
+
+function changePassword (req, res, next) {
+  if (!req.user) {
+    res.sendStatus(403)
+  }
+  if (!req.body.password) {
+    res.status(400).send('Missing password')
+  }
+  authdb.setPassword(req.user.username, req.body.password)
+    .then(ok => {
+      if (!ok) throw new Error('Unable to change password')
+      next()
+    })
+    .catch(next)
 }
 
 async function validateNewUser (req, res, next) {
@@ -201,18 +223,16 @@ async function registerClient (req, res, next) {
   return res.json(client)
 }
 
-async function homeImmer (req, res, next) {
-  if (!req.body.handle) { return res.status(400).send('Missing user handle') }
+async function checkImmer (req, res, next) {
+  const { username, immer } = req.query
+  if (!(username && immer)) { return res.status(400).send('Missing user handle') }
   try {
-    const [, username, remoteDomain] = /@?([^@]+)@(.+)/.exec(req.body.handle)
-    if (remoteDomain.toLowerCase() === domain.toLowerCase()) {
-      // pass username to easy strategy for login email
-      req.body.username = username
-      return next()
+    if (immer.toLowerCase() === domain.toLowerCase()) {
+      return res.json({ local: true })
     }
-    let client = await authdb.getRemoteClient(remoteDomain)
+    let client = await authdb.getRemoteClient(immer)
     if (!client) {
-      client = await request(`https://${remoteDomain}/auth/client`, {
+      client = await request(`https://${immer}/auth/client`, {
         method: 'POST',
         body: {
           name,
@@ -221,10 +241,29 @@ async function homeImmer (req, res, next) {
         },
         json: true
       })
-      await authdb.saveRemoteClient(remoteDomain, client)
+      await authdb.saveRemoteClient(immer, client)
     }
-    return res.json({ redirect: `${req.protocol}://${remoteDomain}${req.session.returnTo || '/'}` })
+    /* returnTo is /auth/authorize with client_id and redirect_uri for the destination immer
+     * so users are sent home to login and authorize the destination immer as a client,
+     * then come back the same room on the desination with their token
+     */
+    const url = new URL(`${req.protocol}://${immer}${req.session.returnTo || '/'}`)
+    const search = new URLSearchParams(url.search)
+    // handle may or may not be included depending on path here, ensure it is
+    search.set('me', `${username}[${immer}]`)
+    url.search = search.toString()
+    return res.json({ redirect: url.toString() })
   } catch (err) { next(err) }
+}
+
+function stashHandle (req, res, next) {
+  /* To save repeated handle entry, an immer can pass along handle when
+   * redirecting for auth. Store it in session for access during login
+   */
+  if (req.query.me && req.session) {
+    req.session.handle = req.query.me
+  }
+  next()
 }
 
 module.exports = {
@@ -234,25 +273,22 @@ module.exports = {
   logout,
   userToActor,
   registerUser,
+  changePassword,
+  changePasswordAndReturn: [
+    login.ensureLoggedIn('/auth/login'),
+    changePassword,
+    returnTo
+  ],
   validateNewUser,
   registerClient,
-  homeImmer,
-  // new user registration followed by email login
+  checkImmer,
   registration: [
     registerUser,
-    passport.authenticate('easy'),
-    (req, res) => { return res.json({ emailed: true }) }
+    respondRedirect
   ],
   // new client authorization & token request
   authorization: [
-    (req, res, next) => {
-      // saves shortlink info to VR instructions in login page
-      if (req.session && req.query.shortlink_domain && req.query.entry_code) {
-        req.session.hub_shortlink_domain = req.query.shortlink_domain
-        req.session.hub_entry_code = req.query.entry_code
-      }
-      next()
-    },
+    stashHandle,
     login.ensureLoggedIn('/auth/login'),
     server.authorization(authdb.validateClient, (client, user, scope, type, req, done) => {
       // Auto-approve
@@ -270,13 +306,14 @@ module.exports = {
     (request, response) => {
       const data = {
         transactionId: request.oauth2.transactionID,
-        user: request.user,
-        client: request.oauth2.client,
+        username: request.user.username,
+        clientName: request.oauth2.client.name,
+        redirectUri: request.oauth2.client.redirectUri,
         name,
         monetizationPointer,
         ...theme
       }
-      response.render('dialog.njk', data)
+      response.render('dist/dialog/dialog.html', data)
     }
   ],
   // process result of auth dialog form
@@ -292,4 +329,23 @@ module.exports = {
       done(null, params)
     })
   ]
+}
+
+// misc utils
+function respondRedirect (req, res) {
+  let redirect = `https://${hub}`
+  if (req.session && req.session.returnTo) {
+    redirect = req.session.returnTo
+    delete req.session.returnTo
+  }
+  return res.json({ redirect })
+}
+
+function returnTo (req, res) {
+  let redirect = `https://${hub}`
+  if (req.session && req.session.returnTo) {
+    redirect = req.session.returnTo
+    delete req.session.returnTo
+  }
+  res.redirect(redirect)
 }

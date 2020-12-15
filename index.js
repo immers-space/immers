@@ -14,6 +14,7 @@ const request = require('request-promise-native')
 const nunjucks = require('nunjucks')
 const passport = require('passport')
 const auth = require('./src/auth')
+const { parseHandle } = require('./src/utils')
 
 const {
   port,
@@ -51,7 +52,7 @@ const apex = ActivitypubExpress({
 })
 const client = new MongoClient('mongodb://localhost:27017', { useUnifiedTopology: true, useNewUrlParser: true })
 
-nunjucks.configure('views', {
+nunjucks.configure({
   autoescape: true,
   express: app,
   watch: app.get('env') === 'development'
@@ -84,28 +85,34 @@ app.use(apex)
 app.options('*', cors())
 
 /// auth related routes
-app.get('/auth/login', (req, res) => {
-  const data = { name, domain, monetizationPointer, ...theme }
-  if (req.session) {
-    // passed from auth.authorize flow
-    data.shortlink_domain = req.session.hub_shortlink_domain
-    data.entry_code = req.session.hub_entry_code
-    delete req.session.hub_shortlink_domain
-    delete req.session.hub_entry_code
-  }
-  res.render('login.njk', data)
-})
-// local users - send login email; remote users - find redirect url
-app.post('/auth/login', auth.homeImmer, passport.authenticate('easy'), (req, res) => {
-  return res.json({ emailed: true })
-})
-app.get('/auth/logintoken', passport.authenticate('easy', {
-  successReturnToOrRedirect: '/',
-  failureRedirect: '/auth/login?tokenfail'
-}))
+app.route('/auth/login')
+  .get((req, res) => {
+    const data = { name, domain, monetizationPointer, ...theme }
+    if (req.session && req.session.handle) {
+      Object.assign(data, parseHandle(req.session.handle))
+      delete req.session.handle
+    }
+    res.render('dist/login/login.html', data)
+  })
+  .post(passport.authenticate('local', {
+    successReturnToOrRedirect: '/',
+    failureRedirect: '/auth/login?passwordfail'
+  }))
+// find username & home from handle; if user is remote, get remote authorization url
+app.get('/auth/home', auth.checkImmer)
 // TODO:
 // app.get('/auth/logout', routes.site.logout)
 app.post('/auth/client', auth.registerClient)
+
+app.post('/auth/forgot', passport.authenticate('easy'), (req, res) => {
+  return res.json({ emailed: true })
+})
+app.route('/auth/reset')
+  .get(passport.authenticate('easy'), (req, res) => {
+    const data = { name, domain, monetizationPointer, ...theme }
+    res.render('dist/reset/reset.html', data)
+  })
+  .post(auth.changePasswordAndReturn)
 
 async function registerActor (req, res, next) {
   const preferredUsername = req.body.username
@@ -117,6 +124,8 @@ async function registerActor (req, res, next) {
   } catch (err) { next(err) }
 }
 app.post('/auth/user', auth.validateNewUser, auth.logout, registerActor, auth.registration)
+// users are sent here from Hub to get access token, but it may interrupt with redirect
+// to login and further redirect to login at their home immer if they are remote
 app.get('/auth/authorize', auth.authorization)
 app.post('/auth/decision', auth.decision)
 // get actor from token
@@ -199,6 +208,7 @@ app.get('/u/:actor/friends', [
 ])
 
 app.use('/static', express.static('static'))
+app.use('/dist', express.static('dist'))
 app.get('/', (req, res) => res.redirect(`${req.protocol}://${homepage || hub}`))
 const sslOptions = {
   key: fs.readFileSync(path.join(__dirname, keyPath)),

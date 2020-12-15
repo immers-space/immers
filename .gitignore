@@ -3,3 +3,5 @@ certs
 .vscode
 secrets.json
 config.json
+.cache
+dist

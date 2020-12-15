@@ -1,3 +1,5 @@
+@import 'aesthetic-css/src/index.scss';
+
 html, body {
   height: 100%;
   margin: 0;
@@ -29,11 +31,17 @@ h1 {
   z-index: -1;
 }
 
+.error {
+  color: #FF6AD5;
+}
+
+
 .attribution {
   position: fixed;
   right: 0;
   bottom: 0;
   padding: 5px;
+  z-index: 0;
 }
 
 .content {
@@ -44,22 +52,34 @@ h1 {
  justify-content: space-around;
 }
 
+.main-content {
+  z-index: 5;
+  min-width: 670px;
+  flex-shrink: 0;
+}
+
 .content form {
   margin: 20px;
   /* transition: all 1s; */
 }
 
 .form-item {
-  padding: 10px;
+  height: 60px;
+  padding: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .form-item, .form-item label, .form-item input {
-  transition: all 0.5s ease-in;
-  height: 33px;
+  transition: all 0.5s ease-in-out;
   overflow: hidden;
+  box-sizing: border-box;
+}
+
+.form-item input, .form-item label {
+  height: 35px;
+  margin: 1px;
 }
 
 .form-item label {
@@ -67,8 +87,37 @@ h1 {
 }
 
 .form-item input {
-  width: 350px;
+  width: 400px;
   padding-left: 5px;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.form-item input.with-feedback {
+  padding-right: 30px;
+}
+
+.form-item-feedback {
+  position: absolute;
+  right: 15px;
+  top: 5px;
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+.form-item input.handle {
+  width: 195px;
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.form-item.emoji {
+  height: 430px;
+  justify-content: center;
+}
+
+.form-item.emoji.hidden {
+  height: 0;
 }
 
 #registration-domain-cue {
@@ -104,14 +153,32 @@ button[disabled] {
   pointer-events: none;
 }
 
+.password-wrapper {
+  scroll-margin: 30px;
+}
+
+.reveal-pass {
+  position: absolute;
+  top: 0;
+  width: 365px;
+  background-color: #FFFE;
+  margin: 3px 6px;
+}
+
+.reveal-pass .emoji-mart-emoji {
+  vertical-align: middle;
+}
+
+/* to make alignment easier */
+.handle-bracket {
+  display: inline-block;
+  width: 10px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .aesthetic-effect-crt::after,
   .aesthetic-effect-text-glitch::before,
   .aesthetic-effect-text-glitch::after {
     animation: none !important;
   }
-}
-
-#body {
-  display: initial;
 }

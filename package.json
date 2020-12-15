@@ -1,13 +1,19 @@
 {
   "name": "immers",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "ActivityPub server for the metaverse",
   "main": "index.js",
+  "engines": {
+    "node": ">=12.16.2"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 node index.js",
+    "dev:server": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 node index.js",
+    "dev:client": "npx parcel watch views/**/*.html --public-url /dist/",
+    "build:client": "rimraf dist/ && npx parcel build views/**/*.html --public-url /dist/",
     "start": "cross-env NODE_ENV=production node index.js",
-    "https-redirect": "cross-env NODE_ENV=production node node_modules/https-redirector/index.js"
+    "https-redirect": "cross-env NODE_ENV=production node node_modules/https-redirector/index.js",
+    "postinstall": "npm run build:client"
   },
   "repository": {
     "type": "git",
@@ -29,6 +35,9 @@
   "homepage": "https://github.com/wmurphyrd/immers#readme",
   "dependencies": {
     "activitypub-express": "^0.2.0",
+    "aesthetic-css": "^1.0.1",
+    "bcrypt": "^5.0.0",
+    "classnames": "^2.2.6",
     "connect-ensure-login": "^0.1.1",
     "connect-mongodb-session": "^2.3.2",
     "cookie-parser": "^1.4.5",
@@ -36,21 +45,32 @@
     "cross-env": "^7.0.2",
     "easy-no-password": "^1.2.0",
     "email-validator": "^2.0.4",
+    "emoji-mart": "^3.0.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
+    "grapheme-splitter": "^1.0.4",
     "https-redirector": "^1.0.0",
     "mongodb": "^3.5.7",
     "nodemailer": "^6.4.6",
     "nunjucks": "^3.2.1",
     "oauth2orize": "^1.11.0",
+    "parcel-bundler": "^1.12.4",
     "passport": "^0.4.1",
     "passport-anonymous": "^1.0.1",
     "passport-http-bearer": "^1.0.1",
+    "passport-local": "^1.0.0",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "rimraf": "^3.0.2",
+    "sass": "^1.30.0",
     "socket.io": "^2.3.0",
     "uid-safe": "^2.1.5"
   },
   "devDependencies": {
+    "@babel/core": "^7.12.9",
+    "@babel/preset-env": "^7.12.7",
+    "@babel/preset-react": "^7.12.7",
     "chokidar": "^3.4.0",
-    "standard": "^14.3.3"
+    "standard": "^16.0.3"
   }
 }
