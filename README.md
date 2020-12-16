@@ -76,7 +76,7 @@ pm2 save
 
 ### Hubs cloud setup
 
-1. [Deply custom hubs client](https://hubs.mozilla.com/docs/hubs-cloud-custom-clients.html) from immers-space/hubs#immers-integration
+1. [Deply custom hubs client](https://hubs.mozilla.com/docs/hubs-cloud-custom-clients.html) from [immers-space/hubs#immers-integration](https://github.com/immers-space/hubs/tree/immers-integration)
 1. Add config in hubs cloud admin -> setup -> sever settings -> advanced
   * Extra room Header HTML: `<meta name="env:immers_server" content="https://your.immers.server">`
   (replace value in content with your immers server url)
