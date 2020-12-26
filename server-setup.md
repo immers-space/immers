@@ -36,9 +36,9 @@ sudo chmod 755 /etc/authbind/byport/80
 SSL via certbot (replace domain name, username)
 
 ```
-sudo add-apt-repository ppa:certbot/certbot
-sudo apt update
-sudo apt install certbot
+sudo snap install core; sudo snap refresh core
+sudo snap install --classic certbot
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
 sudo certbot certonly --standalone --preferred-challenges http -d example.com
 sudo cp -RL /etc/letsencrypt/live/example.com/. certs/
 sudo chown -R myuser certs/.
