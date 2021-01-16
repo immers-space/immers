@@ -1,0 +1,10 @@
+{
+  "@context": {
+    "is": "https://immers.space/ns/v1#",
+    "Model": "is:Model",
+    "avatar": {
+      "@id": "is:avatar",
+      "@type": "@id"
+    }
+  }
+}
