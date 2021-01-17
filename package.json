@@ -13,7 +13,9 @@
     "build:client": "rimraf dist/ && npx parcel build views/**/*.html --public-url /dist/",
     "start": "cross-env NODE_ENV=production node index.js",
     "https-redirect": "cross-env NODE_ENV=production node node_modules/https-redirector/index.js",
-    "postinstall": "npm run build:client"
+    "postinstall": "npm run build:client && npm run migration:check",
+    "migration:check": "cd migrate-mongo && migrate-mongo status && cd ..",
+    "migration:do": "cd migrate-mongo && migrate-mongo up && cd .."
   },
   "repository": {
     "type": "git",
