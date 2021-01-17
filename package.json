@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/wmurphyrd/immers#readme",
   "dependencies": {
-    "activitypub-express": "^1.0.1",
+    "activitypub-express": "^1.0.2",
     "aesthetic-css": "^1.0.1",
     "bcrypt": "^5.0.0",
     "classnames": "^2.2.6",
@@ -50,6 +50,7 @@
     "express-session": "^1.17.1",
     "grapheme-splitter": "^1.0.4",
     "https-redirector": "^1.0.0",
+    "migrate-mongo": "^8.1.4",
     "mongodb": "^3.5.7",
     "nodemailer": "^6.4.6",
     "nunjucks": "^3.2.1",

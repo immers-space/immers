@@ -8,15 +8,14 @@ const MongoSessionStore = require('connect-mongodb-session')(session)
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
 const { MongoClient } = require('mongodb')
-const ActivitypubExpress = require('activitypub-express')
 const socketio = require('socket.io')
 const request = require('request-promise-native')
 const nunjucks = require('nunjucks')
 const passport = require('passport')
 const auth = require('./src/auth')
 const { debugOutput, parseHandle } = require('./src/utils')
+const { apex, createImmersActor, routes } = require('./src/apex')
 
-const immersContext = require('./static/immers-context.json')
 const {
   port,
   domain,
@@ -32,32 +31,7 @@ const {
 } = require('./config.json')
 const { sessionSecret } = require('./secrets.json')
 const app = express()
-const routes = {
-  actor: '/u/:actor',
-  object: '/o/:id',
-  activity: '/s/:id',
-  inbox: '/inbox/:actor',
-  outbox: '/outbox/:actor',
-  followers: '/followers/:actor',
-  following: '/following/:actor',
-  liked: '/liked/:actor',
-  collections: '/collection/:actor/:id',
-  blocked: '/blocked/:actor',
-  rejections: '/rejections/:actor/',
-  rejected: '/rejected/:actor/',
-  shares: '/shares/:id/',
-  likes: '/likes/:id/'
-}
-const apex = ActivitypubExpress({
-  domain,
-  actorParam: 'actor',
-  objectParam: 'id',
-  routes,
-  context: immersContext,
-  endpoints: {
-    oauthAuthorizationEndpoint: `${domain}/auth/authorize`
-  }
-})
+
 const client = new MongoClient('mongodb://localhost:27017', { useUnifiedTopology: true, useNewUrlParser: true })
 
 nunjucks.configure({
@@ -126,11 +100,7 @@ async function registerActor (req, res, next) {
   const preferredUsername = req.body.username
   const name = req.body.name
   try {
-    const actor = await apex.createActor(preferredUsername, name, 'Immerser profile')
-    actor.streams = [{
-      id: `${actor.id}#streams`,
-      avatars: apex.utils.userCollectionIdToIRI(preferredUsername, 'avatars')
-    }]
+    const actor = await createImmersActor(preferredUsername, name)
     await apex.store.saveObject(actor)
     next()
   } catch (err) { next(err) }
@@ -152,7 +122,6 @@ app.route(routes.outbox)
   .post(auth.priv, apex.net.outbox.post)
 app.route(routes.actor)
   .get(auth.publ, apex.net.actor.get)
-
 app.get(routes.object, auth.publ, apex.net.object.get)
 app.get(routes.activity, auth.publ, apex.net.activityStream.get)
 app.get('/.well-known/webfinger', apex.net.webfinger.get)
@@ -309,5 +278,9 @@ client
     return auth.authdb.setup(apex.store.db)
   })
   .then(() => {
-    return server.listen(port, () => console.log(`apex app listening on port ${port}`))
+    return server.listen(port, () => {
+      console.log(`apex app listening on port ${port}`)
+      // startup delivery in case anything is queued
+      apex.startDelivery()
+    })
   })
