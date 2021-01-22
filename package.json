@@ -1,6 +1,6 @@
 {
   "name": "immers",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "ActivityPub server for the metaverse",
   "main": "index.js",
   "engines": {
