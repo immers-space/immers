@@ -112,12 +112,16 @@ const hubCors = cors(function (req, done) {
   if (!req.header('Origin')) { return done(null, { origin: false }) }
   try {
     const origin = new URL(req.header('Origin')).host
-    if (origin === hub) {
-      return done(null, { origin: true, credentials: true })
-    }
-    if (req.authInfo && origin === new URL(req.authInfo.origin).host) {
+    if (
+      origin === hub ||
       // CORS for authorized remote clients
-      return done(null, { origin: true, credentials: true })
+      (req.authInfo && origin === new URL(req.authInfo.origin).host)
+    ) {
+      return done(null, {
+        origin: true,
+        credentials: true,
+        exposedHeaders: 'Location'
+      })
     }
     done(null, { origin: false })
   } catch (err) { done(err) }

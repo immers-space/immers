@@ -8,13 +8,13 @@ const MongoSessionStore = require('connect-mongodb-session')(session)
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
 const { MongoClient } = require('mongodb')
-const ActivitypubExpress = require('activitypub-express')
 const socketio = require('socket.io')
 const request = require('request-promise-native')
 const nunjucks = require('nunjucks')
 const passport = require('passport')
 const auth = require('./src/auth')
-const { parseHandle } = require('./src/utils')
+const { debugOutput, parseHandle } = require('./src/utils')
+const { apex, createImmersActor, routes } = require('./src/apex')
 
 const {
   port,
@@ -31,25 +31,7 @@ const {
 } = require('./config.json')
 const { sessionSecret } = require('./secrets.json')
 const app = express()
-const routes = {
-  actor: '/u/:actor',
-  object: '/o/:id',
-  activity: '/s/:id',
-  inbox: '/inbox/:actor',
-  outbox: '/outbox/:actor',
-  followers: '/followers/:actor',
-  following: '/following/:actor',
-  liked: '/liked/:actor'
-}
-const apex = ActivitypubExpress({
-  domain,
-  actorParam: 'actor',
-  objectParam: 'id',
-  activityParam: 'id',
-  routes,
-  context: ['https://www.w3.org/ns/activitystreams', 'https://w3id.org/security/v1']
-  // context: ["https://www.w3.org/ns/activitystreams", "https://w3id.org/security/v1", `https://${domain}/ns`]
-})
+
 const client = new MongoClient('mongodb://localhost:27017', { useUnifiedTopology: true, useNewUrlParser: true })
 
 nunjucks.configure({
@@ -118,7 +100,7 @@ async function registerActor (req, res, next) {
   const preferredUsername = req.body.username
   const name = req.body.name
   try {
-    const actor = await apex.createActor(preferredUsername, name, 'immers profile')
+    const actor = await createImmersActor(preferredUsername, name)
     await apex.store.saveObject(actor)
     next()
   } catch (err) { next(err) }
@@ -140,44 +122,37 @@ app.route(routes.outbox)
   .post(auth.priv, apex.net.outbox.post)
 app.route(routes.actor)
   .get(auth.publ, apex.net.actor.get)
-
 app.get(routes.object, auth.publ, apex.net.object.get)
 app.get(routes.activity, auth.publ, apex.net.activityStream.get)
+app.get(routes.followers, auth.publ, apex.net.followers.get)
+app.get(routes.following, auth.publ, apex.net.following.get)
+app.get(routes.liked, auth.publ, apex.net.liked.get)
+app.get(routes.collections, auth.publ, apex.net.collections.get)
+app.get(routes.shares, auth.publ, apex.net.shares.get)
+app.get(routes.likes, auth.publ, apex.net.likes.get)
+app.get(routes.blocked, auth.priv, apex.net.blocked.get)
+app.get(routes.rejections, auth.priv, apex.net.rejections.get)
+app.get(routes.rejected, auth.priv, apex.net.rejected.get)
 app.get('/.well-known/webfinger', apex.net.webfinger.get)
-/*
-// schema extensions
-const immersSchema = JSON.parse(fs.readFileSync("server/context.json"));
-immersSchema["@context"].immers = `https://${domain}/ns#`;
-app.get("/ns", function(req, res) {
-  res.json(immersSchema);
-});
-console.log("setting custom loader");
-// override fetching of some contexts
-const nodeDocumentLoader = jsonld.documentLoaders.node();
-const customLoader = async (url, options) => {
-  console.log("custom loader");
-  if (url.startsWith(`https://${domain}/ns`)) {
-    console.log("cached context");
-    return {
-      contextUrl: null, // this is for a context via a link header
-      document: immersSchema, // this is the actual document that was loaded
-      documentUrl: url // this is the actual context URL after redirects
-    };
-  }
-  // call the default documentLoader
-  return nodeDocumentLoader(url);
-};
-jsonld.documentLoader = customLoader;
-*/
 
-// auto-accept follows
+/// Custom side effects
 app.on('apex-inbox', async msg => {
-  if (msg.activity.type !== 'Follow') return
-  console.log(`${msg.actor} followed ${msg.recipient.id}`)
-  const accept = await apex.buildActivity('Accept', msg.recipient.id, msg.actor, { object: msg.activity.id })
-  const publishUpdatedFollowers = await apex.acceptFollow(msg.recipient, msg.activity)
-  await apex.addToOutbox(msg.recipient, accept)
-  return publishUpdatedFollowers()
+  // auto-accept follows
+  if (msg.activity.type === 'Follow') {
+    const accept = await apex.buildActivity('Accept', msg.recipient.id, msg.actor.id, { object: msg.activity.id })
+    const { postTask: publishUpdatedFollowers } = await apex.acceptFollow(msg.recipient, msg.activity)
+    await apex.addToOutbox(msg.recipient, accept)
+    return publishUpdatedFollowers()
+  }
+})
+const collectionTypes = ['Add', 'Remove']
+app.on('apex-outbox', async msg => {
+  // publish avatars collection updates
+  const isColChange = collectionTypes.includes(msg.activity.type)
+  const isAvatarCollection = msg.activity.target?.[0] === msg.actor.streams?.[0].avatars
+  if (isColChange && isAvatarCollection) {
+    return apex.publishUpdate(msg.actor, await apex.getAdded(msg.actor, 'avatars'))
+  }
 })
 
 // custom c2s apis
@@ -201,6 +176,8 @@ async function friendsLocations (req, res, next) {
 }
 app.get('/u/:actor/friends', [
   auth.priv,
+  apex.net.security.verifyAuthorization,
+  apex.net.security.requireAuthorizedOrPublic,
   apex.net.validators.jsonld,
   apex.net.validators.targetActor,
   friendsLocations,
@@ -285,6 +262,10 @@ function onInboxFriendUpdate (msg) {
 }
 app.on('apex-inbox', onInboxFriendUpdate)
 
+if (process.env.NODE_ENV !== 'production') {
+  debugOutput(app)
+}
+
 client
   .connect({ useNewUrlParser: true })
   .then(() => {
@@ -294,7 +275,8 @@ client
       id: `https://${domain}/o/immer`,
       type: 'Place',
       name,
-      url: `https://${hub}`
+      url: `https://${hub}`,
+      audience: apex.consts.publicAddress
     }
     return apex.fromJSONLD(immer)
   })
@@ -305,5 +287,9 @@ client
     return auth.authdb.setup(apex.store.db)
   })
   .then(() => {
-    return server.listen(port, () => console.log(`apex app listening on port ${port}`))
+    return server.listen(port, () => {
+      console.log(`apex app listening on port ${port}`)
+      // startup delivery in case anything is queued
+      apex.startDelivery()
+    })
   })
