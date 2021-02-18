@@ -13,6 +13,8 @@ const request = require('request-promise-native')
 const nunjucks = require('nunjucks')
 const passport = require('passport')
 const auth = require('./src/auth')
+const AutoEncrypt = require('@small-tech/auto-encrypt')
+const { onShutdown } = require('node-graceful-shutdown')
 const { debugOutput, parseHandle } = require('./src/utils')
 const { apex, createImmersActor, routes } = require('./src/apex')
 
@@ -192,7 +194,9 @@ const sslOptions = {
   cert: fs.readFileSync(path.join(__dirname, certPath)),
   ca: caPath ? fs.readFileSync(path.join(__dirname, caPath)) : undefined
 }
-const server = https.createServer(sslOptions, app)
+const server = process.env.NODE_ENV === 'production'
+  ? AutoEncrypt.https.createServer({ domains: [domain] }, app)
+  : https.createServer(sslOptions, app)
 
 // streaming updates
 const profilesSockets = new Map()
@@ -288,8 +292,17 @@ client
   })
   .then(() => {
     return server.listen(port, () => {
-      console.log(`apex app listening on port ${port}`)
+      console.log(`immers app listening on port ${port}`)
       // startup delivery in case anything is queued
       apex.startDelivery()
     })
   })
+
+// clean shutdown required for autoencrypt
+onShutdown(async () => {
+  await client.close()
+  await new Promise((resolve, reject) => {
+    server.close(err => (err ? reject(err) : resolve()))
+  })
+  console.log('Immers server closed')
+})
