@@ -11,13 +11,13 @@ usermod -aG sudo myuser
 su - myuser
 ```
 
-Install NodeJS 12 w/ build tools (for bcrypt)
+Install NodeJS 14 (w/ build tools for bcrypt)
 
 ```
 cd ~
-curl -sL https://deb.nodesource.com/setup_12.x -o nodesource_setup.sh
-sudo bash nodesource_setup.sh
+curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 sudo apt-get install -y nodejs
+sudo apt-get install -y build-essential
 ```
 
 Install pm2 and authbind to run server with public port access (replace myuser)
@@ -31,15 +31,4 @@ sudo chmod 755 /etc/authbind/byport/443
 sudo touch /etc/authbind/byport/80
 sudo chown myuser /etc/authbind/byport/80
 sudo chmod 755 /etc/authbind/byport/80
-```
-
-SSL via certbot (replace domain name, username)
-
-```
-sudo snap install core; sudo snap refresh core
-sudo snap install --classic certbot
-sudo ln -s /snap/bin/certbot /usr/bin/certbot
-sudo certbot certonly --standalone --preferred-challenges http -d example.com
-sudo cp -RL /etc/letsencrypt/live/example.com/. certs/
-sudo chown -R myuser certs/.
 ```

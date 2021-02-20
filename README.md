@@ -14,7 +14,8 @@ Attempts to navigate to the main domain will be redirected to the hub homepage a
 
 ### Immers server deploy
 
-Setup a web server with MongoDB (v4.x), NodeJS (v12.x), pm2, authbind, and Let's Encrypt certbot. [See detailed instructions for these steps if needed](./server-setup.md).
+Setup a web server with MongoDB (v4.x), NodeJS (v12.x), pm2, and authbind.
+SSL is provided automatically via `@small-tech/autoencrypt` [See detailed instructions for these steps if needed](./server-setup.md).
 
 * Install immers from github
 
@@ -67,7 +68,6 @@ smtpPassword | Password for mail service
 * Start server with pm2 & authbind
 
 ```
-authbind --deep pm2 start npm --name="redirector" -- run https-redirect
 authbind --deep pm2 start npm --name="immer" -- run start
 # one-time setup for autorestart
 pm2 startup
@@ -113,8 +113,6 @@ git checkout immers-integration
 npm ci
 ```
 * Run hub with either `npm run dev` (use Hubs dev networking servers) or `npm run start` (to connect to your hubs cloud networking server).
-* Visit hub at `https://localhost:8080`, create a room, and you will be redirected to login or register with your immer.
-You'll encounter and need to bypass certificate warnings for both the hub and immer domains.
-To get e-mail confirmation links, check the immers console for a link to read the email
+* Visit you immer at `https://localhost:8081`, approve the certificate exception, get automatically forwarded to your hub at `https://localhost:8080`, approve another certificate exception, create a room, and you will be redirected to login or register with your immer.
 
 Default immers server is `https://localhost:8081`, override with entry `IMMERS_SERVER` in hubs repo root folder `.env` file.
