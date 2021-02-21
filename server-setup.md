@@ -20,15 +20,15 @@ sudo apt-get install -y nodejs
 sudo apt-get install -y build-essential
 ```
 
-Install pm2 and authbind to run server with public port access (replace myuser)
+Install pm2 and authbind to run server with public port access
 
 ```
 sudo npm install pm2@latest -g
 sudo apt-get install authbind
 sudo touch /etc/authbind/byport/443
-sudo chown myuser /etc/authbind/byport/443
+sudo chown $USER /etc/authbind/byport/443
 sudo chmod 755 /etc/authbind/byport/443
 sudo touch /etc/authbind/byport/80
-sudo chown myuser /etc/authbind/byport/80
+sudo chown $USER /etc/authbind/byport/80
 sudo chmod 755 /etc/authbind/byport/80
 ```
