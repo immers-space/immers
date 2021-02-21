@@ -20,16 +20,9 @@ SSL is provided automatically via `@small-tech/autoencrypt` [See detailed instru
 * Install immers from github
 
 ```
-git clone https://github.com/wmurphyrd/immers.git
+git clone https://github.com/immers-space/immers.git
 cd immers
 npm ci
-```
-
-* Copy SSL certificates (replace domain name, username)
-
-```
-sudo cp -RL /etc/letsencrypt/live/example.com/. certs/
-sudo chown -R myuser certs/.
 ```
 
 * Copy `config-template.json` to `config.json` and edit to configure immers server
@@ -45,9 +38,6 @@ dbName | Database name to use with MongoDb
 smtpHost | Mail service domain
 smtpPort | Mail delivery port
 smtpFrom | From address for emails (match mail domain configured in hubs)
-keyPath | Relative path to SSL private key (`privkey.pem`)
-certPath | Relative path to SSL certificate (`cert.pem`)
-caPath | Relative path to SSL certificate authority (`chain.pem`)
 monetizationPointer | Optional. Adding a payment pointer here activates Web Monetization
 theme | Object containing optional theme properties
 theme.googleFont | Font family name from to fetch from Google Fonts
@@ -94,6 +84,11 @@ immers
 git clone https://github.com/immers-space/immers.git
 cd immers
 npm ci
+```
+* Create config files from templates
+```
+cp config-template.json config.json
+cp secrets-template.sjon secrets.json
 ```
 * Install a self-signed certificate
 ```
