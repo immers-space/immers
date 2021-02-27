@@ -32,6 +32,7 @@ const {
   theme
 } = require('./config.json')
 const { sessionSecret } = require('./secrets.json')
+const { mergeJSONLD } = require('activitypub-express/pub')
 const app = express()
 
 const client = new MongoClient('mongodb://localhost:27017', { useUnifiedTopology: true, useNewUrlParser: true })
@@ -162,8 +163,11 @@ async function friendsLocations (req, res, next) {
   const locals = res.locals.apex
   const friends = await apex.store.db.collection('streams').aggregate([
     { $match: { '_meta.collection': locals.target.inbox[0], type: { $in: ['Arrive', 'Leave', 'Accept'] } } },
+    // most recent activity per actor
     { $sort: { _id: -1 } },
     { $group: { _id: '$actor', loc: { $first: '$$ROOT' } } },
+    // sort actors by most recent activity
+    { $sort: { _id: -1 } },
     { $replaceRoot: { newRoot: '$loc' } },
     { $lookup: { from: 'objects', localField: 'actor', foreignField: 'id', as: 'actor' } },
     { $project: { _id: 0, 'actor.publicKey': 0 } }
@@ -255,13 +259,14 @@ io.on('connection', socket => {
   })
 })
 
-function onInboxFriendUpdate (msg) {
+async function onInboxFriendUpdate (msg) {
   const type = msg.activity.type
+  const liveSocket = profilesSockets.get(msg.recipient.id)
+  msg.activity.actor = [msg.actor]
+  msg.activity.object = [msg.object]
+  liveSocket?.emit('inbox-update', apex.stringifyPublicJSONLD(await apex.toJSONLD(msg.activity)))
   if (type === 'Arrive' || type === 'Leave' || type === 'Accept') {
-    const liveSocket = profilesSockets.get(msg.recipient.id)
-    if (liveSocket) {
-      liveSocket.emit('friends-update')
-    }
+    liveSocket?.emit('friends-update')
   }
 }
 app.on('apex-inbox', onInboxFriendUpdate)
