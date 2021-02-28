@@ -32,7 +32,6 @@ const {
   theme
 } = require('./config.json')
 const { sessionSecret } = require('./secrets.json')
-const { mergeJSONLD } = require('activitypub-express/pub')
 const app = express()
 
 const client = new MongoClient('mongodb://localhost:27017', { useUnifiedTopology: true, useNewUrlParser: true })
@@ -258,12 +257,13 @@ io.on('connection', socket => {
     socket.immers.authorization = msg.authorization
   })
 })
-
+// live stream of feed updates to client inbox-update goes to chat & friends-update to people list
 async function onInboxFriendUpdate (msg) {
   const type = msg.activity.type
   const liveSocket = profilesSockets.get(msg.recipient.id)
   msg.activity.actor = [msg.actor]
   msg.activity.object = [msg.object]
+  // convert to same format as inbox endpoint and strip any private properties
   liveSocket?.emit('inbox-update', apex.stringifyPublicJSONLD(await apex.toJSONLD(msg.activity)))
   if (type === 'Arrive' || type === 'Leave' || type === 'Accept') {
     liveSocket?.emit('friends-update')
