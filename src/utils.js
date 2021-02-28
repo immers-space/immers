@@ -7,7 +7,7 @@ function debugOutput (app) {
   const l = (activity) => {
     const obj = activity.object?.[0]?.id ?? activity.object?.[0]
     const target = activity.target?.[0]?.id ?? activity.target?.[0]
-    return `${activity.type}: from ${activity.actor} to ${activity.to} obj ${obj} target ${target}`
+    return `${activity.type}: from ${activity.actor[0].id ?? activity.actor[0]} to ${activity.to} obj ${obj} target ${target}`
   }
   app.on('apex-inbox', msg => console.log('---inbox----------\n', l(msg.activity)))
   app.on('apex-outbox', msg => console.log('---outbox---------\n', l(msg.activity)))
