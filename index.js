@@ -16,7 +16,7 @@ const auth = require('./src/auth')
 const AutoEncrypt = require('@small-tech/auto-encrypt')
 const { onShutdown } = require('node-graceful-shutdown')
 const { debugOutput, parseHandle } = require('./src/utils')
-const { apex, createImmersActor, routes } = require('./src/apex')
+const { apex, createImmersActor, routes, onInbox, onOutbox } = require('./src/apex')
 
 const {
   port,
@@ -138,36 +138,34 @@ app.get(routes.rejected, auth.priv, apex.net.rejected.get)
 app.get('/.well-known/webfinger', apex.net.webfinger.get)
 
 /// Custom side effects
-app.on('apex-inbox', async msg => {
-  // auto-accept follows
-  if (msg.activity.type === 'Follow') {
-    const accept = await apex.buildActivity('Accept', msg.recipient.id, msg.actor.id, { object: msg.activity.id })
-    const { postTask: publishUpdatedFollowers } = await apex.acceptFollow(msg.recipient, msg.activity)
-    await apex.addToOutbox(msg.recipient, accept)
-    return publishUpdatedFollowers()
-  }
-})
-const collectionTypes = ['Add', 'Remove']
-app.on('apex-outbox', async msg => {
-  // publish avatars collection updates
-  const isColChange = collectionTypes.includes(msg.activity.type)
-  const isAvatarCollection = msg.activity.target?.[0] === msg.actor.streams?.[0].avatars
-  if (isColChange && isAvatarCollection) {
-    return apex.publishUpdate(msg.actor, await apex.getAdded(msg.actor, 'avatars'))
-  }
-})
+app.on('apex-inbox', onInbox)
+app.on('apex-outbox', onOutbox)
 
 // custom c2s apis
 async function friendsLocations (req, res, next) {
   const locals = res.locals.apex
+  const actor = locals.target
+  const inbox = actor.inbox[0]
+  const followers = actor.followers[0]
+  const rejected = apex.utils.nameToRejectedIRI(actor.preferredUsername)
   const friends = await apex.store.db.collection('streams').aggregate([
-    { $match: { '_meta.collection': locals.target.inbox[0], type: { $in: ['Arrive', 'Leave', 'Accept'] } } },
+    {
+      $match: {
+        $and: [
+          { '_meta.collection': inbox },
+          // filter only pending follow requests
+          { '_meta.collection': { $nin: [followers, rejected] } }
+        ],
+        type: { $in: ['Arrive', 'Leave', 'Accept', 'Follow'] }
+      }
+    },
     // most recent activity per actor
     { $sort: { _id: -1 } },
     { $group: { _id: '$actor', loc: { $first: '$$ROOT' } } },
     // sort actors by most recent activity
     { $sort: { _id: -1 } },
     { $replaceRoot: { newRoot: '$loc' } },
+    { $sort: { _id: -1 } },
     { $lookup: { from: 'objects', localField: 'actor', foreignField: 'id', as: 'actor' } },
     { $project: { _id: 0, 'actor.publicKey': 0 } }
   ]).toArray()
@@ -257,15 +255,16 @@ io.on('connection', socket => {
     socket.immers.authorization = msg.authorization
   })
 })
+
 // live stream of feed updates to client inbox-update goes to chat & friends-update to people list
+const friendUpdateTypes = ['Arrive', 'Leave', 'Accept', 'Follow']
 async function onInboxFriendUpdate (msg) {
-  const type = msg.activity.type
   const liveSocket = profilesSockets.get(msg.recipient.id)
   msg.activity.actor = [msg.actor]
   msg.activity.object = [msg.object]
   // convert to same format as inbox endpoint and strip any private properties
   liveSocket?.emit('inbox-update', apex.stringifyPublicJSONLD(await apex.toJSONLD(msg.activity)))
-  if (type === 'Arrive' || type === 'Leave' || type === 'Accept') {
+  if (friendUpdateTypes.includes(msg.activity.type)) {
     liveSocket?.emit('friends-update')
   }
 }
