@@ -37,7 +37,7 @@
   "homepage": "https://github.com/wmurphyrd/immers#readme",
   "dependencies": {
     "@small-tech/auto-encrypt": "2.0.6",
-    "activitypub-express": "^2.0.0",
+    "activitypub-express": "^2.1.0",
     "aesthetic-css": "^1.0.1",
     "bcrypt": "^5.0.0",
     "classnames": "^2.2.6",

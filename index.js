@@ -142,6 +142,7 @@ app.on('apex-inbox', onInbox)
 app.on('apex-outbox', onOutbox)
 
 // custom c2s apis
+const friendUpdateTypes = ['Arrive', 'Leave', 'Accept', 'Follow', 'Reject']
 async function friendsLocations (req, res, next) {
   const locals = res.locals.apex
   const actor = locals.target
@@ -156,7 +157,7 @@ async function friendsLocations (req, res, next) {
           // filter only pending follow requests
           { '_meta.collection': { $nin: [followers, rejected] } }
         ],
-        type: { $in: ['Arrive', 'Leave', 'Accept', 'Follow'] }
+        type: { $in: friendUpdateTypes }
       }
     },
     // most recent activity per actor
@@ -257,7 +258,6 @@ io.on('connection', socket => {
 })
 
 // live stream of feed updates to client inbox-update goes to chat & friends-update to people list
-const friendUpdateTypes = ['Arrive', 'Leave', 'Accept', 'Follow']
 async function onInboxFriendUpdate (msg) {
   const liveSocket = profilesSockets.get(msg.recipient.id)
   msg.activity.actor = [msg.actor]

@@ -94,20 +94,18 @@ async function onInbox ({ actor, activity, recipient, object }) {
   }
   // auto unfollowback
   if (activity.type === 'Reject' && object.type === 'Follow' && object.actor[0] === recipient.id) {
-    // TODO
-    // const rejectedIRI = apex.utils.nameToRejectedIRI(recipient.preferredUsername)
-    // const followers = await apex.getCollection(recipient.followers[0], Infinity, null, true)
-    // const acceptedFollow = followers.orderedItems.find(follow => follow.actor[0] === activity.actor[0])
-    // if (!acceptedFollow) {
-    //   return
-    // }
-    // // perform reject side effects and publish
-    // await apex.store.updateActivityMeta(acceptedFollow, 'collection', rejectedIRI)
-    // await apex.store.updateActivityMeta(acceptedFollow, 'collection', recipient.followers[0], true)
-    // const reject = await apex.buildActivity('Reject', recipient.id, actor.id, {
-    //   object: acceptedFollow.id
-    // })
-    // await apex.addToOutbox(recipient, reject)
-    // return apex.publishUpdate(recipient, await apex.getFollowers(recipient))
+    const rejectedIRI = apex.utils.nameToRejectedIRI(recipient.preferredUsername)
+    const follow = await apex.store.findActivityByCollectionAndActorId(recipient.followers[0], actor.id, true)
+    if (!follow || follow._meta?.collection?.includes(rejectedIRI)) {
+      return
+    }
+    // perform reject side effects and publish
+    await apex.store.updateActivityMeta(follow, 'collection', rejectedIRI)
+    await apex.store.updateActivityMeta(follow, 'collection', recipient.followers[0], true)
+    const reject = await apex.buildActivity('Reject', recipient.id, actor.id, {
+      object: follow.id
+    })
+    await apex.addToOutbox(recipient, reject)
+    return apex.publishUpdate(recipient, await apex.getFollowers(recipient))
   }
 }
