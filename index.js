@@ -162,8 +162,11 @@ async function friendsLocations (req, res, next) {
   const locals = res.locals.apex
   const friends = await apex.store.db.collection('streams').aggregate([
     { $match: { '_meta.collection': locals.target.inbox[0], type: { $in: ['Arrive', 'Leave', 'Accept'] } } },
+    // most recent activity per actor
     { $sort: { _id: -1 } },
     { $group: { _id: '$actor', loc: { $first: '$$ROOT' } } },
+    // sort actors by most recent activity
+    { $sort: { _id: -1 } },
     { $replaceRoot: { newRoot: '$loc' } },
     { $lookup: { from: 'objects', localField: 'actor', foreignField: 'id', as: 'actor' } },
     { $project: { _id: 0, 'actor.publicKey': 0 } }
@@ -254,14 +257,16 @@ io.on('connection', socket => {
     socket.immers.authorization = msg.authorization
   })
 })
-
-function onInboxFriendUpdate (msg) {
+// live stream of feed updates to client inbox-update goes to chat & friends-update to people list
+async function onInboxFriendUpdate (msg) {
   const type = msg.activity.type
+  const liveSocket = profilesSockets.get(msg.recipient.id)
+  msg.activity.actor = [msg.actor]
+  msg.activity.object = [msg.object]
+  // convert to same format as inbox endpoint and strip any private properties
+  liveSocket?.emit('inbox-update', apex.stringifyPublicJSONLD(await apex.toJSONLD(msg.activity)))
   if (type === 'Arrive' || type === 'Leave' || type === 'Accept') {
-    const liveSocket = profilesSockets.get(msg.recipient.id)
-    if (liveSocket) {
-      liveSocket.emit('friends-update')
-    }
+    liveSocket?.emit('friends-update')
   }
 }
 app.on('apex-inbox', onInboxFriendUpdate)
