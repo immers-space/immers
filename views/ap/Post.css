@@ -1,0 +1,25 @@
+.tinyIconWrapper {
+  height: 20px;
+  overflow:hidden;
+  display: inline-block;
+}
+
+.tinyIcon {
+  width: 20px;
+}
+
+.postHeader {
+  display: flex;
+  justify-content: space-between;
+}
+
+.postMedia {
+  max-width: 600px;
+  max-height: 600px;
+  margin: 0 auto;
+  display: block;
+}
+
+.lesserPost {
+  color: rgb(59, 59, 59);
+}

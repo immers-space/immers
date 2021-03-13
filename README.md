@@ -25,13 +25,6 @@ cd immers
 npm ci
 ```
 
-* Copy SSL certificates (replace domain name, username)
-
-```
-sudo cp -RL /etc/letsencrypt/live/example.com/. certs/
-sudo chown -R myuser certs/.
-```
-
 * Copy `config-template.json` to `config.json` and edit to configure immers server
 
 Key | Value

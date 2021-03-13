@@ -1,0 +1,40 @@
+.userImmer {
+  font-size: 24;
+}
+
+.userContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.userContainer h2, .userContainer h3 {
+  margin: 0;
+}
+
+.iconWrapper {
+  max-width: 500px;
+  overflow: hidden;
+  background-color: black;
+}
+
+.icon {
+  height: 500px;
+}
+
+.aesthetic-windows-95-tabbed-container-tabs-button a {
+  text-decoration: none;
+  color: black;
+  padding: 2px;
+}
+
+.profile .aesthetic-windows-95-tabbed-container .aesthetic-windows-95-tabbed-container-tabs .aesthetic-windows-95-tabbed-container-tabs-button button {
+  padding: 0;
+}
+
+.profileSummary {
+  width: 400px;
+  margin-top: 10px;
+}
