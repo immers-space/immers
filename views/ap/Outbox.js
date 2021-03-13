@@ -16,7 +16,7 @@ export default function Outbox ({ iri }) {
           setPage(collectionPage.first)
           return
         }
-        setItems(collectionPage.orderedItems)
+        setItems(items.concat(collectionPage.orderedItems))
         setNextPage(collectionPage.next)
       })
   }, [page])
@@ -26,7 +26,7 @@ export default function Outbox ({ iri }) {
       <div>
         {items.map(item => <Post key={item.id} {...item} />)}
       </div>
-      {nextPage && <button onClick={handleNext}>Next page</button>}
+      {nextPage && <button onClick={handleNext}>Load more</button>}
     </div>
   )
 }
