@@ -14,7 +14,7 @@ export default function Post ({ actor, summary, object = {}, published }) {
     return (
       <div>
         <div className='postHeader'>
-          <div>
+          <div className='handle'>
             <div className='tinyIconWrapper'>
               <ProfileIcon className='tinyIcon' icon={icon} />
             </div>
@@ -61,7 +61,7 @@ function Timestamp ({ published }) {
   } catch (ignore) {}
   if (published && timestamp) {
     return (
-      <span className='lesserPost'>
+      <span className='lesserPost timestamp'>
         <FormattedRelativeTime updateIntervalInSeconds={10} value={(timestamp - Date.now()) / 1000} />
       </span>
     )
