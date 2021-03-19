@@ -182,11 +182,12 @@ async function friendsLocations (req, res, next) {
   next()
 }
 app.get('/u/:actor/friends', [
+  // check content type first in case this is HTML request
   apex.net.validators.jsonld,
   auth.priv,
-  apex.net.security.verifyAuthorization,
-  apex.net.security.requireAuthorizedOrPublic,
   apex.net.validators.targetActor,
+  apex.net.security.verifyAuthorization,
+  apex.net.security.requireAuthorized,
   friendsLocations,
   apex.net.responders.result
 ])
