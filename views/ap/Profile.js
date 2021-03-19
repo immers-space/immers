@@ -1,15 +1,22 @@
-import React, { useEffect, useState } from 'react'
-import { Router, Link, useMatch } from '@reach/router'
+import React, { useContext, useEffect, useState } from 'react'
+import { Router, Link, useMatch, useNavigate } from '@reach/router'
 import './Profile.css'
 import Layout from '../components/Layout'
 import Tab from '../components/Tab'
-import Outbox from './Outbox'
+import Box from './Box'
 import ImmersHandle from '../components/ImmersHandle'
 import ProfileIcon from '../components/ProfileIcon'
+import ServerDataContext from './ServerDataContext'
+import Friends from './Friends'
 
 export default function Profile ({ actor }) {
+  const navigate = useNavigate()
+  const { loggedInUser } = useContext(ServerDataContext)
   const [actorObj, setActorObj] = useState(null)
-  const [tabs, setTabs] = useState(['Outbox'])
+  // const [tabs, setTabs] = useState(['Outbox', 'Inbox'])
+  const tabs = loggedInUser === actor
+    ? ['Friends', 'Inbox', 'Outbox']
+    : ['Outbox']
   const { currentTab } = useMatch(':currentTab') || {}
   useEffect(() => {
     window.fetch(`/u/${actor}`, {
@@ -19,9 +26,18 @@ export default function Profile ({ actor }) {
     }).then(res => res.json())
       .then(setActorObj)
   }, [actor])
+  useEffect(() => {
+    if (!currentTab) {
+      navigate(`/u/${actor}/${tabs[0]}`, { replace: true })
+    }
+  }, [currentTab])
   if (!actorObj) {
     return (
-      <Layout contentTitle='Immers Profile'><div>Loading...</div></Layout>
+      <Layout contentTitle='Immers Profile'>
+        <div className='aesthetic-windows-95-loader'>
+          <div /><div /><div />
+        </div>
+      </Layout>
     )
   }
   return (
@@ -34,9 +50,7 @@ export default function Profile ({ actor }) {
           <h3>
             <ImmersHandle className='userImmer' {...actorObj} />
           </h3>
-          <div className='iconWrapper'>
-            <ProfileIcon className='icon' icon={actorObj.icon} />
-          </div>
+          <ProfileIcon className='aesthetic-black-bg-color' size='large' icon={actorObj.icon} />
           <div className='aesthetic-windows-95-container-indent profileSummary'>
             {actorObj.summary}
           </div>
@@ -55,8 +69,9 @@ export default function Profile ({ actor }) {
           </div>
           <div className='aesthetic-windows-95-container'>
             <Router>
-              <Outbox path='Outbox' iri={actorObj.outbox} />
-              {/* <Outbox path='Outbox/:page' iri={actorObj.outbox} /> */}
+              <Feed path='Outbox' iri={actorObj.outbox} />
+              <Feed path='Inbox' iri={actorObj.inbox} />
+              <Friends path='Friends' iri={`${actorObj.id}/friends`} />
             </Router>
           </div>
         </div>

@@ -12,11 +12,12 @@
         clientName: '{{ clientName }}',
         redirectUri: '{{ redirectUri }}',
         transactionId: '{{ transactionId }}',
+        loggedInUser: '{{ loggedInUser }}'
       }
     </script>
     <title>{% block title %}{{ name }}{% endblock %}</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=670, initial-scale=1">
+    <meta name="viewport" content="width=670, initial-scale=0.5">
     {% if monetizationPointer %}
     <meta name="monetization" content="{{ monetizationPointer }}">
     {% endif %}

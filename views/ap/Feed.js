@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Post from './Post'
 
-export default function Outbox ({ iri }) {
+export default function Feed ({ iri }) {
   const [page, setPage] = useState(iri)
   const [nextPage, setNextPage] = useState(undefined)
   const [items, setItems] = useState([])

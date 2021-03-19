@@ -14,16 +14,6 @@
   margin: 0;
 }
 
-.iconWrapper {
-  max-width: 500px;
-  overflow: hidden;
-  background-color: black;
-}
-
-.icon {
-  height: 500px;
-}
-
 .aesthetic-windows-95-tabbed-container-tabs-button a {
   text-decoration: none;
   color: black;
@@ -37,4 +27,5 @@
 .profileSummary {
   width: 400px;
   margin-top: 10px;
+  margin-bottom: 10px;
 }

@@ -1,12 +1,13 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import SanitizedHTML from 'react-sanitized-html'
 import { FormattedRelativeTime } from 'react-intl'
 import ImmersHandle from '../components/ImmersHandle'
 import ProfileIcon from '../components/ProfileIcon'
 import './Post.css'
+import ServerDataContext from './ServerDataContext'
 
 export default function Post ({ actor, summary, object = {}, published }) {
-  const { id: actorId, name, preferredUsername, icon } = actor
+  const { id: actorId, icon } = actor
   const { context } = object
 
   const body = getPostBody(object)
@@ -14,13 +15,10 @@ export default function Post ({ actor, summary, object = {}, published }) {
     return (
       <div>
         <div className='postHeader'>
-          <div className='handle'>
-            <div className='tinyIconWrapper'>
-              <ProfileIcon className='tinyIcon' icon={icon} />
-            </div>
-            {name} &ndash;
-            {' '}<ImmersHandle id={actorId} preferredUsername={preferredUsername} />
-          </div>
+          <a className='handle profileLink' href={actorId}>
+            <ProfileIcon size='tiny' icon={icon} />
+            <ImmersHandle {...actor} showName />
+          </a>
           <ImmerLink place={context} />
           <Timestamp published={published} />
         </div>
@@ -70,6 +68,8 @@ function Timestamp ({ published }) {
 }
 
 export function ImmerLink ({ place }) {
+  const { loggedInUser, domain } = useContext(ServerDataContext)
+  const handle = `${loggedInUser}[${domain}]`
   if (!place?.url) {
     return null
   }
@@ -78,7 +78,7 @@ export function ImmerLink ({ place }) {
   try {
     const url = new URL(placeUrl)
     const search = new URLSearchParams(url.search)
-    // search.set('me', window.APP.store.state.profile.handle)
+    search.set('me', handle)
     url.search = search.toString()
     placeUrl = url.toString()
   } catch (ignore) {

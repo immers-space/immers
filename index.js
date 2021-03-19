@@ -115,6 +115,8 @@ app.get('/auth/authorize', auth.authorization)
 app.post('/auth/decision', auth.decision)
 // get actor from token
 app.get('/auth/me', auth.priv, auth.userToActor, apex.net.actor.get)
+// token endpoint for immers web client
+app.post('/auth/token', auth.localToken)
 
 // AP routes
 app.route(routes.inbox)
@@ -180,10 +182,10 @@ async function friendsLocations (req, res, next) {
   next()
 }
 app.get('/u/:actor/friends', [
+  apex.net.validators.jsonld,
   auth.priv,
   apex.net.security.verifyAuthorization,
   apex.net.security.requireAuthorizedOrPublic,
-  apex.net.validators.jsonld,
   apex.net.validators.targetActor,
   friendsLocations,
   apex.net.responders.result
@@ -198,7 +200,10 @@ app.use(history({
 }))
 // HTML versions of acitivty pub objects routes
 app.get('/ap.html', auth.publ, (req, res) => {
-  res.render('dist/ap/ap.html', renderConfig)
+  const data = {
+    loggedInUser: req.user?.username
+  }
+  res.render('dist/ap/ap.html', Object.assign(data, renderConfig))
 })
 
 const sslOptions = {
