@@ -16,6 +16,9 @@ export default function Layout (props) {
             <div className='aesthetic-windows-95-modal-title-bar-text'>
               {props.contentTitle}
             </div>
+            <div className='aesthetic-windows-95-modal-title-bar-controls'>
+              {props.buttons}
+            </div>
           </div>
           <div className='aesthetic-windows-95-modal-content'>
             <hr />

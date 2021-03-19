@@ -3,20 +3,25 @@ import { Router, Link, useMatch, useNavigate } from '@reach/router'
 import './Profile.css'
 import Layout from '../components/Layout'
 import Tab from '../components/Tab'
-import Box from './Box'
+import Feed from './Feed'
 import ImmersHandle from '../components/ImmersHandle'
 import ProfileIcon from '../components/ProfileIcon'
 import ServerDataContext from './ServerDataContext'
 import Friends from './Friends'
+import EmojiButton from './EmojiButton'
 
 export default function Profile ({ actor }) {
   const navigate = useNavigate()
   const { loggedInUser } = useContext(ServerDataContext)
   const [actorObj, setActorObj] = useState(null)
   // const [tabs, setTabs] = useState(['Outbox', 'Inbox'])
-  const tabs = loggedInUser === actor
-    ? ['Friends', 'Inbox', 'Outbox']
-    : ['Outbox']
+  const tabs = ['Outbox']
+  let buttons
+  if (loggedInUser === actor) {
+    tabs.unshift('Friends', 'Inbox')
+    // TODO: edit profile
+    // buttons = <EmojiButton emoji='pencil2' title='Edit profile' />
+  }
   const { currentTab } = useMatch(':currentTab') || {}
   useEffect(() => {
     window.fetch(`/u/${actor}`, {
@@ -41,7 +46,7 @@ export default function Profile ({ actor }) {
     )
   }
   return (
-    <Layout contentTitle='Immers Profile'>
+    <Layout contentTitle='Immers Profile' buttons={buttons}>
       <div className='profile'>
         <div className='userContainer'>
           <h2 className='displayName'>

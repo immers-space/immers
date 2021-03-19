@@ -14,13 +14,23 @@ function Root () {
     if (!dataContext.loggedInUser) {
       return
     }
+    const newData = Object.assign({}, dataContext)
     window.fetch('/auth/token', {
       method: 'POST'
     })
       .then(res => res.text())
       .then(token => {
-        const newData = Object.assign({}, dataContext)
         newData.token = token
+        return window.fetch('/auth/me', {
+          headers: {
+            Accept: 'application/activity+json',
+            Authorization: `Bearer ${token}`
+          }
+        })
+      })
+      .then(res => res.json())
+      .then(actor => {
+        newData.actor = actor
         setDataContext(newData)
       })
       .catch(err => console.error(err.message))
