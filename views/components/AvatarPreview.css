@@ -1,0 +1,26 @@
+.avatarPreview {
+  position: relative;
+}
+
+.coverAvatar {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.activate3d {
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.showOnHover {
+  opacity: 0;
+}
+
+.showOnHover:hover {
+  opacity: 0.75;
+}

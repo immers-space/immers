@@ -36,7 +36,6 @@ function Friend ({ id, type, actor, summary, object = {}, target = {}, published
   const { token, actor: me } = useContext(ServerDataContext)
   const [action, setAction] = useState('')
   const { id: actorId, icon } = actor
-  // const { context } = object
   let location = null
   switch (type) {
     case 'Arrive':

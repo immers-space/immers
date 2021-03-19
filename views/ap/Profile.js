@@ -5,16 +5,15 @@ import Layout from '../components/Layout'
 import Tab from '../components/Tab'
 import Feed from './Feed'
 import ImmersHandle from '../components/ImmersHandle'
-import ProfileIcon from '../components/ProfileIcon'
 import ServerDataContext from './ServerDataContext'
 import Friends from './Friends'
-import EmojiButton from './EmojiButton'
+// import EmojiButton from './EmojiButton'
+import { AvatarPreview } from '../components/AvatarPreview'
 
 export default function Profile ({ actor }) {
   const navigate = useNavigate()
   const { loggedInUser } = useContext(ServerDataContext)
   const [actorObj, setActorObj] = useState(null)
-  // const [tabs, setTabs] = useState(['Outbox', 'Inbox'])
   const tabs = ['Outbox']
   let buttons
   if (loggedInUser === actor) {
@@ -55,7 +54,7 @@ export default function Profile ({ actor }) {
           <h3>
             <ImmersHandle className='userImmer' {...actorObj} />
           </h3>
-          <ProfileIcon className='aesthetic-black-bg-color' size='large' icon={actorObj.icon} />
+          <AvatarPreview {...actorObj} />
           <div className='aesthetic-windows-95-container-indent profileSummary'>
             {actorObj.summary}
           </div>
