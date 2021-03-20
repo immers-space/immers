@@ -219,19 +219,13 @@ const server = process.env.NODE_ENV === 'production'
 // streaming updates
 const profilesSockets = new Map()
 const io = socketio(server, {
-  // currently has blanket approval for CORS on all requests
-  // due to api limitation, future version (engine.io v4) will allow more CORS configuration
-  origins: '*:*',
-  // required to support authorization header over CORS
-  handlePreflightRequest: (req, res) => {
-    const headers = {
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      // preflight cors has to be wide open
-      'Access-Control-Allow-Origin': req.headers.origin,
-      'Access-Control-Allow-Credentials': true
-    }
-    res.writeHead(200, headers)
-    res.end()
+  // we have to leave CORS open for preflight regardless, and tokens are required to connect,
+  // so not really worth the effort to make CORS more specific
+  cors: {
+    origin: '*',
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+
   }
 })
 io.use(function (socket, next) {
@@ -247,7 +241,8 @@ io.use(function (socket, next) {
 })
 io.on('connection', socket => {
   socket.immers = {}
-  socket.on('disconnect', async () => {
+  socket.on('disconnect', async (reason) => {
+    console.log('socket disconnect: ', reason, socket.authorizedUserId)
     if (socket.authorizedUserId) {
       profilesSockets.delete(socket.authorizedUserId)
     }
