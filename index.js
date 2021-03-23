@@ -212,7 +212,7 @@ const sslOptions = {
   cert: fs.readFileSync(path.join(__dirname, certPath)),
   ca: caPath ? fs.readFileSync(path.join(__dirname, caPath)) : undefined
 }
-AutoEncryptPromise.then(async AutoEncrypt => {
+AutoEncryptPromise.then(async ({ default: AutoEncrypt }) => {
   const server = process.env.NODE_ENV === 'production'
     ? AutoEncrypt.https.createServer({ domains: [domain] }, app)
     : https.createServer(sslOptions, app)
