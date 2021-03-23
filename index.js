@@ -1,4 +1,5 @@
 'use strict'
+require('dotenv').config()
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
@@ -25,18 +26,36 @@ const {
   hub,
   homepage,
   name,
+  dbHost,
+  dbPort,
   dbName,
+  sessionSecret,
   keyPath,
   certPath,
   caPath,
   monetizationPointer,
-  theme
-} = require('./config.json')
-const renderConfig = { name, domain, monetizationPointer, ...theme }
-const { sessionSecret } = require('./secrets.json')
+  googleFont,
+  backgroundColor,
+  backgroundImage,
+  icon,
+  imageAttributionText,
+  imageAttributionUrl
+} = process.env
+const renderConfig = {
+  name,
+  domain,
+  monetizationPointer,
+  googleFont,
+  backgroundColor,
+  backgroundImage,
+  icon,
+  imageAttributionText,
+  imageAttributionUrl
+}
+const mongoURI = `mongodb://${dbHost}:${dbPort}`
 const app = express()
 
-const client = new MongoClient('mongodb://localhost:27017', { useUnifiedTopology: true, useNewUrlParser: true })
+const client = new MongoClient(mongoURI, { useUnifiedTopology: true, useNewUrlParser: true })
 
 nunjucks.configure({
   autoescape: true,
@@ -49,7 +68,7 @@ app.use(cookieParser())
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
 const sessionStore = new MongoSessionStore({
-  uri: 'mongodb://localhost:27017',
+  uri: mongoURI,
   databaseName: dbName,
   collection: 'sessions',
   maxAge: 365 * 24 * 60 * 60 * 1000
@@ -191,8 +210,10 @@ app.get('/u/:actor/friends', [
   friendsLocations,
   apex.net.responders.result
 ])
-
+// static files included in repo/docker image
 app.use('/static', express.static('static'))
+// static files added on deployed server
+app.use('/static', express.static('static-ext'))
 app.use('/dist', express.static('dist'))
 app.get('/', (req, res) => res.redirect(`${req.protocol}://${homepage || hub}`))
 // for SPA routing in activity pub pages
@@ -208,9 +229,9 @@ app.get('/ap.html', auth.publ, (req, res) => {
 })
 
 const sslOptions = {
-  key: fs.readFileSync(path.join(__dirname, keyPath)),
-  cert: fs.readFileSync(path.join(__dirname, certPath)),
-  ca: caPath ? fs.readFileSync(path.join(__dirname, caPath)) : undefined
+  key: keyPath && fs.readFileSync(path.join(__dirname, keyPath)),
+  cert: certPath && fs.readFileSync(path.join(__dirname, certPath)),
+  ca: caPath && fs.readFileSync(path.join(__dirname, caPath))
 }
 AutoEncryptPromise.then(async ({ default: AutoEncrypt }) => {
   const server = process.env.NODE_ENV === 'production'

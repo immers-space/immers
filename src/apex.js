@@ -1,6 +1,6 @@
 const ActivitypubExpress = require('activitypub-express')
 const immersContext = require('../static/immers-context.json')
-const { domain } = require('../config.json')
+const { domain } = process.env
 
 const routes = {
   actor: '/u/:actor',

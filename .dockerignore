@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+config.json
+secrets.json
+certs
+.vscode
+.cache
+dist
+.parcel-cache
+.env

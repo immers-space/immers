@@ -3,80 +3,48 @@
 ActivityPub server for immers.space - a decentralized virtual reality metaverse platform powered by Mozilla Hubs and activitypub-express.
 
 
-## Installation & setup
+## Installation
 
-### Domains
+We provide a [Docker Hub image](https://hub.docker.com/repository/docker/immersspace/immers) for immers,
+and the [immers-app repo](https://github.com/immers-space/immers-app) contains
+docker-compose configuration, configuration script, and deploy instructions.
+If you prefer to run immers without docker, it can be deployed just like
+any other NodeJS & MongoDB app.
 
-For the best user experience, install your hubs-cloud on a subdomain (e.g. hub.yourdomain.com) when
-running the hubs-cloud setup and then use the main domain (e.g. yourdomain.com) for your immer.
-This way users only need to use the main domain in the immers handle (user@yourdomain.com).
-Attempts to navigate to the main domain will be redirected to the hub homepage automatically.
+## Configuration
 
-### Immers server deploy
+Immers looks for the following configuration values as environment variables
+or in a `.env` file in the project root.
 
-Setup a web server with MongoDB (v4.x), NodeJS (v12.x), pm2, and authbind.
-SSL is provided automatically via `@small-tech/autoencrypt` [See detailed instructions for these steps if needed](./server-setup.md).
+## Required configuration
 
-* Install immers from github
+Variable | Value | Example
+--- | --- | ---
+name | Name of your immer | Immers Space
+domain | Domain name for your ymmers server | immers.space
+hub | Domain name for your Mozilla Hubs Cloud or other connected immersive experience | hub.immers.space
+smtpHost | Mail service domain (for password resets) | smtp.sendgrid.net
+smtpPort | Mail service port | 587
+smtpUser | Mail service username | apikey
+smtpPassword | Mail service password |
+sessionSecret | Secret key for session cookie encryption | *Automatically generated when [using setup script](https://github.com/immers-space/immers-app#step-1---setup)*
+easySecret | Secret key for email token encryption | *Automatically generated when [using setup script](https://github.com/immers-space/immers-app#step-1---setup)*
 
-```
-git clone https://github.com/wmurphyrd/immers.git
-cd immers
-npm ci
-```
+## Optional configuration
 
-* Copy `config-template.json` to `config.json` and edit to configure immers server
-
-Key | Value
---- | ---
-port | Port number for immers sever (usually 443)
-domain | Immers server [host](https://developer.mozilla.org/en-US/docs/Web/API/Location/host)
-hub | Hubs cloud [host](https://developer.mozilla.org/en-US/docs/Web/API/Location/host)
-homepage | Optonal, redirect root html requests to this url (defaults to `hub`)
-name | Name of your immer
-dbName | Database name to use with MongoDb
-smtpHost | Mail service domain
-smtpPort | Mail delivery port
-smtpFrom | From address for emails (match mail domain configured in hubs)
-keyPath | Relative path to SSL private key (`privkey.pem`)
-certPath | Relative path to SSL certificate (`cert.pem`)
-caPath | Relative path to SSL certificate authority (`chain.pem`)
-monetizationPointer | Optional. Adding a payment pointer here activates Web Monetization
-theme | Object containing optional theme properties
-theme.googleFont | Font family name from to fetch from Google Fonts
-theme.backgroundColor | CSS color,
-theme.backgroundImage | Image file,
-theme.imageAttributionText | Attribution for backgroundImage, if needed,
-theme.imageAttributionUrl | Attribution for backgroundImage, if needed
-
-* Copy `secrets-template.json` to `secrets.json` and edit to configure secrets
-
-Key | Value
---- | ---
-sessionSecret | Secret key for session cookie encryption
-easySecret | Secret key for login token encryption
-smtpUser | Username for mail service
-smtpPassword | Password for mail service
-
-* Start server with pm2 & authbind
-
-```
-authbind --deep pm2 start npm --name="immer" -- run start
-# one-time setup for autorestart
-pm2 startup
-pm2 save
-```
-
-### Hubs cloud setup
-
-1. [Deply custom hubs client](https://hubs.mozilla.com/docs/hubs-cloud-custom-clients.html) from [immers-space/hubs#immers-integration](https://github.com/immers-space/hubs/tree/immers-integration)
-1. Add config in hubs cloud admin -> setup -> sever settings -> advanced
-  * Extra room Header HTML: `<meta name="env:immers_server" content="https://your.immers.server">`
-  (replace value in content with your immers server url)
-  * Extra Content Security Policy connect-src Rules: `https: wss:`
-  (allows API and streaming connections to remote users home instances)
-  * Allowed CORS origins: `*`
-  (temporary measure cross-hub for avatar sharing)
+Variable | Value | Default
+--- | --- | ---
+homepage | Redirect root html requests to this url | Use `hub` url
+googleFont | Font family name from to fetch from Google Fonts for immer name header | Monoton
+backgroundColor | CSS color | #a6549d
+backgroundImage | Image file | vapor.png
+imageAttributionText | Attribution for backgroundImage, if needed | Vectors by Vecteezy
+imageAttributionUrl | Attribution for backgroundImage, if needed | https://www.vecteezy.com/free-vector/vector
+monetizationPointer | [Payment pointer](https://webmonetization.org/docs/ilp-wallets/#payment-pointers) for Web Monetization on login & profile pages | Immers Space organization wallet
+dbName | Database name to use with MongoDb | mongodb
+port | Port number for immers sever | 8081
+smtpFrom | From address for emails | noreplay@mail.`domain`
+keyPath, certPath, caPath | Local development only. Relative paths to certificate files | None
 
 ## Local dev
 

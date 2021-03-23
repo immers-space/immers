@@ -26,7 +26,7 @@
       #body h1 { font-family: '{{ googleFont }}', monospace; }
       {% endif %}
       {% if backgroundImage %}
-      #body .bg { background-image: url('{{ backgroundImage }}'); }
+      #body .bg { background-image: url('/static/{{ backgroundImage }}'); }
       {% endif %}
       {% if backgroundColor %}
       #body .bg { background-color: {{ backgroundColor }}; }
