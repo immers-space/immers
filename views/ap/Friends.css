@@ -1,0 +1,8 @@
+.friendManager {
+  display: flex;
+  align-items: center;
+}
+
+.friendManager>div {
+  margin-left: 5px;
+}

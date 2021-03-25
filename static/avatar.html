@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Hello, WebVR! • A-Frame</title>
+    <meta name="description" content="Hello, WebVR! • A-Frame">
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-orbit-controls@1.0.0/dist/aframe-orbit-controls.min.js"></script> 
+
+  </head>
+  <body>
+    <a-scene background="color: #ECECEC">
+      <a-assets>
+        <a-asset-item id="asset" src=""></a-asset-item>
+      </a-assets>
+      <a-entity camera look-controls orbit-controls="target: 0 1 -0.5; minDistance: 0.5; maxDistance: 180; initialPosition: 1 1.5 0.5"></a-entity>
+      <a-gltf-model id="model" src="#asset" position="0 0.5 -0.5"></a-gltf-model>
+    </a-scene>
+    <script>
+      document.getElementById('asset')
+        .setAttribute('src', new URLSearchParams(window.location.search).get('avatar'))
+    </script>
+  </body>
+</html>

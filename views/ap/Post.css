@@ -1,0 +1,42 @@
+.postHeader {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 5px;
+}
+
+.postHeader>* {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.postHeader .handle {
+  flex-shrink: 2;
+  display: flex;
+  align-items: center;
+}
+
+.postHeader .timestamp {
+  flex-shrink: 4;
+}
+
+.profileLink {
+  color: black;
+  text-decoration: none;
+}
+
+.profileLink:hover {
+  text-decoration: underline;
+}
+
+
+.postMedia {
+  max-width: 600px;
+  max-height: 600px;
+  margin: 0 auto;
+  display: block;
+}
+
+.lesserPost {
+  color: rgb(59, 59, 59);
+}

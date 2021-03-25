@@ -7,6 +7,7 @@ const session = require('express-session')
 const MongoSessionStore = require('connect-mongodb-session')(session)
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
+const history = require('connect-history-api-fallback')
 const { MongoClient } = require('mongodb')
 const socketio = require('socket.io')
 const request = require('request-promise-native')
@@ -31,6 +32,7 @@ const {
   monetizationPointer,
   theme
 } = require('./config.json')
+const renderConfig = { name, domain, monetizationPointer, ...theme }
 const { sessionSecret } = require('./secrets.json')
 const app = express()
 
@@ -71,7 +73,7 @@ app.options('*', cors())
 /// auth related routes
 app.route('/auth/login')
   .get((req, res) => {
-    const data = { name, domain, monetizationPointer, ...theme }
+    const data = Object.assign({}, renderConfig)
     if (req.session && req.session.handle) {
       Object.assign(data, parseHandle(req.session.handle))
       delete req.session.handle
@@ -93,8 +95,7 @@ app.post('/auth/forgot', passport.authenticate('easy'), (req, res) => {
 })
 app.route('/auth/reset')
   .get(passport.authenticate('easy'), (req, res) => {
-    const data = { name, domain, monetizationPointer, ...theme }
-    res.render('dist/reset/reset.html', data)
+    res.render('dist/reset/reset.html', renderConfig)
   })
   .post(auth.changePasswordAndReturn)
 
@@ -114,6 +115,8 @@ app.get('/auth/authorize', auth.authorization)
 app.post('/auth/decision', auth.decision)
 // get actor from token
 app.get('/auth/me', auth.priv, auth.userToActor, apex.net.actor.get)
+// token endpoint for immers web client
+app.post('/auth/token', auth.localToken)
 
 // AP routes
 app.route(routes.inbox)
@@ -179,11 +182,12 @@ async function friendsLocations (req, res, next) {
   next()
 }
 app.get('/u/:actor/friends', [
-  auth.priv,
-  apex.net.security.verifyAuthorization,
-  apex.net.security.requireAuthorizedOrPublic,
+  // check content type first in case this is HTML request
   apex.net.validators.jsonld,
+  auth.priv,
   apex.net.validators.targetActor,
+  apex.net.security.verifyAuthorization,
+  apex.net.security.requireAuthorized,
   friendsLocations,
   apex.net.responders.result
 ])
@@ -191,6 +195,18 @@ app.get('/u/:actor/friends', [
 app.use('/static', express.static('static'))
 app.use('/dist', express.static('dist'))
 app.get('/', (req, res) => res.redirect(`${req.protocol}://${homepage || hub}`))
+// for SPA routing in activity pub pages
+app.use(history({
+  index: '/ap.html'
+}))
+// HTML versions of acitivty pub objects routes
+app.get('/ap.html', auth.publ, (req, res) => {
+  const data = {
+    loggedInUser: req.user?.username
+  }
+  res.render('dist/ap/ap.html', Object.assign(data, renderConfig))
+})
+
 const sslOptions = {
   key: fs.readFileSync(path.join(__dirname, keyPath)),
   cert: fs.readFileSync(path.join(__dirname, certPath)),

@@ -105,6 +105,20 @@ server.serializeClient(authdb.serializeClient)
 server.deserializeClient(authdb.deserializeClient)
 // Implicit grant only
 server.grant(oauth2orize.grant.token(authdb.createAccessToken))
+// token grant for logged-in users in immers client
+function localToken (req, res) {
+  if (!req.user) {
+    return res.sendStatus(401)
+  }
+  const client = { id: `https://${domain}/o/immer` }
+  const done = (err, token) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+    res.send(token)
+  }
+  authdb.createAccessToken(client, req.user, { origin: domain }, done)
+}
 
 // dynamic cors for oauth clients
 const hubCors = cors(function (req, done) {
@@ -274,6 +288,7 @@ module.exports = {
   authdb,
   publ,
   priv,
+  localToken,
   logout,
   userToActor,
   registerUser,
