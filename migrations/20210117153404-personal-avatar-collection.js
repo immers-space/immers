@@ -1,4 +1,4 @@
-const { apex, createImmersActor } = require('../../src/apex')
+const { apex, createImmersActor } = require('../src/apex')
 
 module.exports = {
   async up (db, client) {

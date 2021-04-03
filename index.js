@@ -19,6 +19,7 @@ const AutoEncryptPromise = import('@small-tech/auto-encrypt')
 const { onShutdown } = require('node-graceful-shutdown')
 const { debugOutput, parseHandle } = require('./src/utils')
 const { apex, createImmersActor, routes, onInbox, onOutbox } = require('./src/apex')
+const { migrate } = require('./src/migrate')
 
 const {
   port,
@@ -233,7 +234,11 @@ const sslOptions = {
   cert: certPath && fs.readFileSync(path.join(__dirname, certPath)),
   ca: caPath && fs.readFileSync(path.join(__dirname, caPath))
 }
-AutoEncryptPromise.then(async ({ default: AutoEncrypt }) => {
+migrate(mongoURI).catch((err) => {
+  console.error('Unable to apply migrations: ', err.message)
+  process.exit(1)
+}).then(async () => {
+  const { default: AutoEncrypt } = await AutoEncryptPromise
   const server = process.env.NODE_ENV === 'production'
     ? AutoEncrypt.https.createServer({ domains: [domain] }, app)
     : https.createServer(sslOptions, app)
