@@ -14,7 +14,7 @@ const request = require('request-promise-native')
 const nunjucks = require('nunjucks')
 const passport = require('passport')
 const auth = require('./src/auth')
-const AutoEncrypt = require('@small-tech/auto-encrypt')
+const AutoEncryptPromise = import('@small-tech/auto-encrypt')
 const { onShutdown } = require('node-graceful-shutdown')
 const { debugOutput, parseHandle } = require('./src/utils')
 const { apex, createImmersActor, routes, onInbox, onOutbox } = require('./src/apex')
@@ -212,117 +212,104 @@ const sslOptions = {
   cert: fs.readFileSync(path.join(__dirname, certPath)),
   ca: caPath ? fs.readFileSync(path.join(__dirname, caPath)) : undefined
 }
-const server = process.env.NODE_ENV === 'production'
-  ? AutoEncrypt.https.createServer({ domains: [domain] }, app)
-  : https.createServer(sslOptions, app)
+AutoEncryptPromise.then(async ({ default: AutoEncrypt }) => {
+  const server = process.env.NODE_ENV === 'production'
+    ? AutoEncrypt.https.createServer({ domains: [domain] }, app)
+    : https.createServer(sslOptions, app)
 
-// streaming updates
-const profilesSockets = new Map()
-const io = socketio(server, {
-  // currently has blanket approval for CORS on all requests
-  // due to api limitation, future version (engine.io v4) will allow more CORS configuration
-  origins: '*:*',
-  // required to support authorization header over CORS
-  handlePreflightRequest: (req, res) => {
-    const headers = {
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      // preflight cors has to be wide open
-      'Access-Control-Allow-Origin': req.headers.origin,
-      'Access-Control-Allow-Credentials': true
-    }
-    res.writeHead(200, headers)
-    res.end()
-  }
-})
-io.use(function (socket, next) {
-  passport.authenticate('bearer', function (err, user, info) {
-    if (err) { return next(err) }
-    if (!user) { return next(new Error('Not authorized')) }
-    socket.authorizedUserId = apex.utils.usernameToIRI(user.username)
-    profilesSockets.set(socket.authorizedUserId, socket)
-    // for future use with fine-grained CORS origins
-    socket.hub = info.origin
-    next()
-  })(socket.request, {}, next)
-})
-io.on('connection', socket => {
-  socket.immers = {}
-  socket.on('disconnect', async () => {
-    if (socket.authorizedUserId) {
-      profilesSockets.delete(socket.authorizedUserId)
-    }
-    if (socket.immers.outbox && socket.immers.leave) {
-      request({
-        method: 'POST',
-        url: socket.immers.outbox,
-        headers: {
-          'Content-Type': apex.consts.jsonldOutgoingType,
-          Authorization: socket.immers.authorization
-        },
-        json: true,
-        simple: false,
-        body: await apex.toJSONLD(socket.immers.leave)
-      }).catch(err => console.log(err.message))
-      delete socket.immers.leave
+  // streaming updates
+  const profilesSockets = new Map()
+  const io = socketio(server, {
+    // we have to leave CORS open for preflight regardless, and tokens are required to connect,
+    // so not really worth the effort to make CORS more specific
+    cors: {
+      origin: '*',
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      credentials: true
+
     }
   })
-  socket.on('entered', msg => {
-    socket.immers.outbox = msg.outbox
-    socket.immers.leave = msg.leave
-    socket.immers.authorization = msg.authorization
+  io.use(function (socket, next) {
+    passport.authenticate('bearer', function (err, user, info) {
+      if (err) { return next(err) }
+      if (!user) { return next(new Error('Not authorized')) }
+      socket.authorizedUserId = apex.utils.usernameToIRI(user.username)
+      profilesSockets.set(socket.authorizedUserId, socket)
+      // for future use with fine-grained CORS origins
+      socket.hub = info.origin
+      next()
+    })(socket.request, {}, next)
   })
-})
-
-// live stream of feed updates to client inbox-update goes to chat & friends-update to people list
-async function onInboxFriendUpdate (msg) {
-  const liveSocket = profilesSockets.get(msg.recipient.id)
-  msg.activity.actor = [msg.actor]
-  msg.activity.object = [msg.object]
-  // convert to same format as inbox endpoint and strip any private properties
-  liveSocket?.emit('inbox-update', apex.stringifyPublicJSONLD(await apex.toJSONLD(msg.activity)))
-  if (friendUpdateTypes.includes(msg.activity.type)) {
-    liveSocket?.emit('friends-update')
-  }
-}
-app.on('apex-inbox', onInboxFriendUpdate)
-
-if (process.env.NODE_ENV !== 'production') {
-  debugOutput(app)
-}
-
-client
-  .connect({ useNewUrlParser: true })
-  .then(() => {
-    apex.store.db = client.db(dbName)
-    // Place object representing this node
-    const immer = {
-      id: `https://${domain}/o/immer`,
-      type: 'Place',
-      name,
-      url: `https://${hub}`,
-      audience: apex.consts.publicAddress
-    }
-    return apex.fromJSONLD(immer)
-  })
-  .then(immer => {
-    return apex.store.setup(immer)
-  })
-  .then(() => {
-    return auth.authdb.setup(apex.store.db)
-  })
-  .then(() => {
-    return server.listen(port, () => {
-      console.log(`immers app listening on port ${port}`)
-      // startup delivery in case anything is queued
-      apex.startDelivery()
+  io.on('connection', socket => {
+    socket.immers = {}
+    socket.on('disconnect', async (reason) => {
+      console.log('socket disconnect: ', reason, socket.authorizedUserId)
+      if (socket.authorizedUserId) {
+        profilesSockets.delete(socket.authorizedUserId)
+      }
+      if (socket.immers.outbox && socket.immers.leave) {
+        request({
+          method: 'POST',
+          url: socket.immers.outbox,
+          headers: {
+            'Content-Type': apex.consts.jsonldOutgoingType,
+            Authorization: socket.immers.authorization
+          },
+          json: true,
+          simple: false,
+          body: await apex.toJSONLD(socket.immers.leave)
+        }).catch(err => console.log(err.message))
+        delete socket.immers.leave
+      }
+    })
+    socket.on('entered', msg => {
+      socket.immers.outbox = msg.outbox
+      socket.immers.leave = msg.leave
+      socket.immers.authorization = msg.authorization
     })
   })
 
-// clean shutdown required for autoencrypt
-onShutdown(async () => {
-  await client.close()
-  await new Promise((resolve, reject) => {
-    server.close(err => (err ? reject(err) : resolve()))
+  // live stream of feed updates to client inbox-update goes to chat & friends-update to people list
+  async function onInboxFriendUpdate (msg) {
+    const liveSocket = profilesSockets.get(msg.recipient.id)
+    msg.activity.actor = [msg.actor]
+    msg.activity.object = [msg.object]
+    // convert to same format as inbox endpoint and strip any private properties
+    liveSocket?.emit('inbox-update', apex.stringifyPublicJSONLD(await apex.toJSONLD(msg.activity)))
+    if (friendUpdateTypes.includes(msg.activity.type)) {
+      liveSocket?.emit('friends-update')
+    }
+  }
+  app.on('apex-inbox', onInboxFriendUpdate)
+
+  if (process.env.NODE_ENV !== 'production') {
+    debugOutput(app)
+  }
+  // clean shutdown required for autoencrypt
+  onShutdown(async () => {
+    await client.close()
+    await new Promise((resolve, reject) => {
+      server.close(err => (err ? reject(err) : resolve()))
+    })
+    console.log('Immers server closed')
   })
-  console.log('Immers server closed')
+
+  // server startup
+  await client.connect({ useNewUrlParser: true })
+  apex.store.db = client.db(dbName)
+  // Place object representing this node
+  const immer = await apex.fromJSONLD({
+    id: `https://${domain}/o/immer`,
+    type: 'Place',
+    name,
+    url: `https://${hub}`,
+    audience: apex.consts.publicAddress
+  })
+  await apex.store.setup(immer)
+  await auth.authdb.setup(apex.store.db)
+  server.listen(port, () => {
+    console.log(`immers app listening on port ${port}`)
+    // startup delivery in case anything is queued
+    apex.startDelivery()
+  })
 })
