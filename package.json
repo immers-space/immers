@@ -12,9 +12,6 @@
     "dev:client": "npx parcel watch views/**/*.html --public-url /dist/",
     "build:client": "rimraf dist/ && npx parcel build views/**/*.html --public-url /dist/",
     "start": "cross-env NODE_ENV=production node index.js",
-    "xprepare": "npm run build:client && npm run migration:check",
-    "migration:check": "cd migrate-mongo && migrate-mongo status && cd ..",
-    "migration:do": "cd migrate-mongo && migrate-mongo up && cd ..",
     "build:image": "docker build -t immersspace/immers .",
     "publish:image": "docker push immersspace/immers:latest"
   },

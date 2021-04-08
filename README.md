@@ -72,8 +72,11 @@ git clone https://github.com/immers-space/hubs.git
 cd hubs
 git checkout immers-integration
 npm ci
+npm run build:client
 ```
 * Run hub with either `npm run dev` (use Hubs dev networking servers) or `npm run start` (to connect to your hubs cloud networking server).
 * Visit you immer at `https://localhost:8081`, approve the certificate exception, get automatically forwarded to your hub at `https://localhost:8080`, approve another certificate exception, create a room, and you will be redirected to login or register with your immer.
 
 Default immers server is `https://localhost:8081`, override with entry `IMMERS_SERVER` in hubs repo root folder `.env` file.
+
+If working on immers server web client, run both `npm run dev:client` and `npm run dev` at the same time.
