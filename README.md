@@ -21,7 +21,7 @@ or in a `.env` file in the project root.
 Variable | Value | Example
 --- | --- | ---
 name | Name of your immer | Immers Space
-domain | Domain name for your ymmers server | immers.space
+domain | Domain name for your immers server | immers.space
 hub | Domain name for your Mozilla Hubs Cloud or other connected immersive experience | hub.immers.space
 smtpHost | Mail service domain (for password resets) | smtp.sendgrid.net
 smtpPort | Mail service port | 587
