@@ -40,10 +40,13 @@ module.exports = {
 
 async function createImmersActor (preferredUsername, name) {
   const actor = await apex.createActor(preferredUsername, name, 'Immerser profile')
+  const { blocked } = apex.utils.nameToActorStreams(preferredUsername)
   actor.streams = [{
     id: `${actor.id}#streams`,
     // personal avatar collection
-    avatars: apex.utils.userCollectionIdToIRI(preferredUsername, 'avatars')
+    avatars: apex.utils.userCollectionIdToIRI(preferredUsername, 'avatars'),
+    // blocklist (requires auth)
+    blocked
   }]
   return actor
 }
