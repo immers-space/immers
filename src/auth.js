@@ -18,10 +18,17 @@ const {
   smtpHost,
   smtpPort,
   smtpFrom,
+  smtpUser,
+  smtpPassword,
+  easySecret,
   monetizationPointer,
-  theme
-} = require('../config.json')
-const { easySecret, smtpUser, smtpPassword } = require('../secrets.json')
+  googleFont,
+  backgroundColor,
+  backgroundImage,
+  icon,
+  imageAttributionText,
+  imageAttributionUrl
+} = process.env
 const emailCheck = require('email-validator')
 const handleCheck = '^[A-Za-z0-9-]{3,32}$'
 const nameCheck = '^[A-Za-z0-9 -]{3,32}$'
@@ -330,7 +337,12 @@ module.exports = {
         redirectUri: request.oauth2.client.redirectUri,
         name,
         monetizationPointer,
-        ...theme
+        googleFont,
+        backgroundColor,
+        backgroundImage,
+        icon,
+        imageAttributionText,
+        imageAttributionUrl
       }
       response.render('dist/dialog/dialog.html', data)
     }

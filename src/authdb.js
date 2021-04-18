@@ -1,7 +1,7 @@
 const { ObjectId } = require('mongodb')
 const uid = require('uid-safe')
 const bcrypt = require('bcrypt')
-const { domain, hub, name } = require('../config.json')
+const { domain, hub, name } = process.env
 
 const saltRounds = 10
 const tokenAge = 24 * 60 * 60 * 1000 // one day
