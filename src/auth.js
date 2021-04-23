@@ -31,7 +31,7 @@ const {
 } = process.env
 const emailCheck = require('email-validator')
 const handleCheck = '^[A-Za-z0-9-]{3,32}$'
-const nameCheck = '^[A-Za-z0-9 -]{3,32}$'
+const nameCheck = '^[A-Za-z0-9_~ -]{3,32}$'
 let transporter
 if (process.env.NODE_ENV === 'production') {
   transporter = nodemailer.createTransport({

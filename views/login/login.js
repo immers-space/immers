@@ -275,7 +275,7 @@ class Login extends React.Component {
                   <input
                     id='handle' className='aesthetic-windows-95-text-input'
                     type='text' name='name'
-                    pattern='^[A-Za-z0-9 -]{3,32}$'
+                    pattern='^[A-Za-z0-9_~ -]{3,32}$'
                     title='Letters, numbers, spaces, &amp; dashes only, between 3 and 32 characters'
                     required
                   />
