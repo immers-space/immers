@@ -324,6 +324,7 @@ module.exports = {
         params.origin = `${origin.protocol}//${origin.host}`
         // express protocol does not include colon
         params.issuer = `https://${domain}`
+        params.scope = ['*']
         return done(null, true, params)
       }
       // Otherwise ask user
@@ -335,6 +336,7 @@ module.exports = {
         username: request.user.username,
         clientName: request.oauth2.client.name,
         redirectUri: request.oauth2.client.redirectUri,
+        preferredScope: request.oauth2.req.scope.join(' '),
         name,
         monetizationPointer,
         googleFont,
@@ -357,6 +359,7 @@ module.exports = {
       params.origin = `${origin.protocol}//${origin.host}`
       // express protocol does not include colon
       params.issuer = `https://${domain}`
+      params.scope = req.body.scope?.split(' ') || []
       done(null, params)
     })
   ]

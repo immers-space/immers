@@ -92,15 +92,15 @@ module.exports = {
       const token = await uid(128)
       const expiry = new Date(Date.now() + tokenAge)
       await db.collection('tokens')
-        .insertOne({ token, user, clientId, expiry, tokenType, origin: ares.origin })
-      return done(null, token, { token_type: tokenType, issuer: ares.issuer })
+        .insertOne({ token, user, clientId, expiry, tokenType, origin: ares.origin, scope: ares.scope })
+      return done(null, token, { token_type: tokenType, issuer: ares.issuer, scope: ares.scope.join(' ') })
     } catch (err) { done(err) }
   },
   async validateAccessToken (token, done) {
     try {
       const tokenDoc = await db.collection('tokens').findOne({ token })
       if (!tokenDoc) { return done(null, false) }
-      done(null, tokenDoc.user, { scope: '*', origin: tokenDoc.origin })
+      done(null, tokenDoc.user, { scope: tokenDoc.scope, origin: tokenDoc.origin })
     } catch (err) { done(err) }
   },
   // immers api methods (promises instead of callbacks)

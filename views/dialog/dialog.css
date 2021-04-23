@@ -1,0 +1,23 @@
+#roleOptions {
+  display: flex;
+  justify-content: space-around;
+}
+
+.roleOption input {
+  display: block;
+  width: 100%;
+}
+
+.permissionsInfo {
+  display: inline-block;
+  width: 50%;
+  vertical-align: top;
+}
+
+.permissionsHeader {
+  text-align: center;
+}
+
+.permissionsContainer {
+  margin-top: 15px;
+}
