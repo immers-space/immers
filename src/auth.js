@@ -10,6 +10,7 @@ const EasyNoPassword = require('easy-no-password').Strategy
 const LocalStrategy = require('passport-local').Strategy
 const BearerStrategy = require('passport-http-bearer').Strategy
 const AnonymousStrategy = require('passport-anonymous').Strategy
+const overlaps = require('overlaps')
 const authdb = require('./authdb')
 const {
   domain,
@@ -150,6 +151,22 @@ const hubCors = cors(function (req, done) {
 // auth for public v. private routes, with cors enabled for client origins
 const publ = [passport.authenticate(['bearer', 'anonymous'], { session: false }), hubCors]
 const priv = [passport.authenticate('bearer', { session: false }), hubCors]
+// simple scoping limits acess to entire route by scope
+function scope (scopeNames) {
+  let hasScope
+  if (!Array.isArray(scopeNames)) {
+    hasScope = authorizedScopes => authorizedScopes?.includes(scopeNames)
+  } else {
+    hasScope = authorizedScopes => authorizedScopes && overlaps(authorizedScopes, scopeNames)
+  }
+  return function scopeAuth (req, res, next) {
+    if (!req.authInfo?.scope?.includes('*') && !hasScope(req.authInfo?.scope)) {
+      res.locals.apex.authorized = false
+    }
+    // leave authorized undefined if has scope so apex still checks ownership
+    next()
+  }
+}
 
 function logout (req, res, next) {
   req.logout()
@@ -295,6 +312,7 @@ module.exports = {
   authdb,
   publ,
   priv,
+  scope,
   localToken,
   logout,
   userToActor,
@@ -317,7 +335,7 @@ module.exports = {
     stashHandle,
     login.ensureLoggedIn('/auth/login'),
     server.authorization(authdb.validateClient, (client, user, scope, type, req, done) => {
-      // Auto-approve
+      // Auto-approve for home immer
       if (client.isTrusted) {
         const params = {}
         const origin = new URL(req.redirectURI)

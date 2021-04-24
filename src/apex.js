@@ -1,5 +1,7 @@
 const ActivitypubExpress = require('activitypub-express')
+const overlaps = require('overlaps')
 const immersContext = require('../static/immers-context.json')
+const { scopes } = require('../common/scopes')
 const { domain } = process.env
 
 const routes = {
@@ -30,12 +32,31 @@ const apex = ActivitypubExpress({
   }
 })
 
+/*
+  Similar to apex default with addition of scope-by-activty-type auth.
+  Moved outboxCreate validation earlier to before the auth also
+*/
+const outboxPost = [
+  apex.net.validators.jsonld,
+  apex.net.validators.targetActorWithMeta,
+  apex.net.validators.outboxCreate,
+  outboxScoping,
+  apex.net.security.verifyAuthorization,
+  apex.net.security.requireAuthorized,
+  apex.net.validators.outboxActivityObject,
+  apex.net.validators.outboxActivity,
+  apex.net.activity.save,
+  apex.net.activity.outboxSideEffects,
+  apex.net.responders.status
+]
+
 module.exports = {
   apex,
   createImmersActor,
   onOutbox,
   onInbox,
-  routes
+  routes,
+  outboxPost
 }
 
 async function createImmersActor (preferredUsername, name) {
@@ -108,4 +129,54 @@ async function onInbox ({ actor, activity, recipient, object }) {
     await apex.addToOutbox(recipient, reject)
     return apex.publishUpdate(recipient, await apex.getFollowers(recipient))
   }
+}
+
+// complex scoping by activity type for outbox post
+const profileUpdateProps = ['id', 'name', 'icon', 'avatar', 'summary']
+function outboxScoping (req, res, next) {
+  const authorizedScope = req.authInfo?.scope || []
+  let postType = req.body?.type?.toLowerCase?.()
+  const object = req.body?.object?.[0]
+  if (
+    postType === 'update' &&
+    // update target is the actor itself
+    object?.id === res.locals.apex.target?.id &&
+    Object.keys(object).every(prop => profileUpdateProps.includes(prop))
+  ) {
+    // profile udpates are lower permission than general update
+    postType = 'update-profile'
+  }
+  // default requires unlimited access
+  const requiredScope = ['*']
+  switch (postType) {
+    case 'arrive':
+    case 'leave':
+      requiredScope.push(scopes.postLocation.name)
+      break
+    case 'follow':
+    case 'accept':
+      requiredScope.push(scopes.addFriends.name)
+      break
+    case 'block':
+      requiredScope.push(scopes.addBlocks.name)
+      break
+    case 'add':
+    case 'create':
+    case 'like':
+    case 'announce':
+    case 'update-profile':
+      requiredScope.push(scopes.creative.name)
+      break
+    case 'update':
+    case 'reject':
+    case 'undo':
+    case 'delete':
+    case 'remove':
+      requiredScope.push(scopes.destructive.name)
+      break
+  }
+  if (!overlaps(requiredScope, authorizedScope)) {
+    res.locals.apex.authorized = false
+  }
+  next()
 }

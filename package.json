@@ -60,6 +60,7 @@
     "nodemailer": "^6.5.0",
     "nunjucks": "^3.2.3",
     "oauth2orize": "^1.11.0",
+    "overlaps": "^1.0.0",
     "parcel-bundler": "^1.12.5",
     "passport": "^0.4.1",
     "passport-anonymous": "^1.0.1",
