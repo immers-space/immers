@@ -3,9 +3,14 @@
   justify-content: space-around;
 }
 
+.roleOption {
+  margin: 0 8px;
+}
+
 .roleOption input {
   display: block;
   width: 100%;
+  height: 24px;
 }
 
 .permissionsInfo {
