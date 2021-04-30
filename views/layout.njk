@@ -13,7 +13,8 @@
         redirectUri: '{{ redirectUri }}',
         transactionId: '{{ transactionId }}',
         loggedInUser: '{{ loggedInUser }}',
-        preferredScope: '{{ preferredScope }}'.split(' ')
+        preferredScope: '{{ preferredScope }}'.split(' '),
+        emailOptInURL: '{{ emailOptInURL }}'
       }
     </script>
     <title>{% block title %}{{ name }}{% endblock %}</title>

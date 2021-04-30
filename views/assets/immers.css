@@ -71,6 +71,10 @@ h1 {
   align-items: center;
 }
 
+.form-footer {
+  margin: 0 20px;
+  max-width: 590px;
+}
 .form-item, .form-item label, .form-item input {
   transition: all 0.5s ease-in-out;
   overflow: hidden;

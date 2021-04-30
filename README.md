@@ -44,6 +44,9 @@ monetizationPointer | [Payment pointer](https://webmonetization.org/docs/ilp-wal
 dbName | Database name to use with MongoDb | mongodb
 port | Port number for immers sever | 8081
 smtpFrom | From address for emails | noreplay@mail.`domain`
+emailOptInURL | Link to an opt-in form for email updates to show on registration page | None
+emailOptInParam | Query parameter for `emailOptInURL` for the e-mail address | Use opt-in url without inserting e-mail
+emailOptInNameParam | Query parameter for `emailOptInURL` for the name | Use opt-in url without inserting name
 keyPath, certPath, caPath | Local development only. Relative paths to certificate files | None
 
 ## Local dev
