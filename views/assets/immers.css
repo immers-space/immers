@@ -179,6 +179,11 @@ button[disabled] {
   width: 10px;
 }
 
+/* okay we're all sick of the flicker */
+.aesthetic-effect-crt::after {
+  animation: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .aesthetic-effect-crt::after,
   .aesthetic-effect-text-glitch::before,
