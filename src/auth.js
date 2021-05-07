@@ -125,7 +125,7 @@ function localToken (req, res) {
     }
     res.send(token)
   }
-  authdb.createAccessToken(client, req.user, { origin: domain, scope: ['*'] }, done)
+  authdb.createAccessToken(client, req.user, { origin: `https://${domain}`, scope: ['*'] }, done)
 }
 
 // dynamic cors for oauth clients
