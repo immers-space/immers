@@ -1,10 +1,14 @@
 const { ObjectId } = require('mongodb')
 const uid = require('uid-safe')
 const bcrypt = require('bcrypt')
+const crypto = require('crypto')
 const { domain, hub, name } = process.env
 
 const saltRounds = 10
 const tokenAge = 24 * 60 * 60 * 1000 // one day
+function hashEmail (email) {
+  return crypto.createHash('sha256').update(email.toLowerCase()).digest('base64')
+}
 let db
 module.exports = {
   async setup (connection) {
@@ -109,13 +113,13 @@ module.exports = {
     return db.collection('users').findOne({ username })
   },
   getUserByEmail (email) {
-    email = email.toLowerCase()
+    email = hashEmail(email)
     return db.collection('users').findOne({ email })
   },
   async createUser (username, password, email) {
-    const user = { username, email }
-    const passwordHash = await bcrypt.hash(password, saltRounds)
-    user.passwordHash = passwordHash
+    const user = { username }
+    user.passwordHash = await bcrypt.hash(password, saltRounds)
+    user.email = hashEmail(email)
     await db.collection('users').insertOne(user)
     return user
   },

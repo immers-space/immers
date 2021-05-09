@@ -41,7 +41,10 @@ const {
   backgroundImage,
   icon,
   imageAttributionText,
-  imageAttributionUrl
+  imageAttributionUrl,
+  emailOptInURL,
+  emailOptInParam,
+  emailOptInNameParam
 } = process.env
 const renderConfig = {
   name,
@@ -52,7 +55,8 @@ const renderConfig = {
   backgroundImage,
   icon,
   imageAttributionText,
-  imageAttributionUrl
+  imageAttributionUrl,
+  emailOptInURL
 }
 const mongoURI = `mongodb://${dbHost}:${dbPort}`
 const app = express()
@@ -119,6 +123,25 @@ app.route('/auth/reset')
     res.render('dist/reset/reset.html', renderConfig)
   })
   .post(auth.changePasswordAndReturn)
+/* redirect to an email opt-in form
+ doing this here rather than client-side because the URL was
+ troublesome to pass to the client via renderConfig due to sanitization
+*/
+app.get('/auth/optin', (req, res) => {
+  if (!emailOptInURL) {
+    return res.sendStatus(404)
+  }
+  const url = new URL(emailOptInURL)
+  const search = new URLSearchParams(url.search)
+  if (emailOptInParam && req.query.email) {
+    search.set(emailOptInParam, req.query.email)
+  }
+  if (emailOptInNameParam && req.query.name) {
+    search.set(emailOptInNameParam, req.query.name)
+  }
+  url.search = search
+  res.redirect(url)
+})
 
 async function registerActor (req, res, next) {
   const preferredUsername = req.body.username

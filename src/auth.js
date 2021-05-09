@@ -83,9 +83,9 @@ passport.use(new EasyNoPassword(
       const url = `https://${domain}/auth/reset?username=${safeEmail}&token=${token}`
       const info = await transporter.sendMail({
         from: `"${name}" <${smtpFrom}>`,
-        to: user.email,
+        to: email,
         subject: `${user.username}: your ${name} password reset link`,
-        text: `${user.username}, please use this link to reset you ${name} profile password: ${url}`
+        text: `${user.username}, please use this link to reset your ${name} profile password: ${url}`
       })
       if (process.env.NODE_ENV !== 'production') {
         console.log(nodemailer.getTestMessageUrl(info))
@@ -125,7 +125,7 @@ function localToken (req, res) {
     }
     res.send(token)
   }
-  authdb.createAccessToken(client, req.user, { origin: domain, scope: ['*'] }, done)
+  authdb.createAccessToken(client, req.user, { origin: `https://${domain}`, scope: ['*'] }, done)
 }
 
 // dynamic cors for oauth clients
