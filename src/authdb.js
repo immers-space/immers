@@ -1,10 +1,14 @@
 const { ObjectId } = require('mongodb')
 const uid = require('uid-safe')
 const bcrypt = require('bcrypt')
+const crypto = require('crypto')
 const { domain, hub, name } = process.env
 
 const saltRounds = 10
 const tokenAge = 24 * 60 * 60 * 1000 // one day
+function hashEmail (email) {
+  return crypto.createHash('sha256').update(email.toLowerCase()).digest('base64')
+}
 let db
 module.exports = {
   async setup (connection) {
@@ -92,15 +96,15 @@ module.exports = {
       const token = await uid(128)
       const expiry = new Date(Date.now() + tokenAge)
       await db.collection('tokens')
-        .insertOne({ token, user, clientId, expiry, tokenType, origin: ares.origin })
-      return done(null, token, { token_type: tokenType, issuer: ares.issuer })
+        .insertOne({ token, user, clientId, expiry, tokenType, origin: ares.origin, scope: ares.scope })
+      return done(null, token, { token_type: tokenType, issuer: ares.issuer, scope: ares.scope.join(' ') })
     } catch (err) { done(err) }
   },
   async validateAccessToken (token, done) {
     try {
       const tokenDoc = await db.collection('tokens').findOne({ token })
       if (!tokenDoc) { return done(null, false) }
-      done(null, tokenDoc.user, { scope: '*', origin: tokenDoc.origin })
+      done(null, tokenDoc.user, { scope: tokenDoc.scope, origin: tokenDoc.origin })
     } catch (err) { done(err) }
   },
   // immers api methods (promises instead of callbacks)
@@ -109,13 +113,13 @@ module.exports = {
     return db.collection('users').findOne({ username })
   },
   getUserByEmail (email) {
-    email = email.toLowerCase()
+    email = hashEmail(email)
     return db.collection('users').findOne({ email })
   },
   async createUser (username, password, email) {
-    const user = { username, email }
-    const passwordHash = await bcrypt.hash(password, saltRounds)
-    user.passwordHash = passwordHash
+    const user = { username }
+    user.passwordHash = await bcrypt.hash(password, saltRounds)
+    user.email = hashEmail(email)
     await db.collection('users').insertOne(user)
     return user
   },

@@ -10,6 +10,7 @@ const EasyNoPassword = require('easy-no-password').Strategy
 const LocalStrategy = require('passport-local').Strategy
 const BearerStrategy = require('passport-http-bearer').Strategy
 const AnonymousStrategy = require('passport-anonymous').Strategy
+const overlaps = require('overlaps')
 const authdb = require('./authdb')
 const {
   domain,
@@ -82,9 +83,9 @@ passport.use(new EasyNoPassword(
       const url = `https://${domain}/auth/reset?username=${safeEmail}&token=${token}`
       const info = await transporter.sendMail({
         from: `"${name}" <${smtpFrom}>`,
-        to: user.email,
+        to: email,
         subject: `${user.username}: your ${name} password reset link`,
-        text: `${user.username}, please use this link to reset you ${name} profile password: ${url}`
+        text: `${user.username}, please use this link to reset your ${name} profile password: ${url}`
       })
       if (process.env.NODE_ENV !== 'production') {
         console.log(nodemailer.getTestMessageUrl(info))
@@ -124,7 +125,7 @@ function localToken (req, res) {
     }
     res.send(token)
   }
-  authdb.createAccessToken(client, req.user, { origin: domain }, done)
+  authdb.createAccessToken(client, req.user, { origin: `https://${domain}`, scope: ['*'] }, done)
 }
 
 // dynamic cors for oauth clients
@@ -150,6 +151,22 @@ const hubCors = cors(function (req, done) {
 // auth for public v. private routes, with cors enabled for client origins
 const publ = [passport.authenticate(['bearer', 'anonymous'], { session: false }), hubCors]
 const priv = [passport.authenticate('bearer', { session: false }), hubCors]
+// simple scoping limits acess to entire route by scope
+function scope (scopeNames) {
+  let hasScope
+  if (!Array.isArray(scopeNames)) {
+    hasScope = authorizedScopes => authorizedScopes?.includes(scopeNames)
+  } else {
+    hasScope = authorizedScopes => authorizedScopes && overlaps(authorizedScopes, scopeNames)
+  }
+  return function scopeAuth (req, res, next) {
+    if (!req.authInfo?.scope?.includes('*') && !hasScope(req.authInfo?.scope)) {
+      res.locals.apex.authorized = false
+    }
+    // leave authorized undefined if has scope so apex still checks ownership
+    next()
+  }
+}
 
 function logout (req, res, next) {
   req.logout()
@@ -295,6 +312,7 @@ module.exports = {
   authdb,
   publ,
   priv,
+  scope,
   localToken,
   logout,
   userToActor,
@@ -317,13 +335,14 @@ module.exports = {
     stashHandle,
     login.ensureLoggedIn('/auth/login'),
     server.authorization(authdb.validateClient, (client, user, scope, type, req, done) => {
-      // Auto-approve
+      // Auto-approve for home immer
       if (client.isTrusted) {
         const params = {}
         const origin = new URL(req.redirectURI)
         params.origin = `${origin.protocol}//${origin.host}`
         // express protocol does not include colon
         params.issuer = `https://${domain}`
+        params.scope = ['*']
         return done(null, true, params)
       }
       // Otherwise ask user
@@ -335,6 +354,7 @@ module.exports = {
         username: request.user.username,
         clientName: request.oauth2.client.name,
         redirectUri: request.oauth2.client.redirectUri,
+        preferredScope: request.oauth2.req.scope.join(' '),
         name,
         monetizationPointer,
         googleFont,
@@ -357,6 +377,7 @@ module.exports = {
       params.origin = `${origin.protocol}//${origin.host}`
       // express protocol does not include colon
       params.issuer = `https://${domain}`
+      params.scope = req.body.scope?.split(' ') || []
       done(null, params)
     })
   ]

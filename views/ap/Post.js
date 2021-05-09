@@ -77,9 +77,9 @@ export function ImmerLink ({ place }) {
   // inject user handle into desintation url so they don't have to type it
   try {
     const url = new URL(placeUrl)
-    const search = new URLSearchParams(url.search)
-    search.set('me', handle)
-    url.search = search.toString()
+    const hashParams = new URLSearchParams()
+    hashParams.set("me", handle)
+    url.hash = hashParams.toString()
     placeUrl = url.toString()
   } catch (ignore) {
     /* if fail, leave original url unchanged */

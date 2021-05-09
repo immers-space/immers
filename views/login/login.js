@@ -7,6 +7,7 @@ import HandleInput from '../components/HandleInput'
 import PasswordInput from '../components/PasswordInput'
 import Layout from '../components/Layout'
 import EmailInput from '../components/EmailInput'
+import EmailOptIn from '../components/EmailOptIn'
 
 class Login extends React.Component {
   constructor (props) {
@@ -299,6 +300,7 @@ class Login extends React.Component {
                   </span>
                 </div>
               </form>
+              <EmailOptIn />
             </div>}
           {this.state.tab === 'Reset password' &&
             <div className='aesthetic-windows-95-container-indent'>

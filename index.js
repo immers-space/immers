@@ -18,8 +18,9 @@ const auth = require('./src/auth')
 const AutoEncryptPromise = import('@small-tech/auto-encrypt')
 const { onShutdown } = require('node-graceful-shutdown')
 const { debugOutput, parseHandle } = require('./src/utils')
-const { apex, createImmersActor, routes, onInbox, onOutbox } = require('./src/apex')
+const { apex, createImmersActor, routes, onInbox, onOutbox, outboxPost } = require('./src/apex')
 const { migrate } = require('./src/migrate')
+const { scopes } = require('./common/scopes')
 
 const {
   port,
@@ -40,7 +41,10 @@ const {
   backgroundImage,
   icon,
   imageAttributionText,
-  imageAttributionUrl
+  imageAttributionUrl,
+  emailOptInURL,
+  emailOptInParam,
+  emailOptInNameParam
 } = process.env
 const renderConfig = {
   name,
@@ -51,7 +55,8 @@ const renderConfig = {
   backgroundImage,
   icon,
   imageAttributionText,
-  imageAttributionUrl
+  imageAttributionUrl,
+  emailOptInURL
 }
 const mongoURI = `mongodb://${dbHost}:${dbPort}`
 const app = express()
@@ -118,6 +123,25 @@ app.route('/auth/reset')
     res.render('dist/reset/reset.html', renderConfig)
   })
   .post(auth.changePasswordAndReturn)
+/* redirect to an email opt-in form
+ doing this here rather than client-side because the URL was
+ troublesome to pass to the client via renderConfig due to sanitization
+*/
+app.get('/auth/optin', (req, res) => {
+  if (!emailOptInURL) {
+    return res.sendStatus(404)
+  }
+  const url = new URL(emailOptInURL)
+  const search = new URLSearchParams(url.search)
+  if (emailOptInParam && req.query.email) {
+    search.set(emailOptInParam, req.query.email)
+  }
+  if (emailOptInNameParam && req.query.name) {
+    search.set(emailOptInNameParam, req.query.name)
+  }
+  url.search = search
+  res.redirect(url)
+})
 
 async function registerActor (req, res, next) {
   const preferredUsername = req.body.username
@@ -139,25 +163,27 @@ app.get('/auth/me', auth.priv, auth.userToActor, apex.net.actor.get)
 app.post('/auth/token', auth.localToken)
 
 // AP routes
+const viewAuth = auth.scope(scopes.viewPrivate.name)
+const friendsAuth = auth.scope([scopes.viewPrivate.name, scopes.viewFriends.name])
 app.route(routes.inbox)
-  .get(auth.publ, apex.net.inbox.get)
+  .get(auth.publ, viewAuth, apex.net.inbox.get)
   .post(auth.publ, apex.net.inbox.post)
 app.route(routes.outbox)
-  .get(auth.publ, apex.net.outbox.get)
-  .post(auth.priv, apex.net.outbox.post)
+  .get(auth.publ, viewAuth, apex.net.outbox.get)
+  .post(auth.priv, outboxPost)
 app.route(routes.actor)
-  .get(auth.publ, apex.net.actor.get)
-app.get(routes.object, auth.publ, apex.net.object.get)
-app.get(routes.activity, auth.publ, apex.net.activityStream.get)
-app.get(routes.followers, auth.publ, apex.net.followers.get)
-app.get(routes.following, auth.publ, apex.net.following.get)
-app.get(routes.liked, auth.publ, apex.net.liked.get)
-app.get(routes.collections, auth.publ, apex.net.collections.get)
-app.get(routes.shares, auth.publ, apex.net.shares.get)
-app.get(routes.likes, auth.publ, apex.net.likes.get)
-app.get(routes.blocked, auth.priv, apex.net.blocked.get)
-app.get(routes.rejections, auth.priv, apex.net.rejections.get)
-app.get(routes.rejected, auth.priv, apex.net.rejected.get)
+  .get(auth.publ, auth.scope(scopes.viewProfile.name), apex.net.actor.get)
+app.get(routes.object, auth.publ, viewAuth, apex.net.object.get)
+app.get(routes.activity, auth.publ, viewAuth, apex.net.activityStream.get)
+app.get(routes.followers, auth.publ, friendsAuth, apex.net.followers.get)
+app.get(routes.following, auth.publ, friendsAuth, apex.net.following.get)
+app.get(routes.liked, auth.publ, viewAuth, apex.net.liked.get)
+app.get(routes.collections, auth.publ, viewAuth, apex.net.collections.get)
+app.get(routes.shares, auth.publ, viewAuth, apex.net.shares.get)
+app.get(routes.likes, auth.publ, viewAuth, apex.net.likes.get)
+app.get(routes.blocked, auth.priv, friendsAuth, apex.net.blocked.get)
+app.get(routes.rejections, auth.priv, friendsAuth, apex.net.rejections.get)
+app.get(routes.rejected, auth.priv, friendsAuth, apex.net.rejected.get)
 app.get('/.well-known/webfinger', apex.net.webfinger.get)
 
 /// Custom side effects
@@ -205,6 +231,7 @@ app.get('/u/:actor/friends', [
   // check content type first in case this is HTML request
   apex.net.validators.jsonld,
   auth.priv,
+  friendsAuth,
   apex.net.validators.targetActor,
   apex.net.security.verifyAuthorization,
   apex.net.security.requireAuthorized,

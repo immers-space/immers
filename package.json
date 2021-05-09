@@ -1,6 +1,6 @@
 {
   "name": "immers",
-  "version": "1.0.0",
+  "version": "1.1.0-alpha.0",
   "description": "ActivityPub server for the metaverse",
   "main": "index.js",
   "engines": {
@@ -60,6 +60,7 @@
     "nodemailer": "^6.5.0",
     "nunjucks": "^3.2.3",
     "oauth2orize": "^1.11.0",
+    "overlaps": "^1.0.0",
     "parcel-bundler": "^1.12.5",
     "passport": "^0.4.1",
     "passport-anonymous": "^1.0.1",
