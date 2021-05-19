@@ -38,6 +38,7 @@ homepage | Redirect root html requests to this url | Use `hub` url
 googleFont | Font family name from to fetch from Google Fonts for immer name header | Monoton
 backgroundColor | CSS color | #a6549d
 backgroundImage | Image file | vapor.png
+icon | Image file | vaporwave-icon.png
 imageAttributionText | Attribution for backgroundImage, if needed | Vectors by Vecteezy
 imageAttributionUrl | Attribution for backgroundImage, if needed | https://www.vecteezy.com/free-vector/vector
 monetizationPointer | [Payment pointer](https://webmonetization.org/docs/ilp-wallets/#payment-pointers) for Web Monetization on login & profile pages | Immers Space organization wallet
@@ -47,6 +48,9 @@ smtpFrom | From address for emails | noreplay@mail.`domain`
 emailOptInURL | Link to an opt-in form for email updates to show on registration page | None
 emailOptInParam | Query parameter for `emailOptInURL` for the e-mail address | Use opt-in url without inserting e-mail
 emailOptInNameParam | Query parameter for `emailOptInURL` for the name | Use opt-in url without inserting name
+systemUserName | Username for a "Service" type actor representing the Immer, enables welcome messages and [Mastodon secure mode](https://docs.joinmastodon.org/spec/activitypub/#secure-mode) compatibility | none (does not create service actor)
+systemDisplayName | Sets the display name for the service actor | none
+welcome | HTML file for a message that will be delivered from the system user to new user's inboxes (requires `systemUserName`) | none (does not send message)
 keyPath, certPath, caPath | Local development only. Relative paths to certificate files | None
 
 ## Local dev

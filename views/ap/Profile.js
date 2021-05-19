@@ -12,7 +12,7 @@ import { AvatarPreview } from '../components/AvatarPreview'
 
 export default function Profile ({ actor }) {
   const navigate = useNavigate()
-  const { loggedInUser } = useContext(ServerDataContext)
+  const { loggedInUser, token } = useContext(ServerDataContext)
   const [actorObj, setActorObj] = useState(null)
   const tabs = ['Outbox']
   let buttons
@@ -23,11 +23,14 @@ export default function Profile ({ actor }) {
   }
   const { currentTab } = useMatch(':currentTab') || {}
   useEffect(() => {
-    window.fetch(`/u/${actor}`, {
-      headers: {
-        Accept: 'application/activity+json'
-      }
-    }).then(res => res.json())
+    const headers = {
+      Accept: 'application/activity+json'
+    }
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+    window.fetch(`/u/${actor}`, { headers })
+      .then(res => res.json())
       .then(setActorObj)
   }, [actor])
   useEffect(() => {

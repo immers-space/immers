@@ -17,8 +17,9 @@ const passport = require('passport')
 const auth = require('./src/auth')
 const AutoEncryptPromise = import('@small-tech/auto-encrypt')
 const { onShutdown } = require('node-graceful-shutdown')
+const morgan = require('morgan')
 const { debugOutput, parseHandle } = require('./src/utils')
-const { apex, createImmersActor, routes, onInbox, onOutbox, outboxPost } = require('./src/apex')
+const { apex, createImmersActor, deliverWelcomeMessage, routes, onInbox, onOutbox, outboxPost } = require('./src/apex')
 const { migrate } = require('./src/migrate')
 const { scopes } = require('./common/scopes')
 
@@ -44,8 +45,19 @@ const {
   imageAttributionUrl,
   emailOptInURL,
   emailOptInParam,
-  emailOptInNameParam
+  emailOptInNameParam,
+  systemUserName,
+  systemDisplayName,
+  welcome
 } = process.env
+let welcomeContent
+if (welcome && fs.existsSync(path.join(__dirname, 'static-ext', welcome))) {
+  // docker volume location
+  welcomeContent = fs.readFileSync(path.join(__dirname, 'static-ext', welcome), 'utf8')
+} else if (welcome && fs.existsSync(path.join(__dirname, 'static', welcome))) {
+  // internal default
+  welcomeContent = fs.readFileSync(path.join(__dirname, 'static', welcome), 'utf8')
+}
 const renderConfig = {
   name,
   domain,
@@ -73,6 +85,7 @@ nunjucks.configure({
 app.use(cookieParser())
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
+app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status Accepts ":req[accept]" ":referrer" ":user-agent"'))
 const sessionStore = new MongoSessionStore({
   uri: mongoURI,
   databaseName: dbName,
@@ -149,6 +162,7 @@ async function registerActor (req, res, next) {
   try {
     const actor = await createImmersActor(preferredUsername, name)
     await apex.store.saveObject(actor)
+    await deliverWelcomeMessage(actor, welcomeContent)
     next()
   } catch (err) { next(err) }
 }
@@ -360,6 +374,23 @@ migrate(mongoURI).catch((err) => {
   })
   await apex.store.setup(immer)
   await auth.authdb.setup(apex.store.db)
+  if (systemUserName) {
+    apex.systemUser = await apex.createActor(
+      systemUserName,
+      systemDisplayName || systemUserName,
+      name,
+      icon && `https://${domain}/static/${icon}`,
+      'Service'
+    )
+    await apex.store.db.collection('objects').findOneAndReplace(
+      { id: apex.systemUser.id },
+      apex.systemUser,
+      {
+        upsert: true,
+        returnOriginal: false
+      }
+    )
+  }
   server.listen(port, () => {
     console.log(`immers app listening on port ${port}`)
     // startup delivery in case anything is queued

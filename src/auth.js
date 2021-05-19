@@ -371,7 +371,6 @@ module.exports = {
   decision: [
     login.ensureLoggedIn(),
     server.decision((req, done) => {
-      // TODO: scopes
       const params = {}
       const origin = new URL(req.oauth2.redirectURI)
       params.origin = `${origin.protocol}//${origin.host}`

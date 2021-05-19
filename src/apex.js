@@ -53,6 +53,8 @@ const outboxPost = [
 module.exports = {
   apex,
   createImmersActor,
+  // createSystemActor,
+  deliverWelcomeMessage,
   onOutbox,
   onInbox,
   routes,
@@ -67,6 +69,24 @@ async function createImmersActor (preferredUsername, name) {
     avatars: apex.utils.userCollectionIdToIRI(preferredUsername, 'avatars')
   }]
   return actor
+}
+
+async function deliverWelcomeMessage (actor, welcomeContent) {
+  if (!(apex.systemUser && welcomeContent)) {
+    return
+  }
+  const object = {
+    id: apex.utils.objectIdToIRI(),
+    type: 'Note',
+    attributedTo: apex.systemUser.id,
+    to: actor.id,
+    content: welcomeContent
+  }
+  await apex.store.saveObject(object)
+  const message = await apex.buildActivity('Create', apex.systemUser.id, actor.id, {
+    object
+  })
+  return apex.addToOutbox(apex.systemUser, message)
 }
 
 // apex event handlers for custom side-effects
