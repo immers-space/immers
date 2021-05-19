@@ -1,16 +1,23 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import Post from './Post'
+import ServerDataContext from './ServerDataContext'
+
 
 export default function Feed ({ iri }) {
   const [page, setPage] = useState(iri)
   const [nextPage, setNextPage] = useState(undefined)
   const [items, setItems] = useState([])
+  const { token } = useContext(ServerDataContext)
+
   useEffect(() => {
-    window.fetch(page, {
-      headers: {
-        Accept: 'application/activity+json'
-      }
-    }).then(res => res.json())
+    const headers = {
+      Accept: 'application/activity+json'
+    }
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+    window.fetch(page, { headers })
+      .then(res => res.json())
       .then(collectionPage => {
         if (!collectionPage.orderedItems && collectionPage.first) {
           setPage(collectionPage.first)
