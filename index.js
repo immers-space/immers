@@ -17,6 +17,7 @@ const passport = require('passport')
 const auth = require('./src/auth')
 const AutoEncryptPromise = import('@small-tech/auto-encrypt')
 const { onShutdown } = require('node-graceful-shutdown')
+const morgan = require('morgan')
 const { debugOutput, parseHandle } = require('./src/utils')
 const { apex, createImmersActor, routes, onInbox, onOutbox, outboxPost } = require('./src/apex')
 const { migrate } = require('./src/migrate')
@@ -73,6 +74,7 @@ nunjucks.configure({
 app.use(cookieParser())
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
+app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status Accepts ":req[accept]" ":referrer" ":user-agent"'))
 const sessionStore = new MongoSessionStore({
   uri: mongoURI,
   databaseName: dbName,
