@@ -116,6 +116,10 @@ app.route('/auth/login')
       Object.assign(data, parseHandle(req.session.handle))
       delete req.session.handle
     }
+    if (req.session?.loginTab) {
+      data.loginTab = req.session.loginTab
+      delete req.session.loginTab
+    }
     res.render('dist/login/login.html', data)
   })
   .post(passport.authenticate('local', {

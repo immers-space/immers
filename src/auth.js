@@ -305,6 +305,9 @@ function stashHandle (req, res, next) {
   if (req.query.me && req.session) {
     req.session.handle = req.query.me
   }
+  if (req.query.tab && req.session) {
+    req.session.loginTab = req.query.tab
+  }
   next()
 }
 

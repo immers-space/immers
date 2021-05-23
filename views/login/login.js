@@ -35,6 +35,9 @@ class Login extends React.Component {
       passwordError: qParams.has('passwordfail'),
       ...this.initialState
     }
+    if (this.state.tabs.includes(data.loginTab)) {
+      this.state.tab = data.loginTab
+    }
     this.handleHandleInput = this.handleHandleInput.bind(this)
     this.handleLookup = this.handleLookup.bind(this)
     this.handleRedirect = this.handleRedirect.bind(this)
