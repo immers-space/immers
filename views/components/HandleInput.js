@@ -19,7 +19,7 @@ export default class HandleInput extends React.Component {
   render () {
     return (
       <div className='form-item'>
-        <label for='username'>Immers handle:</label>
+        <label htmlFor='username'>Immers handle:</label>
         <div>
           <input
             onChange={this.handleInput}
@@ -31,7 +31,7 @@ export default class HandleInput extends React.Component {
             title='Letters, numbers, &amp; dashes only, between 3 and 32 characters'
             value={this.state.username}
           />
-          <label for='immer' className='home-label'>Home immer:</label>
+          <label htmlFor='immer' className='home-label'>Home immer:</label>
           <span className='handle-bracket'>[</span>
           <input
             onChange={this.handleInput}
