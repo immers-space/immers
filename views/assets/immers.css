@@ -214,6 +214,9 @@ button[disabled] {
   .form-item input, .form-item input.handle, .home-label {
     width: calc(100vw - 40px);
   }
+  .reveal-pass {
+    width: calc(100vw - 75px);
+  }
   .handle-bracket {
     display: none;
   }
