@@ -266,10 +266,12 @@ async function registerClient (req, res, next) {
 }
 
 async function checkImmer (req, res, next) {
-  const { username, immer } = req.query
+  let { username, immer } = req.query
   if (!(username && immer)) { return res.status(400).send('Missing user handle') }
   try {
-    if (immer.toLowerCase() === domain.toLowerCase()) {
+    immer = immer.toLowerCase()
+    username = username.toLowerCase()
+    if (immer === domain.toLowerCase()) {
       return res.json({ local: true })
     }
     let client = await authdb.getRemoteClient(immer)
@@ -304,6 +306,9 @@ function stashHandle (req, res, next) {
    */
   if (req.query.me && req.session) {
     req.session.handle = req.query.me
+  }
+  if (req.query.tab && req.session) {
+    req.session.loginTab = req.query.tab
   }
   next()
 }

@@ -115,6 +115,10 @@ h1 {
   margin-left: 0;
 }
 
+.form-item .home-label {
+  display: none;
+}
+
 .form-item.emoji {
   height: 430px;
   justify-content: center;
@@ -189,5 +193,46 @@ button[disabled] {
   .aesthetic-effect-text-glitch::before,
   .aesthetic-effect-text-glitch::after {
     animation: none !important;
+  }
+}
+
+@media screen and (max-width: 679px) {
+  body, html, .content {
+    height: unset;
+  }
+  h1 {
+    font-size: 40px;
+  }
+  .main-content {
+    min-width: unset;
+    width: 100%;
+  }
+  .form-item {
+    height: auto;
+    flex-wrap: wrap;
+  }
+  .form-item input, .form-item input.handle, .home-label {
+    width: calc(100vw - 40px);
+  }
+  .reveal-pass {
+    width: calc(100vw - 75px);
+  }
+  .handle-bracket {
+    display: none;
+  }
+  /* #immer {
+    width: calc(100vw - 60px);
+  } */
+  .form-item.hidden {
+    height: 0;
+  }
+  .form-footer, .content form {
+    margin: 0;
+  }
+  .form-item .home-label {
+    display: block;
+  }
+  .aesthetic-windows-95-button {
+    margin-top: 5px;
   }
 }
