@@ -61,6 +61,8 @@ if (welcome && fs.existsSync(path.join(__dirname, 'static-ext', welcome))) {
 const renderConfig = {
   name,
   domain,
+  hub,
+  homepage,
   monetizationPointer,
   googleFont,
   backgroundColor,
@@ -128,8 +130,7 @@ app.route('/auth/login')
   }))
 // find username & home from handle; if user is remote, get remote authorization url
 app.get('/auth/home', auth.checkImmer)
-// TODO:
-// app.get('/auth/logout', routes.site.logout)
+app.get('/auth/logout', auth.logout, (req, res) => res.redirect('/'))
 app.post('/auth/client', auth.registerClient)
 
 app.post('/auth/forgot', passport.authenticate('easy'), (req, res) => {
@@ -261,7 +262,14 @@ app.use('/static', express.static('static'))
 // static files added on deployed server
 app.use('/static', express.static('static-ext'))
 app.use('/dist', express.static('dist'))
-app.get('/', (req, res) => res.redirect(`${req.protocol}://${homepage || hub}`))
+app.get('/', (req, res) => {
+  // logged in users go to their profile page
+  res.redirect(
+    req.user
+      ? apex.utils.usernameToIRI(req.user.username)
+      : `${req.protocol}://${homepage || hub}`
+  )
+})
 // for SPA routing in activity pub pages
 app.use(history({
   index: '/ap.html'

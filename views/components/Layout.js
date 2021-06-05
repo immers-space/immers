@@ -1,5 +1,7 @@
 import React from 'react'
+import c from 'classnames'
 import '../assets/immers.css'
+import immersIcon from '../assets/immers_logo.png'
 
 export default function Layout (props) {
   const data = window._serverData || {}
@@ -29,12 +31,26 @@ export default function Layout (props) {
         <h1>&nbsp;</h1>
       </div>
 
-      <div className='attribution'>
+      <div className={c('attribution', { 'with-taskbar': props.taskbar })}>
         {attribution &&
           <a className='aesthetic-green-color' href={attributionUrl}>
             Background: {attribution}
           </a>}
       </div>
+      {props.taskbar && (
+        <div className='aesthetic-windows-95-taskbar'>
+          <div className='aesthetic-windows-95-taskbar-start'>
+            <a href={`//${data.hub}`}>
+              <img src={data.icon ?? immersIcon} className='immers-icon' /> Enter {data.name}
+            </a>
+          </div>
+          {props.taskbarButtons?.length && (
+            <div className='aesthetic-windows-95-taskbar-services'>
+              {props.taskbarButtons}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

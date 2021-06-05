@@ -7,7 +7,7 @@ import Feed from './Feed'
 import ImmersHandle from '../components/ImmersHandle'
 import ServerDataContext from './ServerDataContext'
 import Friends from './Friends'
-// import EmojiButton from './EmojiButton'
+import EmojiLink from '../components/EmojiLink'
 import { AvatarPreview } from '../components/AvatarPreview'
 
 export default function Profile ({ actor }) {
@@ -15,7 +15,14 @@ export default function Profile ({ actor }) {
   const { loggedInUser, token } = useContext(ServerDataContext)
   const [actorObj, setActorObj] = useState(null)
   const tabs = ['Outbox']
+  const taskbarButtons = []
   let buttons
+  if (loggedInUser) {
+    taskbarButtons.push(<EmojiLink key='logout' emoji='end' href='/auth/logout' title='Logout' />)
+  } else {
+    // login button
+    taskbarButtons.push(<EmojiLink key='login' emoji='passport_control' href='/auth/login' title='Log in' />)
+  }
   if (loggedInUser === actor) {
     tabs.unshift('Friends', 'Inbox')
     // TODO: edit profile
@@ -48,7 +55,7 @@ export default function Profile ({ actor }) {
     )
   }
   return (
-    <Layout contentTitle='Immers Profile' buttons={buttons}>
+    <Layout contentTitle='Immers Profile' buttons={buttons} taskbar taskbarButtons={taskbarButtons}>
       <div className='profile'>
         <div className='userContainer'>
           <h2 className='displayName'>
