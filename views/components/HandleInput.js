@@ -24,7 +24,7 @@ export default class HandleInput extends React.Component {
           <input
             onChange={this.handleInput}
             id='username' className='aesthetic-windows-95-text-input handle'
-            type='text' name='username'
+            type='text' inputMode='email' name='username'
             placeholder='username'
             required pattern='^[A-Za-z0-9-]{3,32}$'
             autoCapitalize='off' autoCorrect='off' spellCheck='false'
@@ -36,7 +36,7 @@ export default class HandleInput extends React.Component {
           <input
             onChange={this.handleInput}
             id='immer' className='aesthetic-windows-95-text-input handle'
-            type='url' name='immer'
+            type='text' inputMode='url' name='immer'
             placeholder='your.immer'
             required pattern='localhost(:\d+)?|.+\..+'
             autoCapitalize='off' autoCorrect='off' spellCheck='false'
