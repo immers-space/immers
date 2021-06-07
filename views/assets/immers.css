@@ -43,6 +43,9 @@ h1 {
   padding: 5px;
   z-index: 0;
 }
+.attribution.with-taskbar {
+  bottom: 45px;
+}
 
 .content {
  height: 100%;
@@ -188,6 +191,35 @@ button[disabled] {
   animation: none !important;
 }
 
+.aesthetic-windows-95-taskbar {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 10;
+  height: 35px;
+  width: auto;
+}
+
+.aesthetic-windows-95-taskbar .aesthetic-windows-95-taskbar-start {
+  padding: 0;
+  width: auto;
+}
+
+.aesthetic-windows-95-taskbar .aesthetic-windows-95-taskbar-start button,
+.aesthetic-windows-95-taskbar .aesthetic-windows-95-taskbar-start a,
+.aesthetic-windows-95-taskbar .aesthetic-windows-95-taskbar-start a:visited {
+  padding: 4px;
+  text-decoration: none;
+  color: #000;
+}
+
+.immers-icon {
+  width: 28px;
+  height: 28px;
+  vertical-align: bottom;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .aesthetic-effect-crt::after,
   .aesthetic-effect-text-glitch::before,
@@ -234,5 +266,8 @@ button[disabled] {
   }
   .aesthetic-windows-95-button {
     margin-top: 5px;
+  }
+  .main-content {
+    margin-bottom: 45px;
   }
 }

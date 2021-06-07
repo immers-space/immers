@@ -16,3 +16,9 @@
 .tinyIcon {
   width: 39px;
 }
+
+@media screen and (max-width: 679px) {
+  .iconWrapper {
+    max-width: 100vw;
+  }
+}
