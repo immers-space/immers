@@ -51,5 +51,8 @@
   <body id="body">
     {% block content %}{% endblock %}
     {% block script %}{% endblock %}
+    {% if customCSS %}
+      <link rel="stylesheet" href="/static/{{ customCSS }}">
+    {% endif %}
   </body>
 </html>
