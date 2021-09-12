@@ -37,11 +37,16 @@ class Dialog extends React.Component {
     const approvedScopes = cans.map(({ name }) => name).join(' ')
     return (
       <div className='aesthetic-windows-95-container-indent'>
-        <p>Hi {this.state.username}!</p>
         <p>
-          You're headed to <b>{this.state.clientName}</b> ({this.state.redirectUri}).
+          Hi {this.state.username}! <br />
+          You're headed to {
+            this.state.clientName
+              ? <span><b>{this.state.clientName}</b> ({this.state.redirectUri}).</span>
+              : <span><b>{this.state.redirectUri}</b></span>
+            }
+          <br />
+          How would you like to use your account while you're there?
         </p>
-        <p>How would you like to use your account while you're there?</p>
 
         <form action='/auth/decision' method='post'>
           <input name='transaction_id' type='hidden' value={this.state.transactionId} />

@@ -312,6 +312,29 @@ function stashHandle (req, res, next) {
   }
   next()
 }
+/**
+ * To allow destination-only immers (no server), we enable token grants
+ * without a registered client. To avoid redirect attacks, only issue
+ * tokens for the requesting domain. OAuth2orize doesn't provided
+ * the access to request headers in its client validation callbacks,
+ * so this check is done early
+ */
+function validateAnonymousClient (req, res, next) {
+  if (req.query.client_id && req.query.client_id !== 'undefined') {
+    return next()
+  }
+  try {
+    const origin = new URL(req.get('Referer'))
+    const redirect = new URL(req.query.redirect_uri)
+    if (origin.hostname !== redirect.hostname) {
+      return res.status(403)
+        .send('Anonymous clients must use redirect uri on same host')
+    }
+  } catch (err) {
+    return res.status(400).send('Referer header required for anonymous clients')
+  }
+  next()
+}
 
 module.exports = {
   authdb,
@@ -338,6 +361,7 @@ module.exports = {
   // new client authorization & token request
   authorization: [
     stashHandle,
+    validateAnonymousClient,
     login.ensureLoggedIn('/auth/login'),
     server.authorization(authdb.validateClient, (client, user, scope, type, req, done) => {
       // Auto-approve for home immer

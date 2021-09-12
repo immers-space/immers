@@ -26,3 +26,9 @@
 .permissionsContainer {
   margin-top: 15px;
 }
+
+.permissionsInfo li {
+  font-size: 20px;
+  line-height: 80%;
+  padding-bottom: 3px;
+}
