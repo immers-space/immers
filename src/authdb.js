@@ -66,7 +66,7 @@ module.exports = {
     if (client._id === 'anonymous') {
       return done(null, `${anonClientPrefix}${JSON.stringify(client)}`)
     }
-    done(null, client._id)
+    done(null, client._id.toString())
   },
   async deserializeClient (id, done) {
     try {
