@@ -38,6 +38,10 @@ class Login extends React.Component {
     if (this.state.tabs.includes(data.loginTab)) {
       this.state.tab = data.loginTab
     }
+    const hash = window.location.hash.substring(1)
+    if (this.state.tabs.includes(hash)) {
+      this.state.tab = hash
+    }
     this.handleHandleInput = this.handleHandleInput.bind(this)
     this.handleLookup = this.handleLookup.bind(this)
     this.handleRedirect = this.handleRedirect.bind(this)
