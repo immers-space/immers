@@ -218,9 +218,11 @@ async function validateNewUser (req, res, next) {
   } else {
     req.body.username = req.body.username.toLowerCase()
   }
-
-  if (!RegExp(nameCheck).test(req.body.name)) {
+  if (req.body.name && !RegExp(nameCheck).test(req.body.name)) {
     validMessage += `Display name must match ${nameCheck}. `
+  } else if (!req.body.name) {
+    // display name is optional in registration, default to username
+    req.body.name = req.body.username
   }
 
   if (validMessage) {

@@ -278,14 +278,14 @@ class Login extends React.Component {
                   username={this.state.username}
                   immer={this.state.data.domain} lockImmer
                 />
-                <div className='form-item'>
+                {/* hidden & defaults to username, use custom css to reveal if wanted */}
+                <div className='form-item none'>
                   <label>Display name:</label>
                   <input
                     id='handle' className='aesthetic-windows-95-text-input'
                     type='text' name='name'
                     pattern='^[A-Za-z0-9_~ -]{3,32}$'
                     title='Letters, numbers, spaces, &amp; dashes only, between 3 and 32 characters'
-                    required
                   />
                 </div>
                 <EmailInput />
