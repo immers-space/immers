@@ -6,6 +6,7 @@ const { domain, hub, name } = process.env
 
 const saltRounds = 10
 const tokenAge = 24 * 60 * 60 * 1000 // one day
+const anonClientPrefix = '_anonymous:'
 function hashEmail (email) {
   return crypto.createHash('sha256').update(email.toLowerCase()).digest('base64')
 }
@@ -62,15 +63,27 @@ module.exports = {
     } catch (err) { done(err) }
   },
   serializeClient (client, done) {
-    done(null, client._id)
+    if (client._id === 'anonymous') {
+      return done(null, `${anonClientPrefix}${JSON.stringify(client)}`)
+    }
+    done(null, client._id.toString())
   },
   async deserializeClient (id, done) {
     try {
+      if (id.startsWith(anonClientPrefix)) {
+        return done(null, JSON.parse(id.substring(anonClientPrefix.length)))
+      }
       return done(null, await db.collection('clients').findOne({ _id: ObjectId(id) }))
     } catch (err) { done(err) }
   },
   async validateClient (clientId, redirectUriFull, done) {
     try {
+      // apparently cast to string somewhere
+      if (!clientId || clientId === 'undefined') {
+        // anonymous clients can get tokens for their own uri
+        const anonClient = { _id: 'anonymous', clientId: 'anonymous', name: '', redirectUri: [redirectUriFull] }
+        return done(null, anonClient, redirectUriFull)
+      }
       // allow hub room id to be appended to registered Uri
       const url = new URL(redirectUriFull)
       const redirectUri = `${url.protocol}//${url.host}`
