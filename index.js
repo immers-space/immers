@@ -3,6 +3,7 @@ require('dotenv').config()
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
+const http = require('http')
 const express = require('express')
 const session = require('express-session')
 const MongoSessionStore = require('connect-mongodb-session')(session)
@@ -49,7 +50,8 @@ const {
   emailOptInNameParam,
   systemUserName,
   systemDisplayName,
-  welcome
+  welcome,
+  proxyMode
 } = process.env
 let welcomeContent
 if (welcome && fs.existsSync(path.join(__dirname, 'static-ext', welcome))) {
@@ -294,9 +296,22 @@ migrate(mongoURI).catch((err) => {
   process.exit(1)
 }).then(async () => {
   const { default: AutoEncrypt } = await AutoEncryptPromise
-  const server = process.env.NODE_ENV === 'production'
-    ? AutoEncrypt.https.createServer({ domains: [domain] }, app)
-    : https.createServer(sslOptions, app)
+  let server
+  if (process.env.NODE_ENV === 'production') {
+    if (proxyMode) {
+      server = http.createServer(app)
+      let proxyValue = proxyMode === 'true'
+      if (!proxyValue) {
+        proxyValue = Number(proxyMode)
+      }
+      app.set('trust proxy', Number.isNaN(proxyValue) ? proxyMode : proxyValue)
+      console.log('proxy mode:', app.get('trust proxy'), typeof app.get('trust proxy'))
+    } else {
+      server = AutoEncrypt.https.createServer({ domains: [domain] }, app)
+    }
+  } else {
+    server = https.createServer(sslOptions, app)
+  }
 
   // streaming updates
   const profilesSockets = new Map()
