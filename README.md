@@ -79,7 +79,7 @@ const token = await fetch('https://your.immer/auth/token', { method: 'POST', cre
 if (token) {
     user = await window.fetch(`https://your.immer/auth/me`, {
     headers: {
-      Accept: jsonldMime,
+      Accept: 'application/activity+json',
       Authorization: `Bearer ${token}`
     }
   }).then(res => res.json());
