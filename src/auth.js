@@ -320,7 +320,7 @@ module.exports = {
   publ,
   priv,
   scope,
-  localToken,
+  localToken: [hubCors, localToken],
   logout,
   userToActor,
   registerUser,

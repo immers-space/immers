@@ -54,6 +54,45 @@ systemDisplayName | Sets the display name for the service actor | none
 welcome | HTML file for a message that will be delivered from the system user to new user's inboxes (requires `systemUserName`) | none (does not send message)
 keyPath, certPath, caPath | Local development only. Relative paths to certificate files | None
 
+## API access
+
+Most API access will be done with the [immers-client](https://github.com/immers-space/immers-client)
+library on your immersive website, but the immers server also attempts to
+parse your `domain` option to set the login
+session cookie on the apex domain so that it can be used in CORS requests.
+As long as your immers server and immersive website are on the same apex domain,
+e.g. immers.space and hub.immers.space, then you can make authenticated requests
+with the `credentials: 'include'` fetch option.
+
+Restore session for previously logged in user:
+
+```js
+let user
+const token = await fetch('https://your.immer/auth/token', { method: 'POST', credentials: 'include' })
+    .then(res => {
+        if (!res.ok) {
+            // 401 if not logged in
+            return undefined
+        }
+        return res.text()
+    })
+if (token) {
+    user = await window.fetch(`https://your.immer/auth/me`, {
+    headers: {
+      Accept: jsonldMime,
+      Authorization: `Bearer ${token}`
+    }
+  }).then(res => res.json());
+}
+```
+
+Log out of session without having to navigate to immers profile page:
+
+```js
+// no-cors mode tells it to ignore the redirect to the login page
+fetch('https://localhost:8081/auth/logout', { credentials: 'include', mode: 'no-cors' })
+```
+
 ## Local dev
 
 immers

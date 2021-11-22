@@ -1,6 +1,9 @@
+const { parseDomain, ParseResultType } = require('parse-domain')
+
 module.exports = {
   parseHandle,
-  debugOutput
+  debugOutput,
+  apexDomain
 }
 
 function debugOutput (app) {
@@ -22,5 +25,19 @@ function parseHandle (handle) {
       username: match[1],
       immer: match[2]
     }
+  }
+}
+
+function apexDomain (domain) {
+  try {
+    const url = new URL(`https://${domain}`)
+    // use url.hostname to strip port from domain
+    const parsedDomain = parseDomain(url.hostname)
+    return parsedDomain.type === ParseResultType.Listed
+      ? [parsedDomain.domain, ...parsedDomain.topLevelDomains].join('.')
+      : url.hostname
+  } catch (err) {
+    console.warn(`Unable to parse apex domain: ${err.message}`)
+    return domain
   }
 }

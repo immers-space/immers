@@ -18,7 +18,7 @@ const auth = require('./src/auth')
 const AutoEncryptPromise = import('@small-tech/auto-encrypt')
 const { onShutdown } = require('node-graceful-shutdown')
 const morgan = require('morgan')
-const { debugOutput, parseHandle } = require('./src/utils')
+const { debugOutput, parseHandle, apexDomain } = require('./src/utils')
 const { apex, createImmersActor, deliverWelcomeMessage, routes, onInbox, onOutbox, outboxPost } = require('./src/apex')
 const { migrate } = require('./src/migrate')
 const { scopes } = require('./common/scopes')
@@ -96,6 +96,7 @@ const sessionStore = new MongoSessionStore({
   collection: 'sessions',
   maxAge: 365 * 24 * 60 * 60 * 1000
 })
+
 app.use(session({
   secret: sessionSecret,
   resave: true,
@@ -103,9 +104,12 @@ app.use(session({
   store: sessionStore,
   cookie: {
     maxAge: 365 * 24 * 60 * 60 * 1000,
-    secure: true
+    secure: true,
+    // allow logged in requests from both immer and hub
+    domain: apexDomain(domain)
   }
 }))
+console.log("cookie domain", apexDomain(domain))
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(apex)
