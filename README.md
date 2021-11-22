@@ -90,7 +90,7 @@ Log out of session without having to navigate to immers profile page:
 
 ```js
 // no-cors mode tells it to ignore the redirect to the login page
-fetch('https://localhost:8081/auth/logout', { credentials: 'include', mode: 'no-cors' })
+fetch('https://your.immer/auth/logout', { credentials: 'include', mode: 'no-cors' })
 ```
 
 ## Local dev
