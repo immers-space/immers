@@ -133,6 +133,9 @@ app.route('/auth/login')
 // find username & home from handle; if user is remote, get remote authorization url
 app.get('/auth/home', auth.checkImmer)
 app.get('/auth/logout', auth.logout, (req, res) => res.redirect('/'))
+app.get('/auth/logoutFromHubs', auth.logout, (req, res) => {
+  return res.json({ logout: true })
+});
 app.post('/auth/client', auth.registerClient)
 
 app.post('/auth/forgot', passport.authenticate('easy'), (req, res) => {
