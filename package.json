@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "standard",
     "dev:server": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 node index.js",
     "dev:client": "npx parcel watch views/**/*.html --public-url /dist/",
     "build:client": "rimraf dist/ && npx parcel build views/**/*.html --public-url /dist/",

@@ -78,7 +78,7 @@ export function ImmerLink ({ place }) {
   try {
     const url = new URL(placeUrl)
     const hashParams = new URLSearchParams()
-    hashParams.set("me", handle)
+    hashParams.set('me', handle)
     url.hash = hashParams.toString()
     placeUrl = url.toString()
   } catch (ignore) {

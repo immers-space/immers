@@ -11,6 +11,9 @@ docker-compose configuration, configuration script, and deploy instructions.
 If you prefer to run immers without docker, it can be deployed just like
 any other NodeJS & MongoDB app.
 
+If using with Hubs Cloud, but not using our docker config & Hubs deployer,
+[see Manual Hubs Cloud Config](#manual-hubs-cloud-config) section below.
+
 ## Configuration
 
 Immers looks for the following configuration values as environment variables
@@ -92,6 +95,19 @@ Log out of session without having to navigate to immers profile page:
 ```js
 fetch('https://your.immer/auth/logout', { method: 'POST', credentials: 'include' })
 ```
+
+## Manual Hubs Cloud Config
+
+These steps are not necessary if you're using our docker Hubs deployer.
+If you aren't, you'll need to add the following in Hubs Cloud admin -> setup -> sever settings -> advanced
+
+
+* Extra room Header HTML: `<meta name="env:immers_server" content="https://your.immers.server">`
+(replace value in content with your immers server url)
+* Extra Content Security Policy connect-src Rules: `https: wss:`
+(allows API and streaming connections to remote users home instances)
+* Allowed CORS origins: `*`
+(temporary measure cross-hub for avatar sharing)
 
 ## Local dev
 

@@ -2,7 +2,6 @@ import React, { useEffect, useState, useContext } from 'react'
 import Post from './Post'
 import ServerDataContext from './ServerDataContext'
 
-
 export default function Feed ({ iri }) {
   const [page, setPage] = useState(iri)
   const [nextPage, setNextPage] = useState(undefined)
