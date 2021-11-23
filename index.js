@@ -3,6 +3,7 @@ require('dotenv').config()
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
+const http = require('http')
 const express = require('express')
 const session = require('express-session')
 const MongoSessionStore = require('connect-mongodb-session')(session)
@@ -18,7 +19,7 @@ const auth = require('./src/auth')
 const AutoEncryptPromise = import('@small-tech/auto-encrypt')
 const { onShutdown } = require('node-graceful-shutdown')
 const morgan = require('morgan')
-const { debugOutput, parseHandle, apexDomain } = require('./src/utils')
+const { debugOutput, parseHandle, parseProxyMode, apexDomain } = require('./src/utils')
 const { apex, createImmersActor, deliverWelcomeMessage, routes, onInbox, onOutbox, outboxPost } = require('./src/apex')
 const { migrate } = require('./src/migrate')
 const { scopes } = require('./common/scopes')
@@ -49,7 +50,8 @@ const {
   emailOptInNameParam,
   systemUserName,
   systemDisplayName,
-  welcome
+  welcome,
+  proxyMode
 } = process.env
 let welcomeContent
 if (welcome && fs.existsSync(path.join(__dirname, 'static-ext', welcome))) {
@@ -300,9 +302,17 @@ migrate(mongoURI).catch((err) => {
   process.exit(1)
 }).then(async () => {
   const { default: AutoEncrypt } = await AutoEncryptPromise
-  const server = process.env.NODE_ENV === 'production'
-    ? AutoEncrypt.https.createServer({ domains: [domain] }, app)
-    : https.createServer(sslOptions, app)
+  let server
+  if (process.env.NODE_ENV === 'production') {
+    if (proxyMode) {
+      server = http.createServer(app)
+      app.set('trust proxy', parseProxyMode(proxyMode))
+    } else {
+      server = AutoEncrypt.https.createServer({ domains: [domain] }, app)
+    }
+  } else {
+    server = https.createServer(sslOptions, app)
+  }
 
   // streaming updates
   const profilesSockets = new Map()
