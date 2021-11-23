@@ -75,7 +75,7 @@
     "react-intl": "^5.13.5",
     "react-sanitized-html": "^2.0.0",
     "rimraf": "^3.0.2",
-    "sanitize-html": "^1.27.5",
+    "sanitize-html": "^2.3.2",
     "sass": "^1.32.8",
     "socket.io": "^4.0.0",
     "uid-safe": "^2.1.5"
