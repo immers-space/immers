@@ -18,7 +18,7 @@ const auth = require('./src/auth')
 const AutoEncryptPromise = import('@small-tech/auto-encrypt')
 const { onShutdown } = require('node-graceful-shutdown')
 const morgan = require('morgan')
-const { debugOutput, parseHandle } = require('./src/utils')
+const { debugOutput, parseHandle, apexDomain } = require('./src/utils')
 const { apex, createImmersActor, deliverWelcomeMessage, routes, onInbox, onOutbox, outboxPost } = require('./src/apex')
 const { migrate } = require('./src/migrate')
 const { scopes } = require('./common/scopes')
@@ -96,6 +96,7 @@ const sessionStore = new MongoSessionStore({
   collection: 'sessions',
   maxAge: 365 * 24 * 60 * 60 * 1000
 })
+
 app.use(session({
   secret: sessionSecret,
   resave: true,
@@ -103,7 +104,9 @@ app.use(session({
   store: sessionStore,
   cookie: {
     maxAge: 365 * 24 * 60 * 60 * 1000,
-    secure: true
+    secure: true,
+    // allow logged in requests from both immer and hub
+    domain: apexDomain(domain)
   }
 }))
 app.use(passport.initialize())
@@ -134,8 +137,8 @@ app.route('/auth/login')
 app.get('/auth/home', auth.checkImmer)
 app.get('/auth/logout', auth.logout, (req, res) => res.redirect('/'))
 app.post('/auth/logout', auth.logout, (req, res) => {
-  return res.sendStatus(200);
-});
+  return res.sendStatus(200)
+})
 app.post('/auth/client', auth.registerClient)
 
 app.post('/auth/forgot', passport.authenticate('easy'), (req, res) => {
