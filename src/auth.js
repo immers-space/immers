@@ -55,6 +55,8 @@ if (process.env.NODE_ENV === 'production') {
         pass: testAccount.pass
       }
     })
+  }).catch(err => {
+    console.warn(`nodemailer test service not available: ${err.message}`)
   })
 }
 
