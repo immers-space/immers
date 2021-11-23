@@ -109,7 +109,6 @@ app.use(session({
     domain: apexDomain(domain)
   }
 }))
-console.log("cookie domain", apexDomain(domain))
 app.use(passport.initialize())
 app.use(passport.session())
 app.use(apex)
@@ -138,8 +137,8 @@ app.route('/auth/login')
 app.get('/auth/home', auth.checkImmer)
 app.get('/auth/logout', auth.logout, (req, res) => res.redirect('/'))
 app.post('/auth/logout', auth.logout, (req, res) => {
-  return res.sendStatus(200);
-});
+  return res.sendStatus(200)
+})
 app.post('/auth/client', auth.registerClient)
 
 app.post('/auth/forgot', passport.authenticate('easy'), (req, res) => {

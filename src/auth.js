@@ -323,7 +323,7 @@ module.exports = {
   priv,
   scope,
   localToken: [hubCors, localToken],
-  logout,
+  logout: [hubCors, logout],
   userToActor,
   registerUser,
   changePassword,
