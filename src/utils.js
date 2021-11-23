@@ -2,6 +2,7 @@ const { parseDomain, ParseResultType } = require('parse-domain')
 
 module.exports = {
   parseHandle,
+  parseProxyMode,
   debugOutput,
   apexDomain
 }
@@ -26,6 +27,15 @@ function parseHandle (handle) {
       immer: match[2]
     }
   }
+}
+
+function parseProxyMode (proxyMode) {
+  try {
+    // boolean or number
+    return JSON.parse(proxyMode)
+  } catch (ignore) {}
+  // string
+  return proxyMode
 }
 
 function apexDomain (domain) {

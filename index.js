@@ -19,7 +19,7 @@ const auth = require('./src/auth')
 const AutoEncryptPromise = import('@small-tech/auto-encrypt')
 const { onShutdown } = require('node-graceful-shutdown')
 const morgan = require('morgan')
-const { debugOutput, parseHandle, apexDomain } = require('./src/utils')
+const { debugOutput, parseHandle, parseProxyMode, apexDomain } = require('./src/utils')
 const { apex, createImmersActor, deliverWelcomeMessage, routes, onInbox, onOutbox, outboxPost } = require('./src/apex')
 const { migrate } = require('./src/migrate')
 const { scopes } = require('./common/scopes')
@@ -306,12 +306,7 @@ migrate(mongoURI).catch((err) => {
   if (process.env.NODE_ENV === 'production') {
     if (proxyMode) {
       server = http.createServer(app)
-      let proxyValue = proxyMode === 'true'
-      if (!proxyValue) {
-        proxyValue = Number(proxyMode)
-      }
-      app.set('trust proxy', Number.isNaN(proxyValue) ? proxyMode : proxyValue)
-      console.log('proxy mode:', app.get('trust proxy'), typeof app.get('trust proxy'))
+      app.set('trust proxy', parseProxyMode(proxyMode))
     } else {
       server = AutoEncrypt.https.createServer({ domains: [domain] }, app)
     }
