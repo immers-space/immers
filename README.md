@@ -55,6 +55,44 @@ welcome | HTML file for a message that will be delivered from the system user to
 keyPath, certPath, caPath | Local development only. Relative paths to certificate files | None
 proxyMode | Enable use behind an SSL-terminating proxy or load balancer, serves over http instead of https and sets Express `trust proxy` setting to the value of `proxyMode` (e.g. `1`, [other options](https://expressjs.com/en/guide/behind-proxies.html)) | none (serves over https with AutoEncrypt)
 
+## API access
+
+Most API access will be done with the [immers-client](https://github.com/immers-space/immers-client)
+library on your immersive website, but the immers server also attempts to
+parse your `domain` option to set the login
+session cookie on the apex domain so that it can be used in CORS requests.
+As long as your immers server and immersive website are on the same apex domain,
+e.g. immers.space and hub.immers.space, then you can make authenticated requests
+with the `credentials: 'include'` fetch option.
+
+Restore session for previously logged in user:
+
+```js
+let user
+const token = await fetch('https://your.immer/auth/token', { method: 'POST', credentials: 'include' })
+    .then(res => {
+        if (!res.ok) {
+            // 401 if not logged in
+            return undefined
+        }
+        return res.text()
+    })
+if (token) {
+    user = await window.fetch(`https://your.immer/auth/me`, {
+    headers: {
+      Accept: 'application/activity+json',
+      Authorization: `Bearer ${token}`
+    }
+  }).then(res => res.json());
+}
+```
+
+Log out of session without having to navigate to immers profile page:
+
+```js
+fetch('https://your.immer/auth/logout', { method: 'POST', credentials: 'include' })
+```
+
 ## Local dev
 
 immers

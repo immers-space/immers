@@ -55,6 +55,8 @@ if (process.env.NODE_ENV === 'production') {
         pass: testAccount.pass
       }
     })
+  }).catch(err => {
+    console.warn(`nodemailer test service not available: ${err.message}`)
   })
 }
 
@@ -320,8 +322,8 @@ module.exports = {
   publ,
   priv,
   scope,
-  localToken,
-  logout,
+  localToken: [hubCors, localToken],
+  logout: [hubCors, logout],
   userToActor,
   registerUser,
   changePassword,
