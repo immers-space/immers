@@ -1,13 +1,37 @@
-# immers
+# The Immers Server
 
-ActivityPub server for immers.space - a decentralized virtual reality metaverse platform powered by Mozilla Hubs and activitypub-express.
+[![npm](https://img.shields.io/npm/v/immers)](https://npmjs.com/immers)
+[![Docker Pulls](https://img.shields.io/docker/pulls/immersspace/immers)](https://hub.docker.com/r/immersspace/immers)
+[![Matrix](https://img.shields.io/matrix/immers-space:matrix.org?label=Matrix%20chat)](https://matrix.to/#/#immers-space:matrix.org)
+[![Open Collective](https://opencollective.com/immers-space/tiers/badge.svg)](https://opencollective.com/immers-space)
+
+Connect your WebXR project to the metaverse. A microsvervice that adds federated social features to any Immersive Web Project.
+
+<dl>
+  <dt>🔐 Secure user account registration</dt>
+  <dd>Provides sign up, password resets, and profile pages. Password saved with bcrypt, emails saved only as SHA-256 hashes</dd>
+  <dt>♻️ Reciproal OAuth2 authorization</dt>
+  <dd>Users can login to your site with an account from any immer, and your users can use their accounts to login at any other immer</dd>
+  <dt>🧑‍🤝‍🧑 Standards-based federated social features</dt>
+  <dd>Friends lists, messaging, and blocklists - not just between users of your site but across all immers and even other sites using ActivityPub like Mastodon</dd>
+  <dt>🥬 Organic discovery</dt>
+  <dd>Spread your project without any centralized indexer or algorithms. When an immerser visits your site, they share the link with all of their friends</dd>
+</dl>
+
+## See a Demo
+
+Check out [Virtual Reign Immersive Chess](https://vreign.space/auth/login) - this Immers Server is connected to a chess
+game built on top of Mozilla Hubs. 
 
 
-## Installation
+## Get Started
+
+1. Spin up your Immers Server using an [immers-app template](https://github.com/immers-space/immers-app)
+2. Add the [immers-client](https://github.com/immers-space/immers-client) to your WebXR project to connect to it
 
 We provide a [Docker Hub image](https://hub.docker.com/repository/docker/immersspace/immers) for immers,
 and the [immers-app repo](https://github.com/immers-space/immers-app) contains
-docker-compose configuration, configuration script, and deploy instructions.
+docker-compose configuration, configuration script, and deploy instructions for various setups.
 If you prefer to run immers without docker, it can be deployed just like
 any other NodeJS & MongoDB app.
 
@@ -143,3 +167,12 @@ npm run build:client
 Default immers server is `https://localhost:8081`, override with entry `IMMERS_SERVER` in hubs repo root folder `.env` file.
 
 If working on immers server web client, run both `npm run dev:client` and `npm run dev` at the same time.
+
+## Creator Members
+
+[![Creator members](https://opencollective.com/immers-space/tiers/creator-member.svg?avatarHeight=36&width=600)](https://opencollective.com/immers-space)
+
+
+## Immerser Members
+
+[![Immerser members](https://opencollective.com/immers-space/tiers/immerser-member.svg?avatarHeight=36&width=600)](https://opencollective.com/immers-space)
