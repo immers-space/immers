@@ -1,7 +1,7 @@
 # The Immers Server
 
-[![npm](https://img.shields.io/npm/v/immers)](https://npmjs.com/immers)
-[![Docker Pulls](https://img.shields.io/docker/pulls/immersspace/immers)](https://hub.docker.com/r/immersspace/immers)
+[![Docker Image Version (latest semver)](https://img.shields.io/docker/v/immersspace/immers?label=Docker%20version)](https://hub.docker.com/r/immersspace/immers)
+[![Docker Pulls](https://img.shields.io/docker/pulls/immersspace/immers?label=Docker%20pulls)](https://hub.docker.com/r/immersspace/immers)
 [![Matrix](https://img.shields.io/matrix/immers-space:matrix.org?label=Matrix%20chat)](https://matrix.to/#/#immers-space:matrix.org)
 [![Open Collective](https://opencollective.com/immers-space/tiers/badge.svg)](https://opencollective.com/immers-space)
 
@@ -28,6 +28,8 @@ game built on top of Mozilla Hubs.
 
 1. Spin up your Immers Server using an [immers-app template](https://github.com/immers-space/immers-app)
 2. Add the [immers-client](https://github.com/immers-space/immers-client) to your WebXR project to connect to it
+3. [Join our community on Matrix](https://matrix.to/#/#immers-space:matrix.org) for help & discussion
+4. [Join our Platform Cooperative](https://opencollective.com/immers-space/contribute/creator-member-33683) to guide the future of the project
 
 We provide a [Docker Hub image](https://hub.docker.com/repository/docker/immersspace/immers) for immers,
 and the [immers-app repo](https://github.com/immers-space/immers-app) contains
