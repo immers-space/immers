@@ -152,6 +152,8 @@ const hubCors = cors(function (req, done) {
 })
 // auth for public v. private routes, with cors enabled for client origins
 const publ = [passport.authenticate(['bearer', 'anonymous'], { session: false }), hubCors]
+// like public but with wide-open CORS
+const open = [passport.authenticate(['bearer', 'anonymous'], { session: false }), cors()]
 const priv = [passport.authenticate('bearer', { session: false }), hubCors]
 // simple scoping limits acess to entire route by scope
 function scope (scopeNames) {
@@ -320,6 +322,7 @@ function stashHandle (req, res, next) {
 module.exports = {
   authdb,
   publ,
+  open,
   priv,
   scope,
   localToken: [hubCors, localToken],
