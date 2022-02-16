@@ -14,7 +14,7 @@
     "build:client": "rimraf dist/ && npx parcel build views/**/*.html --public-url /dist/",
     "start": "cross-env NODE_ENV=production node index.js",
     "build:image": "docker build -t immersspace/immers .",
-    "publish:image": "docker push immersspace/immers:latest"
+    "publish:image": "docker tag immersspace/immers:latest immersspace/immers:v$npm_package_version && docker push immersspace/immers:latest && docker push immersspace/immers:v$npm_package_version"
   },
   "repository": {
     "type": "git",
