@@ -160,7 +160,7 @@ module.exports = {
       clientId: client.clientId,
       redirectUri: client.redirectUri
     })
-    if (!result.insertedCount) { throw new Error('Error saving remove client') }
+    if (!result.acknowledged) { throw new Error('Error saving remove client') }
   }
 
 }

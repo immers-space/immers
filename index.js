@@ -79,7 +79,7 @@ const renderConfig = {
 const mongoURI = `mongodb://${dbHost}:${dbPort}`
 const app = express()
 
-const client = new MongoClient(mongoURI, { useUnifiedTopology: true, useNewUrlParser: true })
+const client = new MongoClient(mongoURI)
 
 nunjucks.configure({
   autoescape: true,
@@ -392,7 +392,7 @@ migrate(mongoURI).catch((err) => {
   })
 
   // server startup
-  await client.connect({ useNewUrlParser: true })
+  await client.connect()
   apex.store.db = client.db(dbName)
   // Place object representing this node
   const immer = await apex.fromJSONLD({
@@ -417,7 +417,7 @@ migrate(mongoURI).catch((err) => {
       apex.systemUser,
       {
         upsert: true,
-        returnOriginal: false
+        returnDocument: 'after'
       }
     )
   }
