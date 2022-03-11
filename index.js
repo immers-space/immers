@@ -221,11 +221,11 @@ app.get('/nodeinfo/:version', cors(), apex.net.nodeInfo.get)
 
 // CORS & AP proxy services
 app.post('/proxy', auth.priv, apex.net.proxy.post)
-app.get('/proxy/*', (req, res) => {
+app.get('/proxy/*', auth.publ, (req, res) => {
   const url = req.url.replace('/proxy/', '')
   requestRaw(url, {
     headers: {
-      Accepts: req.get('Accepts') || '*/*'
+      Accept: req.get('Accept') || '*/*'
     }
   }).pipe(res)
 })
