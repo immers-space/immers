@@ -2,6 +2,7 @@ const ActivitypubExpress = require('activitypub-express')
 const overlaps = require('overlaps')
 const immersContext = require('../static/immers-context.json')
 const { scopes } = require('../common/scopes')
+const { version } = require('../package.json')
 const { domain } = process.env
 
 const routes = {
@@ -22,13 +23,20 @@ const routes = {
 }
 
 const apex = ActivitypubExpress({
+  name: 'Immers Space',
+  version,
   domain,
   actorParam: 'actor',
   objectParam: 'id',
   routes,
   context: immersContext,
   endpoints: {
-    oauthAuthorizationEndpoint: `${domain}/auth/authorize`
+    oauthAuthorizationEndpoint: `${domain}/auth/authorize`,
+    proxyUrl: `${domain}/proxy`
+  },
+  openRegistrations: true,
+  nodeInfoMetadata: {
+    WebCollectibles: '1.0'
   }
 })
 

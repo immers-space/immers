@@ -12,6 +12,7 @@ const cors = require('cors')
 const history = require('connect-history-api-fallback')
 const { MongoClient } = require('mongodb')
 const socketio = require('socket.io')
+const requestRaw = require('request')
 const request = require('request-promise-native')
 const nunjucks = require('nunjucks')
 const passport = require('passport')
@@ -201,7 +202,8 @@ app.route(routes.outbox)
   .get(auth.publ, viewAuth, apex.net.outbox.get)
   .post(auth.priv, outboxPost)
 app.route(routes.actor)
-  .get(auth.publ, auth.scope(scopes.viewProfile.name), apex.net.actor.get)
+  // open auth allows cross-origin fetching to support user discovery from destinations
+  .get(auth.open, auth.scope(scopes.viewProfile.name), apex.net.actor.get)
 app.get(routes.object, auth.publ, viewAuth, apex.net.object.get)
 app.get(routes.activity, auth.publ, viewAuth, apex.net.activityStream.get)
 app.get(routes.followers, auth.publ, friendsAuth, apex.net.followers.get)
@@ -213,7 +215,20 @@ app.get(routes.likes, auth.publ, viewAuth, apex.net.likes.get)
 app.get(routes.blocked, auth.priv, friendsAuth, apex.net.blocked.get)
 app.get(routes.rejections, auth.priv, friendsAuth, apex.net.rejections.get)
 app.get(routes.rejected, auth.priv, friendsAuth, apex.net.rejected.get)
-app.get('/.well-known/webfinger', apex.net.webfinger.get)
+app.get('/.well-known/webfinger', cors(), apex.net.webfinger.get)
+app.get('/.well-known/nodeinfo', cors(), apex.net.nodeInfoLocation.get)
+app.get('/nodeinfo/:version', cors(), apex.net.nodeInfo.get)
+
+// CORS & AP proxy services
+app.post('/proxy', auth.priv, apex.net.proxy.post)
+app.get('/proxy/*', auth.publ, (req, res) => {
+  const url = req.url.replace('/proxy/', '')
+  requestRaw(url, {
+    headers: {
+      Accept: req.get('Accept') || '*/*'
+    }
+  }).pipe(res)
+})
 
 /// Custom side effects
 app.on('apex-inbox', onInbox)

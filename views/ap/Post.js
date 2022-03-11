@@ -1,10 +1,13 @@
 import React, { useContext } from 'react'
-import SanitizedHTML from 'react-sanitized-html'
+import DOMPurify from 'dompurify'
 import { FormattedRelativeTime } from 'react-intl'
 import ImmersHandle from '../components/ImmersHandle'
 import ProfileIcon from '../components/ProfileIcon'
 import './Post.css'
 import ServerDataContext from './ServerDataContext'
+
+const SanitizedHTML = ({ className, html }) =>
+  <div className={className} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize((html)) }} />
 
 export default function Post ({ actor, summary, object = {}, published }) {
   const { id: actorId, icon } = actor

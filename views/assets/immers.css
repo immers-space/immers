@@ -1,4 +1,4 @@
-@import 'aesthetic-css/src/index.scss';
+@import 'npm:aesthetic-css/src/index.scss';
 
 html, body {
   height: 100%;
