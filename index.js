@@ -214,6 +214,8 @@ app.get(routes.blocked, auth.priv, friendsAuth, apex.net.blocked.get)
 app.get(routes.rejections, auth.priv, friendsAuth, apex.net.rejections.get)
 app.get(routes.rejected, auth.priv, friendsAuth, apex.net.rejected.get)
 app.get('/.well-known/webfinger', apex.net.webfinger.get)
+app.get('/.well-known/nodeinfo', apex.net.nodeInfoLocation.get)
+app.get('/nodeinfo/:version', apex.net.nodeInfo.get)
 
 /// Custom side effects
 app.on('apex-inbox', onInbox)
