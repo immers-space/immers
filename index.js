@@ -438,6 +438,8 @@ migrate(mongoURI).catch((err) => {
   }
   server.listen(port, () => {
     console.log(`immers app listening on port ${port}`)
+    // put back online if was offline for migration
+    apex.offlineMode = false
     // startup delivery in case anything is queued
     apex.startDelivery()
   })

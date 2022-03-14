@@ -1,3 +1,6 @@
+2.1.1
+* Fix issue with federated delivery not resuming after migration
+
 2.1.0 nodeinfo and proxy services
 * Update stale dependencies and resolve most audit issues
 * Finally on to Parcel v2 (had to change out the HTML sanitizer for it to work)
