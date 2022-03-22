@@ -420,7 +420,7 @@ migrate(mongoURI).catch((err) => {
   await apex.store.setup(immer)
   await auth.authdb.setup(apex.store.db)
   if (systemUserName) {
-    apex.systemUser = await apex.createActor(
+    apex.systemUser = await createImmersActor(
       systemUserName,
       systemDisplayName || systemUserName,
       name,
