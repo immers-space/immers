@@ -78,6 +78,8 @@ const renderConfig = {
   imageAttributionUrl,
   emailOptInURL
 }
+
+// fallback to building string from parts for backwards compat
 const mongoURI = dbString || `mongodb://${dbHost}:${dbPort}/${dbName}`
 const app = express()
 
@@ -96,7 +98,6 @@ app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes
 app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status Accepts ":req[accept]" ":referrer" ":user-agent"'))
 const sessionStore = new MongoSessionStore({
   uri: mongoURI,
-  databaseName: dbName,
   collection: 'sessions',
   maxAge: 365 * 24 * 60 * 60 * 1000
 })

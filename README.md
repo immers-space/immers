@@ -52,13 +52,13 @@ Variable | Value | Example
 name | Name of your immer | Immers Space
 domain | Domain name for your immers server | immers.space
 hub | Domain name for your Mozilla Hubs Cloud or other connected immersive experience | hub.immers.space
+dbString | Full MongoDB connection string, with credentials and database name, e.g. `mongodb://localhost:27017/immers`
 smtpHost | Mail service domain (for password resets) | smtp.sendgrid.net
 smtpPort | Mail service port | 587
 smtpUser | Mail service username | apikey
 smtpPassword | Mail service password |
 sessionSecret | Secret key for session cookie encryption | *Automatically generated when [using setup script](https://github.com/immers-space/immers-app#step-1---setup)*
 easySecret | Secret key for email token encryption | *Automatically generated when [using setup script](https://github.com/immers-space/immers-app#step-1---setup)*
-dbString | Full MongoDB connection string, with credentials and database name, e.g. `mongodb://localhost:27017/immers`
 
 ## Optional configuration
 
