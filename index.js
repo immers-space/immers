@@ -34,6 +34,7 @@ const {
   dbHost,
   dbPort,
   dbName,
+  dbString,
   sessionSecret,
   keyPath,
   certPath,
@@ -77,7 +78,7 @@ const renderConfig = {
   imageAttributionUrl,
   emailOptInURL
 }
-const mongoURI = `mongodb://${dbHost}:${dbPort}`
+const mongoURI = dbString || `mongodb://${dbHost}:${dbPort}/${dbName}`
 const app = express()
 
 const client = new MongoClient(mongoURI)
@@ -408,7 +409,7 @@ migrate(mongoURI).catch((err) => {
 
   // server startup
   await client.connect()
-  apex.store.db = client.db(dbName)
+  apex.store.db = client.db()
   // Place object representing this node
   const immer = await apex.fromJSONLD({
     id: `https://${domain}/o/immer`,

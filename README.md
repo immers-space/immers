@@ -58,6 +58,7 @@ smtpUser | Mail service username | apikey
 smtpPassword | Mail service password |
 sessionSecret | Secret key for session cookie encryption | *Automatically generated when [using setup script](https://github.com/immers-space/immers-app#step-1---setup)*
 easySecret | Secret key for email token encryption | *Automatically generated when [using setup script](https://github.com/immers-space/immers-app#step-1---setup)*
+dbString | Full MongoDB connection string, with credentials and database name, e.g. `mongodb://localhost:27017/immers`
 
 ## Optional configuration
 
@@ -72,7 +73,6 @@ icon | Image file | vaporwave-icon.png
 imageAttributionText | Attribution for backgroundImage, if needed | Vectors by Vecteezy
 imageAttributionUrl | Attribution for backgroundImage, if needed | https://www.vecteezy.com/free-vector/vector
 monetizationPointer | [Payment pointer](https://webmonetization.org/docs/ilp-wallets/#payment-pointers) for Web Monetization on login & profile pages | Immers Space organization wallet
-dbName | Database name to use with MongoDb | mongodb
 port | Port number for immers sever | 8081
 smtpFrom | From address for emails | noreplay@mail.`domain`
 emailOptInURL | Link to an opt-in form for email updates to show on registration page | None
