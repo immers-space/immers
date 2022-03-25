@@ -1,4 +1,4 @@
-Unreleased
+2.1.2
 
 * Fix an issue causing migrations to fail if a system user was in use
 * Fix system users not have full immers actor config
