@@ -3,6 +3,7 @@
 const config = {
   mongodb: {
     // TODO Change (or review) the url to your MongoDB:
+    // the default below is overriden with config when migrate is called from index.js
     url: 'mongodb://localhost:27017/immers',
 
     options: {
