@@ -34,6 +34,7 @@ const {
   dbHost,
   dbPort,
   dbName,
+  dbString,
   sessionSecret,
   keyPath,
   certPath,
@@ -77,7 +78,9 @@ const renderConfig = {
   imageAttributionUrl,
   emailOptInURL
 }
-const mongoURI = `mongodb://${dbHost}:${dbPort}`
+
+// fallback to building string from parts for backwards compat
+const mongoURI = dbString || `mongodb://${dbHost}:${dbPort}/${dbName}`
 const app = express()
 
 const client = new MongoClient(mongoURI)
@@ -95,7 +98,6 @@ app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes
 app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status Accepts ":req[accept]" ":referrer" ":user-agent"'))
 const sessionStore = new MongoSessionStore({
   uri: mongoURI,
-  databaseName: dbName,
   collection: 'sessions',
   maxAge: 365 * 24 * 60 * 60 * 1000
 })
@@ -408,7 +410,7 @@ migrate(mongoURI).catch((err) => {
 
   // server startup
   await client.connect()
-  apex.store.db = client.db(dbName)
+  apex.store.db = client.db()
   // Place object representing this node
   const immer = await apex.fromJSONLD({
     id: `https://${domain}/o/immer`,
