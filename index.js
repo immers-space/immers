@@ -17,6 +17,7 @@ const request = require('request-promise-native')
 const nunjucks = require('nunjucks')
 const passport = require('passport')
 const auth = require('./src/auth')
+const media = require('./src/media')
 const AutoEncryptPromise = import('@small-tech/auto-encrypt')
 const { onShutdown } = require('node-graceful-shutdown')
 const morgan = require('morgan')
@@ -233,6 +234,9 @@ app.get('/proxy/*', auth.publ, (req, res) => {
   }).pipe(res)
 })
 
+// file upload
+app.use('/media', media.router)
+
 /// Custom side effects
 app.on('apex-inbox', onInbox)
 app.on('apex-outbox', onOutbox)
@@ -311,6 +315,10 @@ app.get('/ap.html', auth.publ, generateMetaTags, (req, res) => {
   }
   res.render('dist/ap/ap.html', Object.assign(data, renderConfig))
 })
+
+// final fallback to static content
+// useful for immers + static site combo so they don't have to include /static in all page urls
+app.use('/', express.static('static-ext'))
 
 const sslOptions = {
   key: keyPath && fs.readFileSync(path.join(__dirname, keyPath)),
@@ -440,6 +448,15 @@ migrate(mongoURI).catch((err) => {
         returnDocument: 'after'
       }
     )
+  }
+  try {
+    const pluginsRoot = path.join(__dirname, 'static-ext', 'immers-plugins', 'index.js')
+    if (fs.existsSync(pluginsRoot)) {
+      const plugins = await import(pluginsRoot)
+      await Promise.resolve(plugins.default(app, immer, apex))
+    }
+  } catch (err) {
+    console.warn('Error loading plugins', err)
   }
   server.listen(port, () => {
     console.log(`immers app listening on port ${port}`)

@@ -51,6 +51,8 @@
     "migrate-mongo": "^8.2.3",
     "mongodb": "^4.4.1",
     "morgan": "^1.10.0",
+    "multer": "^1.4.4",
+    "multer-gridfs-storage": "^5.0.2",
     "node-graceful-shutdown": "1.1.0",
     "nodemailer": "^6.7.2",
     "nunjucks": "^3.2.3",

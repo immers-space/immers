@@ -43,12 +43,14 @@ module.exports = {
     })
 
     // trusted client entry for local hub
+    const url = new URL(`https://${hub}`)
+    const redirectUri = `${url.protocol}//${url.host}`
     await db.collection('clients').findOneAndReplace({
       clientId: `https://${domain}/o/immer`
     }, {
       name,
       clientId: `https://${domain}/o/immer`,
-      redirectUri: `https://${hub}`,
+      redirectUri,
       isTrusted: true
     }, { upsert: true })
   },

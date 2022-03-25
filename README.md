@@ -59,6 +59,8 @@ smtpUser | Mail service username | apikey
 smtpPassword | Mail service password |
 sessionSecret | Secret key for session cookie encryption | *Automatically generated when [using setup script](https://github.com/immers-space/immers-app#step-1---setup)*
 easySecret | Secret key for email token encryption | *Automatically generated when [using setup script](https://github.com/immers-space/immers-app#step-1---setup)*
+userFiles | Path to storage location for user-uploaded files | `uploads/`
+
 
 ## Optional configuration
 
