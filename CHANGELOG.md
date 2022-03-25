@@ -3,6 +3,7 @@ Unreleased
 * Fix an issue causing migrations to fail if a system user was in use
 * Fix system users not have full immers actor config
 * Dependency update to fix audit alert
+* Support more database setups (Mongo Atlas, credentials) by changing db config to use full connection string via `dbString` env var (keep backwards compat for `dbHost`/`dbName`/`dbPort` config)
 
 2.1.1
 * Fix issue with federated delivery not resuming after migration
