@@ -1,3 +1,9 @@
+Unreleased
+
+* Fix an issue causing migrations to fail if a system user was in use
+* Fix system users not have full immers actor config
+* Dependency update to fix audit alert
+
 2.1.1
 * Fix issue with federated delivery not resuming after migration
 
