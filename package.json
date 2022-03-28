@@ -48,6 +48,7 @@
     "express": "^4.17.3",
     "express-session": "^1.17.2",
     "grapheme-splitter": "^1.0.4",
+    "jsonwebtoken": "^8.5.1",
     "migrate-mongo": "^8.2.3",
     "mongodb": "^4.4.1",
     "morgan": "^1.10.0",
@@ -55,10 +56,12 @@
     "nodemailer": "^6.7.2",
     "nunjucks": "^3.2.3",
     "oauth2orize": "^1.11.1",
+    "oauth2orize-jwt-bearer": "^0.2.0",
     "overlaps": "^1.0.0",
     "parse-domain": "^5.0.0",
     "passport": "^0.5.2",
     "passport-anonymous": "^1.0.1",
+    "passport-custom": "^1.1.1",
     "passport-http-bearer": "^1.0.1",
     "passport-local": "^1.0.0",
     "rimraf": "^3.0.2",
@@ -78,7 +81,7 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-intl": "^5.24.6",
-    "standard": "^16.0.4"
+    "standard": "^17.0.0-2"
   },
   "browserslist": "> 0.25%, not dead"
 }

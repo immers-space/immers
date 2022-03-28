@@ -31,8 +31,9 @@ const apex = ActivitypubExpress({
   routes,
   context: immersContext,
   endpoints: {
-    oauthAuthorizationEndpoint: `${domain}/auth/authorize`,
-    proxyUrl: `${domain}/proxy`
+    oauthAuthorizationEndpoint: `https://${domain}/auth/authorize`,
+    oauthTokenEndpoint: `https://${domain}/auth/exchange`,
+    proxyUrl: `https://${domain}/proxy`
   },
   openRegistrations: true,
   nodeInfoMetadata: {

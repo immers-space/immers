@@ -189,6 +189,7 @@ app.post('/auth/user', auth.validateNewUser, auth.logout, registerActor, auth.re
 // to login and further redirect to login at their home immer if they are remote
 app.get('/auth/authorize', auth.authorization)
 app.post('/auth/decision', auth.decision)
+app.post('/auth/exchange', auth.tokenExchange)
 // get actor from token
 app.get('/auth/me', auth.priv, auth.userToActor, apex.net.actor.get)
 // token endpoint for immers web client

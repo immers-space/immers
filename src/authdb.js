@@ -2,6 +2,7 @@ const { ObjectId } = require('mongodb')
 const uid = require('uid-safe')
 const bcrypt = require('bcrypt')
 const crypto = require('crypto')
+const jwt = require('jsonwebtoken')
 const { domain, hub, name } = process.env
 
 const saltRounds = 10
@@ -43,13 +44,15 @@ module.exports = {
     })
 
     // trusted client entry for local hub
-    await db.collection('clients').findOneAndReplace({
+    await db.collection('clients').findOneAndUpdate({
       clientId: `https://${domain}/o/immer`
     }, {
-      name,
-      clientId: `https://${domain}/o/immer`,
-      redirectUri: `https://${hub}`,
-      isTrusted: true
+      $set: {
+        name,
+        clientId: `https://${domain}/o/immer`,
+        redirectUri: `https://${hub}`,
+        isTrusted: true
+      }
     }, { upsert: true })
   },
   // passport / oauth2orize methods
@@ -93,6 +96,31 @@ module.exports = {
       }
       return done(null, client, redirectUriFull)
     } catch (err) { done(err) }
+  },
+  // login as client by proving you have the private key matching our saved public key
+  async authenticateClientJwt (rawToken, done) {
+    let claims
+    try {
+      claims = jwt.decode(rawToken)
+      if (!claims) {
+        throw new Error('invalid jwt')
+      }
+    } catch (err) {
+      done(null, false, 'invalid jwt')
+    }
+    if (!claims.iss) {
+      return done(null, false, 'missing claim: issuer')
+    }
+    const client = await db
+      .collection('clients')
+      .findOne({ clientId: claims.iss })
+      .catch(done)
+    if (!client.jwtPublicKeyPem) {
+      return done(null, false)
+    }
+    jwt.verify(rawToken, client.jwtPublicKeyPem, (err, verifiedJwt) => {
+      done(err, client, { verifiedJwt })
+    })
   },
   serializeUser (user, done) {
     done(null, user._id)
