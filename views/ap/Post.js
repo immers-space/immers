@@ -1,13 +1,11 @@
 import React, { useContext } from 'react'
-import DOMPurify from 'dompurify'
 import { FormattedRelativeTime } from 'react-intl'
 import ImmersHandle from '../components/ImmersHandle'
 import ProfileIcon from '../components/ProfileIcon'
+import SanitizedHTML from '../components/SanitizedHTML'
 import './Post.css'
 import ServerDataContext from './ServerDataContext'
-
-const SanitizedHTML = ({ className, html }) =>
-  <div className={className} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize((html)) }} />
+import { AvatarPreview } from '../components/AvatarPreview'
 
 export default function Post ({ actor, summary, object = {}, published }) {
   const { id: actorId, icon } = actor
@@ -43,7 +41,8 @@ export default function Post ({ actor, summary, object = {}, published }) {
   return null
 }
 
-function getPostBody ({ type, content, url }) {
+function getPostBody (object) {
+  const { type, content, url } = object
   switch (type) {
     case 'Note':
       return <SanitizedHTML html={content} />
@@ -51,6 +50,8 @@ function getPostBody ({ type, content, url }) {
       return <img className='postMedia' src={url} />
     case 'Video':
       return <video className='postMedia' src={url} controls />
+    case 'Model':
+      return <AvatarPreview avatar={object} icon={object.icon} size='medium' />
   }
   return null
 }

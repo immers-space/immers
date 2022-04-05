@@ -9,6 +9,17 @@
   height: 100%;
 }
 
+.insetAvatar {
+  position: absolute;
+  inset: auto 0 0 0;
+  text-align: center;
+  color: white;
+  -webkit-text-stroke-width: 1px;
+  -webkit-text-stroke-color: black;
+  font-size: 24px;
+  font-weight: 800;
+}
+
 .activate3d {
   background-color: white;
   display: flex;
