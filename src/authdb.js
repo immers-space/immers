@@ -106,7 +106,7 @@ module.exports = {
         throw new Error('invalid jwt')
       }
     } catch (err) {
-      done(null, false, 'invalid jwt')
+      return done(null, false, 'invalid jwt')
     }
     if (!claims.iss) {
       return done(null, false, 'missing claim: issuer')
@@ -159,7 +159,9 @@ module.exports = {
   },
   async createUser (username, password, email) {
     const user = { username }
-    user.passwordHash = await bcrypt.hash(password, saltRounds)
+    if (password) {
+      user.passwordHash = await bcrypt.hash(password, saltRounds)
+    }
     user.email = hashEmail(email)
     await db.collection('users').insertOne(user)
     return user

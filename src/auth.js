@@ -38,6 +38,7 @@ const {
   imageAttributionUrl
 } = process.env
 const emailCheck = require('email-validator')
+const { parseHandle } = require('./utils')
 const handleCheck = '^[A-Za-z0-9-]{3,32}$'
 const nameCheck = '^[A-Za-z0-9_~ -]{3,32}$'
 const oauthJwtExchangeType = 'urn:ietf:params:oauth:grant-type:jwt-bearer'
@@ -147,10 +148,14 @@ server.exchange(oauthJwtExchangeType, jwtBearer(
       let user
       try {
         if (validated.sub) {
-          user = await authdb.getUserByEmail(validated.sub)
+          const { username, immer } = parseHandle(validated.sub)
+          if (immer !== domain) {
+            throw new Error(`User ${validated.sub} not from this domain`)
+          }
+          user = await authdb.getUserByName(username)
         }
         if (!user) {
-          throw new Error(`User email ${validated.sub} not found`)
+          throw new Error(`User ${validated.sub} not found`)
         }
       } catch (err) {
         console.log(`2LO failed user lookup: ${err}`)
