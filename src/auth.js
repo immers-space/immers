@@ -166,7 +166,7 @@ server.exchange(oauthJwtExchangeType, jwtBearer(
       }
       const params = {}
       const origin = new URL(client.redirectUri)
-      params.origin = `${origin.protocol}//${origin.host}`
+      params.origin = validated.origin || `${origin.protocol}//${origin.host}`
       params.issuer = `https://${domain}`
       params.scope = validated.scope.split(' ')
       authdb.createAccessToken(client, user, params, done)
