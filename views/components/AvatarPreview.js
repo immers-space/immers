@@ -1,27 +1,25 @@
-import React, { useState } from 'react'
-import ProfileIcon from './ProfileIcon'
+import React from 'react'
+import c from 'classnames'
 import './AvatarPreview.css'
-import { Emoji } from 'emoji-mart'
 import SanitizedHTML from './SanitizedHTML'
 
-const iframeAllowXr = {
-  allow: 'xr-spatial-tracking',
-  allowFullScreen: true,
-  allowvr: 'yes'
-}
-
 export function AvatarPreview ({ icon, avatar, size = 'large' }) {
-  const [is3D, setIs3D] = useState(false)
+  const iconSrc = typeof icon === 'string' ? icon : icon && icon.url
+  if (!iconSrc) {
+    return null
+  }
   const aviModelURL = typeof avatar?.url === 'string'
     ? avatar.url
     : avatar?.url?.href
   return (
-    <div className='avatarPreview'>
-      <ProfileIcon size={size} icon={icon} />
-      <div className='coverAvatar showOnHover activate3d' title='Load 3D avatar preview' onClick={() => setIs3D(!is3D)}>
-        <Emoji emoji='globe_with_meridians' size={64} />
-      </div>
-      {is3D && <iframe className='coverAvatar' src={`/static/avatar.html?avatar=${encodeURIComponent(aviModelURL)}`} {...iframeAllowXr} />}
+    <div className={c('aesthetic-windows-95-container-indent', 'avatarPreview', size)}>
+      <model-viewer
+        alt={avatar.name}
+        src={aviModelURL}
+        ar ar-modes='webxr scene-viewer quick-look'
+        poster={iconSrc}
+        shadow-intensity='1' camera-controls enable-pan
+      />
       {avatar.name && <SanitizedHTML className='insetAvatar' html={avatar.name} />}
     </div>
   )
