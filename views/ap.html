@@ -1,0 +1,8 @@
+{% extends "views/layout.njk" %}
+{% block head %}
+  <%= htmlWebpackPlugin.tags.headTags %>
+{% endblock %}
+{% block content %}
+  <div id="app"></div>
+  <%= htmlWebpackPlugin.tags.bodyTags %>
+{% endblock %}

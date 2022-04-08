@@ -1,6 +1,6 @@
 import React from 'react'
 import c from 'classnames'
-import '../assets/immers.css'
+import '../assets/immers.scss'
 import immersIcon from '../assets/immers_logo.png'
 
 export default function Layout (props) {
