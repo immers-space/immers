@@ -1,0 +1,16 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": ["defaults", "not ie 11"],
+        "bugfixes": true,
+        "useBuiltIns": "usage",
+        "corejs": "3.21",
+        "shippedProposals": true,
+        "debug": true
+      }
+    ],
+    "@babel/preset-react"
+  ]
+}
