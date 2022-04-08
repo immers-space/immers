@@ -11,16 +11,11 @@ module.exports = {
     dialog: { import: './views/dialog/dialog.js', filename: '[name]/[name].js' },
     reset: { import: './views/reset/reset.js', filename: '[name]/[name].js' }
   },
-  // Where files should be sent once they are bundled
   output: {
     path: path.join(__dirname, '/dist'),
     filename: '[name].bundle.js',
     publicPath: '/dist/',
     clean: true
-  },
-  devServer: {
-    port: 3000,
-    watchContentBase: true
   },
   module: {
     rules: [
