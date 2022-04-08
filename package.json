@@ -6,8 +6,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "standard",
     "dev:server": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 node index.js",
-    "dev:client": "npx parcel watch views/**/*.html --public-url /dist/",
-    "build:client": "rimraf dist/ && npx parcel build views/**/*.html --public-url /dist/",
+    "dev:client": "webpack watch --mode development",
+    "build:client": "webpack build --mode production --devtool source-map",
     "start": "cross-env NODE_ENV=production node index.js",
     "build:image": "docker build -t immersspace/immers .",
     "publish:image": "docker tag immersspace/immers:latest immersspace/immers:v$npm_package_version && docker push immersspace/immers:latest && docker push immersspace/immers:v$npm_package_version"
@@ -66,16 +66,26 @@
     "uid-safe": "^2.1.5"
   },
   "devDependencies": {
-    "@babel/core": "^7.17.5",
+    "@babel/core": "^7.17.9",
     "@babel/preset-env": "^7.16.11",
     "@babel/preset-react": "^7.16.7",
     "@reach/router": "^1.3.4",
+    "babel-loader": "^8.2.4",
     "classnames": "^2.3.1",
+    "css-loader": "^6.7.1",
     "dompurify": "^2.3.6",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.5.0",
+    "mini-css-extract-plugin": "^2.6.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-intl": "^5.24.6",
-    "standard": "^16.0.4"
+    "sass": "^1.50.0",
+    "sass-loader": "^12.6.0",
+    "standard": "^16.0.4",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.72.0",
+    "webpack-cli": "^4.9.2"
   },
   "browserslist": "> 0.25%, not dead"
 }

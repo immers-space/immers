@@ -1,0 +1,9 @@
+{% extends "views/layout.njk" %}
+{% block head %}
+  <%= htmlWebpackPlugin.tags.headTags %>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+{% endblock %}
+{% block content %}
+  <div id="app"></div>
+  <%= htmlWebpackPlugin.tags.bodyTags %>
+{% endblock %}
