@@ -7,8 +7,7 @@
         "bugfixes": true,
         "useBuiltIns": "usage",
         "corejs": "3.21",
-        "shippedProposals": true,
-        "debug": true
+        "shippedProposals": true
       }
     ],
     "@babel/preset-react"
