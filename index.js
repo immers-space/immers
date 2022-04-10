@@ -24,6 +24,7 @@ const { debugOutput, parseHandle, parseProxyMode, apexDomain } = require('./src/
 const { apex, createImmersActor, deliverWelcomeMessage, routes, onInbox, onOutbox, outboxPost } = require('./src/apex')
 const { migrate } = require('./src/migrate')
 const { scopes } = require('./common/scopes')
+const { generateMetaTags } = require('./src/openGraph')
 
 const {
   port,
@@ -302,9 +303,11 @@ app.use(history({
   index: '/ap.html'
 }))
 // HTML versions of acitivty pub objects routes
-app.get('/ap.html', auth.publ, (req, res) => {
+app.get('/ap.html', auth.publ, generateMetaTags, (req, res) => {
+  console.log('originalUrl', req.originalUrl)
   const data = {
-    loggedInUser: req.user?.username
+    loggedInUser: req.user?.username,
+    ...res.locals.openGraph
   }
   res.render('dist/ap/ap.html', Object.assign(data, renderConfig))
 })

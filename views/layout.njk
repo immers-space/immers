@@ -21,9 +21,25 @@
       }
       {% if icon %}window._serverData.icon = '/static/{{ icon }}'{% endif %}
     </script>
-    <title>{% block title %}{{ name }}{% endblock %}</title>
+    <title>{% block title %}{{ ogTitle if ogTitle else name }}{% endblock %}</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% if twitterEmbed %}
+    <meta name="twitter:card" content="player"/>
+    <meta name="twitter:player:width" content="{{ twitterEmbed.width }}"/>
+    <meta name="twitter:player:height" content="{{ twitterEmbed.height }}"/>
+    <meta name="twitter:player" content="{{ twitterEmbed.url }}"/>
+    {% endif %}
+    {% if ogTitle %}
+    <meta property="og:title" content="{{ ogTitle }}"/>
+    {% endif %}
+    {% if ogDescription %}
+    <meta property="og:description" content="{{ ogDescription }}"/>
+    {% endif %}
+    {% if ogImage %}
+    <meta property="og:image" content="{{ ogImage }}"/>
+    {% endif %}
+
     {% if icon %}
     <link rel="icon" href="/static/{{ icon }}">
     {% endif %}
