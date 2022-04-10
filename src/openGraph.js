@@ -26,13 +26,21 @@ async function generateMetaTags (req, res, next) {
       }
       if (avatar) {
         const cardUrl = new URL(`https:${apex.domain}/static/twitter-player.html`)
+        let avatarIconUrl
+        if (avatar.icon) {
+          if (typeof avatar.icon === 'string') {
+            avatarIconUrl = avatar.icon
+          } else {
+            avatarIconUrl = typeof avatar.icon.url === 'string'
+              ? avatar.icon.url
+              : avatar.icon.url?.href
+          }
+        }
         cardUrl.search = new URLSearchParams({
           src: typeof avatar.url === 'string'
             ? avatar.url
             : avatar.url?.href,
-          poster: typeof avatar.icon?.url === 'string'
-            ? avatar.icon?.url
-            : avatar.icon?.url?.href,
+          poster: avatarIconUrl,
           alt: avatar.name
         }).toString()
         openGraph.twitterEmbed = {
