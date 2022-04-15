@@ -45,7 +45,9 @@ router.post(
   auth.priv,
   // check scope
   (req, res, next) => {
-    if (!overlaps(['*', scopes.creative], req.authInfo?.scope ?? [])) {
+    console.log('receiving media request')
+    if (!overlaps(['*', scopes.creative.name], req.authInfo?.scope ?? [])) {
+      console.log(req.authInfo)
       return res.status(403).send(`Uploading media requires ${scopes.creative.name} scope`)
     }
     next()
