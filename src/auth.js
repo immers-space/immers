@@ -19,6 +19,8 @@ const jwtBearer = require('oauth2orize-jwt-bearer').Exchange
 
 const overlaps = require('overlaps')
 const authdb = require('./authdb')
+const { scopes } = require('../common/scopes')
+
 const {
   domain,
   name,
@@ -228,6 +230,8 @@ function scope (scopeNames) {
     next()
   }
 }
+const viewScope = scope(scopes.viewPrivate.name)
+const friendsScope = scope([scopes.viewPrivate.name, scopes.viewFriends.name])
 
 function logout (req, res, next) {
   req.logout()
@@ -382,6 +386,8 @@ module.exports = {
   open,
   priv,
   scope,
+  viewScope,
+  friendsScope,
   localToken: [hubCors, localToken],
   logout: [hubCors, logout],
   userToActor,
