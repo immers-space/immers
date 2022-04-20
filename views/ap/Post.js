@@ -6,8 +6,9 @@ import SanitizedHTML from '../components/SanitizedHTML'
 import './Post.css'
 import ServerDataContext from './ServerDataContext'
 import { AvatarPreview } from '../components/AvatarPreview'
+import { Link } from '@reach/router'
 
-export default function Post ({ type, actor, summary, object = {}, published }) {
+export default function Post ({ id, type, actor, summary, object = {}, published }) {
   const { id: actorId, icon } = actor
   const { context } = object
 
@@ -22,7 +23,7 @@ export default function Post ({ type, actor, summary, object = {}, published }) 
             <ImmersHandle {...actor} showName />
           </a>
           <ImmerLink place={context} />
-          <Timestamp published={published} />
+          <Timestamp id={id} published={published} />
         </div>
 
         <div className='aesthetic-windows-95-container-indent'>
@@ -36,7 +37,7 @@ export default function Post ({ type, actor, summary, object = {}, published }) 
     return (
       <div className='postHeader'>
         <SanitizedHTML className='lesserPost' html={summary} />
-        <Timestamp published={published} />
+        <Timestamp id={id} published={published} />
       </div>
     )
   }
@@ -58,16 +59,16 @@ function getPostBody (object) {
   return null
 }
 
-function Timestamp ({ published }) {
+function Timestamp ({ published, id }) {
   let timestamp
   try {
     timestamp = new Date(published)
   } catch (ignore) {}
   if (published && timestamp) {
     return (
-      <span className='lesserPost timestamp'>
+      <Link className='lesserPost timestamp' to={new URL(id).pathname}>
         <FormattedRelativeTime updateIntervalInSeconds={10} value={(timestamp - Date.now()) / 1000} />
-      </span>
+      </Link>
     )
   }
   return null

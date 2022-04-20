@@ -29,6 +29,14 @@
   text-decoration: underline;
 }
 
+a.timestamp {
+  text-decoration: none;
+}
+
+a.timestamp:hover {
+  text-decoration: underline;
+}
+
 
 .postMedia {
   max-width: 600px;
