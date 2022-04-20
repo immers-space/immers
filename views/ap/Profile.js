@@ -18,6 +18,7 @@ export default function Profile ({ actor, taskbarButtons }) {
 
   if (loggedInUser === actor) {
     tabs.unshift('Friends', 'Inbox')
+    tabs.push('Avatars')
     // TODO: edit profile
     // buttons = <EmojiButton emoji='pencil2' title='Edit profile' />
   }
@@ -79,6 +80,7 @@ export default function Profile ({ actor, taskbarButtons }) {
               <Feed path='Outbox' iri={actorObj.outbox} />
               <Feed path='Inbox' iri={actorObj.inbox} />
               <Friends path='Friends' iri={`${actorObj.id}/friends`} />
+              <Feed path='Avatars' iri={actorObj.streams.avatars} />
             </Router>
           </div>
         </div>
