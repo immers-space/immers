@@ -1,25 +1,36 @@
 import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { Router } from '@reach/router'
-import { ImmersClient } from 'immers-client'
 import Profile from './Profile'
 import { IntlProvider } from 'react-intl'
 import ServerDataContext from './ServerDataContext'
 import Thread from './Thread'
+import ObjectView from './ObjectView'
+import EmojiLink from '../components/EmojiLink'
 
 const mountNode = document.getElementById('app')
 ReactDOM.render(<Root />, mountNode)
 
-function Root () {
-  const client = new ImmersClient({}, {
-    localImmer: window._serverData.domain,
-    allowStorage: true
-  })
+function inIframe () {
+  try {
+    return window.self !== window.top
+  } catch (e) {
+    return true
+  }
+}
 
+function Root () {
   const [dataContext, setDataContext] = useState({
     ...window._serverData,
-    immersClient: client
+    isInIframe: inIframe()
   })
+  const taskbarButtons = []
+  if (dataContext.loggedInUser) {
+    taskbarButtons.push(<EmojiLink key='logout' emoji='end' href='/auth/logout' title='Logout' />)
+  } else {
+    // login button
+    taskbarButtons.push(<EmojiLink key='login' emoji='passport_control' href='/auth/login' title='Log in' />)
+  }
   useEffect(() => {
     if (!dataContext.loggedInUser) {
       return
@@ -49,8 +60,9 @@ function Root () {
     <IntlProvider locale='en' defaultLocale='en'>
       <ServerDataContext.Provider value={dataContext}>
         <Router>
-          <Profile path='/u/:actor/*' />
-          <Thread path='/s/:activityId' />
+          <Profile path='/u/:actor/*' taskbarButtons={taskbarButtons} />
+          <Thread path='/s/:activityId' taskbarButtons={taskbarButtons} />
+          <ObjectView path='/o/:objectId' taskbarButtons={taskbarButtons} />
         </Router>
       </ServerDataContext.Provider>
     </IntlProvider>

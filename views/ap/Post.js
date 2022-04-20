@@ -7,11 +7,12 @@ import './Post.css'
 import ServerDataContext from './ServerDataContext'
 import { AvatarPreview } from '../components/AvatarPreview'
 
-export default function Post ({ actor, summary, object = {}, published }) {
+export default function Post ({ type, actor, summary, object = {}, published }) {
   const { id: actorId, icon } = actor
   const { context } = object
 
   const body = getPostBody(object)
+  const includeSummaryWithBody = ['Offer'].includes(type)
   if (body) {
     return (
       <div>
@@ -25,6 +26,7 @@ export default function Post ({ actor, summary, object = {}, published }) {
         </div>
 
         <div className='aesthetic-windows-95-container-indent'>
+          {includeSummaryWithBody && <SanitizedHTML className='bodySummary' html={summary} />}
           {body}
         </div>
       </div>

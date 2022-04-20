@@ -2,9 +2,10 @@ import React, { useContext, useEffect, useState } from 'react'
 import ServerDataContext from './ServerDataContext'
 import Layout from '../components/Layout'
 import Post from './Post'
+import { immersClient } from './utils/immersClient'
 
-export default function Thread ({ activityId }) {
-  const { immersClient } = useContext(ServerDataContext)
+export default function Thread ({ activityId, taskbarButtons }) {
+  const { isInIframe } = useContext(ServerDataContext)
   const [activity, setActivity] = useState()
   useEffect(async () => {
     const activitiyObj = await immersClient.activities.getObject(window.location.href)
@@ -15,7 +16,7 @@ export default function Thread ({ activityId }) {
   }, [activityId])
   if (!activity) {
     return (
-      <Layout contentTitle='Immers Profile'>
+      <Layout contentTitle='Loading'>
         <div className='aesthetic-windows-95-loader'>
           <div /><div /><div />
         </div>
@@ -23,7 +24,7 @@ export default function Thread ({ activityId }) {
     )
   }
   return (
-    <Layout contentTitle='Immers Activity Thread'>
+    <Layout contentTitle='Activity Thread' taskbar={!isInIframe} taskbarButtons={taskbarButtons}>
       <div className='thread-container'>
         <Post {...activity} />
       </div>
