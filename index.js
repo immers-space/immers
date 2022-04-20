@@ -337,6 +337,7 @@ migrate(mongoURI).catch((err) => {
   })
 
   // live stream of feed updates to client inbox-update goes to chat & friends-update to people list
+  const friendUpdateTypes = ['Arrive', 'Leave', 'Accept', 'Follow', 'Reject', 'Undo']
   async function onInboxFriendUpdate (msg) {
     const liveSocket = profilesSockets.get(msg.recipient.id)
     msg.activity.actor = [msg.actor]
@@ -348,6 +349,19 @@ migrate(mongoURI).catch((err) => {
     }
   }
   app.on('apex-inbox', onInboxFriendUpdate)
+
+  // live stream of feed updates to client outbox-update goes to chat & friends-update to people list
+  async function onOutboxFriendUpdate (msg) {
+    const liveSocket = profilesSockets.get(msg.actor.id)
+    msg.activity.actor = [msg.actor]
+    msg.activity.object = [msg.object]
+    // convert to same format as inbox endpoint and strip any private properties
+    liveSocket?.emit('outbox-update', apex.stringifyPublicJSONLD(await apex.toJSONLD(msg.activity)))
+    if (friendUpdateTypes.includes(msg.activity.type)) {
+      liveSocket?.emit('friends-update')
+    }
+  }
+  app.on('apex-outbox', onOutboxFriendUpdate)
 
   if (process.env.NODE_ENV !== 'production') {
     debugOutput(app)
