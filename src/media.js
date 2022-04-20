@@ -2,6 +2,7 @@ const path = require('path')
 const crypto = require('crypto')
 const express = require('express')
 const multer = require('multer')
+const cors = require('cors')
 const overlaps = require('overlaps')
 const { GridFSBucket } = require('mongodb')
 const { GridFsStorage } = require('multer-gridfs-storage')
@@ -45,9 +46,7 @@ router.post(
   auth.priv,
   // check scope
   (req, res, next) => {
-    console.log('receiving media request')
     if (!overlaps(['*', scopes.creative.name], req.authInfo?.scope ?? [])) {
-      console.log(req.authInfo)
       return res.status(403).send(`Uploading media requires ${scopes.creative.name} scope`)
     }
     next()
@@ -103,7 +102,10 @@ router.post(
 
 router.get(
   '/:filename',
-  auth.publ, // adds dynamic cors when logged-in
+  // leave cors open for now since the proxy features were so recently added to client/server.
+  // After some time for these to be adopted, change to auth.publ, restricting cors to logged in users only
+  cors(),
+  // auth.publ, // adds dynamic cors when logged-in
   async (req, res) => {
     if (!bucket) {
       bucket = new GridFSBucket(apex.store.db, { bucketName })
@@ -114,7 +116,6 @@ router.get(
     if (!file) {
       return res.sendStatus(404)
     }
-    console.log(file)
     res.set('Content-Type', file.contentType)
     bucket.openDownloadStream(file._id).pipe(res)
   }

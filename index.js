@@ -308,7 +308,6 @@ app.use(history({
 }))
 // HTML versions of acitivty pub objects routes
 app.get('/ap.html', auth.publ, generateMetaTags, (req, res) => {
-  console.log('originalUrl', req.originalUrl)
   const data = {
     loggedInUser: req.user?.username,
     ...res.locals.openGraph
@@ -439,6 +438,11 @@ migrate(mongoURI).catch((err) => {
       name,
       icon && `https://${domain}/static/${icon}`,
       'Service'
+    )
+    await apex.store.db.collection('users').findOneAndUpdate(
+      { email: null },
+      { $set: { username: systemUserName, email: null } },
+      { upsert: true }
     )
     await apex.store.db.collection('objects').findOneAndReplace(
       { id: apex.systemUser.id },
