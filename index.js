@@ -230,7 +230,11 @@ app.get('/proxy/*', auth.publ, (req, res) => {
   requestRaw(url, {
     headers: {
       Accept: req.get('Accept') || '*/*'
-    }
+    },
+    timeout: 5000
+  }).on('error', function (err) {
+    console.log('proxy error', err)
+    res.sendStatus(500)
   }).pipe(res)
 })
 
