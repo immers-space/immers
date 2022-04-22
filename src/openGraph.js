@@ -29,7 +29,7 @@ async function generateMetaTags (req, res, next) {
     if (type === 'u') {
       const { name, summary, icon, avatar } = await apex.toJSONLD(await apex.store.getObject(`https://${apex.domain}/u/${id}`))
       openGraph.ogTitle = `${name}'s Profile`
-      openGraph.ogDescription = htmlToText(summary ?? '')
+      openGraph.ogDescription = htmlToText(summary ?? 'Immerser profile')
       if (icon) {
         openGraph.ogImage = typeof icon === 'string' ? icon : icon.url
       }
@@ -37,9 +37,15 @@ async function generateMetaTags (req, res, next) {
         openGraph.twitterEmbed = modelPlayer(avatar, apex.domain)
       }
     } else if (type === 's') {
-      const { type: activityType, summary, object } = await apex.toJSONLD(await apex.store.getActivity(`https://${apex.domain}/s/${id}`))
-      openGraph.title = `${activityType} Activity`
-      openGraph.ogDescription = htmlToText(summary ?? '')
+      const { type: activityType, summary: activitySummary, object } = await apex.toJSONLD(await apex.store.getActivity(`https://${apex.domain}/s/${id}`))
+      const summary = activitySummary || object?.summary
+      if (summary) {
+        openGraph.ogTitle = `${activityType} ${object?.name || 'Activity'}`
+        openGraph.ogDescription = htmlToText(summary)
+      } else {
+        openGraph.ogTitle = `${activityType} Activity`
+        openGraph.ogDescription = htmlToText(object?.name || object?.type)
+      }
       if (object?.icon) {
         openGraph.ogImage = hrefFromIcon(object.icon)
       }
@@ -49,10 +55,10 @@ async function generateMetaTags (req, res, next) {
     } else if (type === 'o') {
       const object = await apex.toJSONLD(await apex.store.getObject(`https://${apex.domain}/o/${id}`))
       if (object.name && object.summary) {
-        openGraph.title = object.name
+        openGraph.ogTitle = object.name
         openGraph.ogDescription = htmlToText(object.summary)
       } else {
-        openGraph.title = `${object.type}`
+        openGraph.ogTitle = `${object.type}`
         openGraph.ogDescription = htmlToText(object.summary ?? object.name ?? '')
       }
       if (object.icon) {
