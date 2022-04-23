@@ -27,7 +27,11 @@ async function generateMetaTags (req, res, next) {
   const [, type, id] = pathMatch
   try {
     if (type === 'u') {
-      const { name, summary, icon, avatar } = await apex.toJSONLD(await apex.store.getObject(`https://${apex.domain}/u/${id}`))
+      const profile = await apex.store.getObject(`https://${apex.domain}/u/${id}`)
+      if (!profile) {
+        return next()
+      }
+      const { name, summary, icon, avatar } = await apex.toJSONLD(profile)
       openGraph.ogTitle = `${name}'s Profile`
       openGraph.ogDescription = htmlToText(summary ?? 'Immerser profile')
       if (icon) {
@@ -37,7 +41,11 @@ async function generateMetaTags (req, res, next) {
         openGraph.twitterEmbed = modelPlayer(avatar, apex.domain)
       }
     } else if (type === 's') {
-      const { type: activityType, summary: activitySummary, object } = await apex.toJSONLD(await apex.store.getActivity(`https://${apex.domain}/s/${id}`))
+      const activity = await apex.store.getActivity(`https://${apex.domain}/s/${id}`)
+      if (!activity) {
+        return next()
+      }
+      const { type: activityType, summary: activitySummary, object } = await apex.toJSONLD(activity)
       const summary = activitySummary || object?.summary
       if (summary) {
         openGraph.ogTitle = `${activityType} ${object?.name || 'Activity'}`
@@ -53,7 +61,11 @@ async function generateMetaTags (req, res, next) {
         openGraph.twitterEmbed = modelPlayer(object, apex.domain)
       }
     } else if (type === 'o') {
-      const object = await apex.toJSONLD(await apex.store.getObject(`https://${apex.domain}/o/${id}`))
+      let object = await apex.store.getObject(`https://${apex.domain}/o/${id}`)
+      if (!object) {
+        return next()
+      }
+      object = await apex.toJSONLD(object)
       if (object.name && object.summary) {
         openGraph.ogTitle = object.name
         openGraph.ogDescription = htmlToText(object.summary)
@@ -69,7 +81,8 @@ async function generateMetaTags (req, res, next) {
       }
     }
   } catch (err) {
-    return next(err)
+    console.warn('Error generating open graph tags: ', err)
+    // continue to serve page anyway without og tags
   }
   next()
 }
