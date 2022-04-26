@@ -111,12 +111,16 @@ module.exports = {
     if (!claims.iss) {
       return done(null, false, 'missing claim: issuer')
     }
-    const client = await db
-      .collection('clients')
-      .findOne({ clientId: claims.iss })
-      .catch(done)
-    if (!client.jwtPublicKeyPem) {
-      return done(null, false)
+    let client
+    try {
+      const client = await db
+        .collection('clients')
+        .findOne({ clientId: claims.iss })
+      if (!client?.jwtPublicKeyPem) {
+        return done(null, false)
+      }
+    } catch (err) {
+      return done(err)
     }
     jwt.verify(rawToken, client.jwtPublicKeyPem, (err, verifiedJwt) => {
       done(err, client, { verifiedJwt })
