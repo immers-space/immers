@@ -209,11 +209,14 @@ const hubCors = cors(function (req, done) {
     done(null, { origin: false })
   } catch (err) { done(err) }
 })
-// auth for public v. private routes, with cors enabled for client origins
-const publ = [passport.authenticate(['bearer', 'anonymous'], { session: false }), hubCors]
-// like public but with wide-open CORS
-const open = [passport.authenticate(['bearer', 'anonymous'], { session: false }), cors()]
+// auth for private routes only accessible with user access token (e.g. outbox POST)
 const priv = [passport.authenticate('bearer', { session: false }), hubCors]
+// auth for public routes that need dynamic cors and/or that can include additional private information (e.g. outbox GET)
+const publ = [passport.authenticate(['bearer', 'anonymous'], { session: false }), hubCors]
+// like public but with wide-open CORS (user profile lookup from destinations)
+const open = [passport.authenticate(['bearer', 'anonymous'], { session: false }), cors()]
+// auth for OAuth client / service account jwt login (e.g. in Authorization code grant)
+const clnt = passport.authenticate('oauth2-client-jwt', { session: false })
 // simple scoping limits acess to entire route by scope
 function scope (scopeNames) {
   let hasScope
@@ -385,6 +388,7 @@ module.exports = {
   publ,
   open,
   priv,
+  clnt,
   scope,
   viewScope,
   friendsScope,
@@ -456,7 +460,7 @@ module.exports = {
     })
   ],
   tokenExchange: [
-    passport.authenticate('oauth2-client-jwt', { session: false }),
+    clnt, // authorize the client
     server.token(),
     server.errorHandler()
   ]
