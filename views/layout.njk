@@ -17,7 +17,8 @@
         loggedInUser: '{{ loggedInUser }}',
         preferredScope: '{{ preferredScope }}'.split(' '),
         emailOptInURL: '{{ emailOptInURL }}',
-        loginTab: '{{ loginTab }}'
+        loginTab: '{{ loginTab }}',
+        enablePublicRegistration: '{{ enablePublicRegistration }}'
       }
       {% if icon %}window._serverData.icon = '/static/{{ icon }}'{% endif %}
     </script>

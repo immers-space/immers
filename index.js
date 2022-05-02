@@ -24,6 +24,7 @@ const { debugOutput, parseHandle, parseProxyMode, apexDomain } = require('./src/
 const { apex, createImmersActor, deliverWelcomeMessage, routes, onInbox, onOutbox, outboxPost } = require('./src/apex')
 const { migrate } = require('./src/migrate')
 const { scopes } = require('./common/scopes')
+const settings = require('./src/settings')
 
 const {
   port,
@@ -53,7 +54,8 @@ const {
   systemUserName,
   systemDisplayName,
   welcome,
-  proxyMode
+  proxyMode,
+  enablePublicRegistration
 } = process.env
 let welcomeContent
 if (welcome && fs.existsSync(path.join(__dirname, 'static-ext', welcome))) {
@@ -76,7 +78,8 @@ const renderConfig = {
   icon,
   imageAttributionText,
   imageAttributionUrl,
-  emailOptInURL
+  emailOptInURL,
+  enablePublicRegistration
 }
 
 // fallback to building string from parts for backwards compat
@@ -144,7 +147,7 @@ app.get('/auth/logout', auth.logout, (req, res) => res.redirect('/'))
 app.post('/auth/logout', auth.logout, (req, res) => {
   return res.sendStatus(200)
 })
-app.post('/auth/client', auth.registerClient)
+app.post('/auth/client', settings.isTrue('enableClientRegistration'), auth.registerClient)
 
 app.post('/auth/forgot', passport.authenticate('easy'), (req, res) => {
   return res.json({ emailed: true })
@@ -184,7 +187,7 @@ async function registerActor (req, res, next) {
     next()
   } catch (err) { next(err) }
 }
-app.post('/auth/user', auth.validateNewUser, auth.logout, registerActor, auth.registration)
+app.post('/auth/user', settings.isTrue('enablePublicRegistration'), auth.validateNewUser, auth.logout, registerActor, auth.registration)
 // users are sent here from Hub to get access token, but it may interrupt with redirect
 // to login and further redirect to login at their home immer if they are remote
 app.get('/auth/authorize', auth.authorization)
