@@ -83,8 +83,8 @@ systemDisplayName | Sets the display name for the service actor | none
 welcome | HTML file for a message that will be delivered from the system user to new user's inboxes (requires `systemUserName`) | none (does not send message)
 keyPath, certPath, caPath | Local development only. Relative paths to certificate files | None
 proxyMode | Enable use behind an SSL-terminating proxy or load balancer, serves over http instead of https and sets Express `trust proxy` setting to the value of `proxyMode` (e.g. `1`, [other options](https://expressjs.com/en/guide/behind-proxies.html)) | none (serves over https with AutoEncrypt)
-enablePublicRegistration | Allow public user registration | false
-enablePublicRegistration | Allow client registration integration | false
+enablePublicRegistration | Allow public user registration | true
+enableClientRegistration | Allow client registration integration | true
 
 ## API access
 
