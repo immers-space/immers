@@ -172,6 +172,14 @@ Default immers server is `https://localhost:8081`, override with entry `IMMERS_S
 
 If working on immers server web client, run both `npm run dev:client` and `npm run dev` at the same time.
 
+### Creating a new release
+
+1. Update `CHANGELOG.md` - Update top section header from "Unreleased" to "vx.x.x (yyyy-mm-dd)" with the version and date of the new release
+2. Update package version: `npm version [patch|minor|major]`
+3. Build new docker image: `npm run build:image`
+4. Login to docker hub: `docker login -u your_user_name` (if needed)
+5. Publish new docker image: `npm run publish:image`
+
 ## Creator Members
 
 [![Creator members](https://opencollective.com/immers-space/tiers/creator-member.svg?avatarHeight=36&width=600)](https://opencollective.com/immers-space)
