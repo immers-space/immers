@@ -219,9 +219,11 @@ class Login extends React.Component {
     return false
   }
 
-  onEnter = cb => e => {
-    if (e.key === 'Enter') {
-      cb()
+  onEnter (cb) {
+    return e => {
+      if (e.key === 'Enter') {
+        cb()
+      }
     }
   }
 
