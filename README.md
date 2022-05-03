@@ -83,6 +83,8 @@ systemDisplayName | Sets the display name for the service actor | none
 welcome | HTML file for a message that will be delivered from the system user to new user's inboxes (requires `systemUserName`) | none (does not send message)
 keyPath, certPath, caPath | Local development only. Relative paths to certificate files | None
 proxyMode | Enable use behind an SSL-terminating proxy or load balancer, serves over http instead of https and sets Express `trust proxy` setting to the value of `proxyMode` (e.g. `1`, [other options](https://expressjs.com/en/guide/behind-proxies.html)) | none (serves over https with AutoEncrypt)
+enablePublicRegistration | Allow new user self-registration | true
+enableClientRegistration | Allow new remote immers servers to register - if this is `false`, users will not be able to login with their accounts from other servers unless that server is already registered | true
 
 ## API access
 
@@ -178,6 +180,14 @@ npm run build:client
 Default immers server is `https://localhost:8081`, override with entry `IMMERS_SERVER` in hubs repo root folder `.env` file.
 
 If working on immers server web client, run both `npm run dev:client` and `npm run dev` at the same time.
+
+### Creating a new release
+
+1. Update `CHANGELOG.md` - Update top section header from "Unreleased" to "vx.x.x (yyyy-mm-dd)" with the version and date of the new release
+2. Update package version: `npm version [patch|minor|major]`
+3. Build new docker image: `npm run build:image`
+4. Login to docker hub: `docker login -u your_user_name` (if needed)
+5. Publish new docker image: `npm run publish:image`
 
 ## Creator Members
 

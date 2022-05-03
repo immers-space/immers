@@ -1,5 +1,5 @@
 'use strict'
-require('dotenv').config()
+require('dotenv-defaults').config()
 const { apex, createImmersActor } = require('../src/apex')
 
 module.exports = {
