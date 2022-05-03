@@ -337,7 +337,7 @@ class Login extends React.Component {
   componentDidMount () {
     // if handle pre-filled, click lookup button
     if (this.state.username && this.state.immer) {
-      (this.state.local) ? this.handleRedirect() : this.handleLookup()
+      handleLookup().then(() => state.isRemote && this.handleRedirect())
     }
   }
 }
