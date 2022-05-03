@@ -6,3 +6,4 @@ config.json
 .cache
 dist
 .parcel-cache
+.env
