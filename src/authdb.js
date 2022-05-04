@@ -113,7 +113,7 @@ module.exports = {
     }
     let client
     try {
-      const client = await db
+      client = await db
         .collection('clients')
         .findOne({ clientId: claims.iss })
       if (!client?.jwtPublicKeyPem) {
