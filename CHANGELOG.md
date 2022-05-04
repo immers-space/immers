@@ -2,10 +2,10 @@
 
 ### Added
 
+## 2.2.0 (2022-05-03)
 * New configuration options `enablePublicRegistration` and `enableClientRegistration` that can be altered to limit access to your immer (default behavior remains unchanged)
 
 ## 2.1.2
-
 * Fix an issue causing migrations to fail if a system user was in use
 * Fix system users not have full immers actor config
 * Dependency update to fix audit alert
