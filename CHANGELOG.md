@@ -1,8 +1,13 @@
-## Unreleased
+## 2.2.1 (2022-05-04)
+
+### Fixed
+
+* Fix incorrect package lock breaking signature verification on incoming messages
+
+## 2.2.0 (2022-05-03) - [YANKED]
 
 ### Added
 
-## 2.2.0 (2022-05-03)
 * New configuration options `enablePublicRegistration` and `enableClientRegistration` that can be altered to limit access to your immer (default behavior remains unchanged)
 
 ## 2.1.2
