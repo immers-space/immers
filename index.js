@@ -65,7 +65,7 @@ if (welcome && fs.existsSync(path.join(__dirname, 'static-ext', welcome))) {
   // internal default
   welcomeContent = fs.readFileSync(path.join(__dirname, 'static', welcome), 'utf8')
 }
-const hubs = hub.split(',');
+const hubs = hub.split(',')
 const renderConfig = {
   name,
   domain,

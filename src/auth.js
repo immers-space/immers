@@ -138,7 +138,7 @@ const hubCors = cors(function (req, done) {
   try {
     const origin = new URL(req.header('Origin')).host
     if (
-      hubs.indexOf(origin) !== -1
+      hubs.indexOf(origin) !== -1 ||
       // CORS for authorized remote clients
       (req.authInfo && origin === new URL(req.authInfo.origin).host)
     ) {
