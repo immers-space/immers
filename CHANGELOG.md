@@ -1,3 +1,8 @@
+## Unreleased
+
+### Added
+
+* Support for `hub` configuration option to be a comma separated list of CORS domains
 ## 2.2.1 (2022-05-04)
 
 ### Fixed
@@ -7,7 +12,6 @@
 ## 2.2.0 (2022-05-03) - [YANKED]
 
 ### Added
-* Support for `hub` configuration option to be a comma separated list of CORS domains
 
 * New configuration options `enablePublicRegistration` and `enableClientRegistration` that can be altered to limit access to your immer (default behavior remains unchanged)
 
