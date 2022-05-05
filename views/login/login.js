@@ -32,7 +32,7 @@ class Login extends React.Component {
       tab: 'Login',
       username: data.username || '',
       immer: data.immer || '',
-      isPrefilled: data.username?.length && data.immer?.length,
+      isPrefilled: data.username.length && data.immer.length,
       passwordError: qParams.has('passwordfail'),
       ...this.initialState
     }
