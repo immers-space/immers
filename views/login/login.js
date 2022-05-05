@@ -344,7 +344,7 @@ class Login extends React.Component {
 
   componentDidUpdate () {
     // if handle pre-filled and remote, click proceed button
-    if (this.state.isPrefilled && this.state.isRemote ) {
+    if (this.state.isPrefilled && this.state.isRemote) {
       this.handleRedirect()
     }
   }
