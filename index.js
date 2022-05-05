@@ -66,10 +66,11 @@ if (welcome && fs.existsSync(path.join(__dirname, 'static-ext', welcome))) {
   // internal default
   welcomeContent = fs.readFileSync(path.join(__dirname, 'static', welcome), 'utf8')
 }
+const hubs = hub.split(',')
 const renderConfig = {
   name,
   domain,
-  hub,
+  hub: hubs,
   homepage,
   monetizationPointer,
   googleFont,
@@ -250,7 +251,7 @@ app.get('/', (req, res) => {
   res.redirect(
     req.user
       ? apex.utils.usernameToIRI(req.user.username)
-      : `${req.protocol}://${homepage || hub}`
+      : `${req.protocol}://${homepage || hubs[0]}`
   )
 })
 // for SPA routing in activity pub pages
@@ -386,7 +387,7 @@ migrate(mongoURI).catch((err) => {
     id: `https://${domain}/o/immer`,
     type: 'Place',
     name,
-    url: `https://${hub}`,
+    url: `https://${hubs[0]}`,
     audience: apex.consts.publicAddress
   })
   await apex.store.setup(immer)
