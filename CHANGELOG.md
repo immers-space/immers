@@ -1,3 +1,9 @@
+## Unreleased
+
+### Added
+
+* Support for `hub` configuration option to be a comma separated list of CORS domains
+
 ## 2.2.1 (2022-05-04)
 
 ### Fixed
