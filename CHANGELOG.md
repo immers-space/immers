@@ -4,6 +4,11 @@
 
 * Support for `hub` configuration option to be a comma separated list of CORS domains
 
+
+### Changed
+
+* Skip waiting for user input and automatically redirect to home immer when opening the login view and the user's handle is already known and the user is from a different immer.
+
 ## 2.2.1 (2022-05-04)
 
 ### Fixed
