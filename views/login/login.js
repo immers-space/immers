@@ -79,7 +79,8 @@ class Login extends React.Component {
     let redirectUri
     const { username, immer } = this.state
     const search = new URLSearchParams({ username, immer }).toString()
-    return window.fetch(`/auth/home?${search}`, {
+    const promise = new Promise();
+    window.fetch(`/auth/home?${search}`, {
       headers: {
         Accept: 'application/json'
       }
@@ -102,6 +103,7 @@ class Login extends React.Component {
       .catch(err => {
         console.error(err.message)
         state = 'error'
+        promise.reject(state)
       })
       .then(() => {
         this.setState({
@@ -109,7 +111,9 @@ class Login extends React.Component {
           redirectUri
         })
         this.setLoginState(state)
+        promise.resolve(state)
       })
+    return promise
   }
 
   handleRedirect () {
