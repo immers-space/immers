@@ -79,7 +79,6 @@ class Login extends React.Component {
     let redirectUri
     const { username, immer } = this.state
     const search = new URLSearchParams({ username, immer }).toString()
-    const promise = new Promise();
     window.fetch(`/auth/home?${search}`, {
       headers: {
         Accept: 'application/json'
@@ -103,7 +102,6 @@ class Login extends React.Component {
       .catch(err => {
         console.error(err.message)
         state = 'error'
-        promise.reject(state)
       })
       .then(() => {
         this.setState({
@@ -111,9 +109,7 @@ class Login extends React.Component {
           redirectUri
         })
         this.setLoginState(state)
-        promise.resolve(state)
       })
-    return promise
   }
 
   handleRedirect () {
@@ -341,7 +337,14 @@ class Login extends React.Component {
   componentDidMount () {
     // if handle pre-filled, click lookup button
     if (this.state.username && this.state.immer) {
-      this.handleLookup().then(() => this.state.isRemote && this.handleRedirect())
+      this.handleLookup()
+    }
+  }
+
+  componentDidUpdate () {
+    // if handle pre-filled and remote, click proceed button
+    if (this.state.username && this.state.immer && this.state.isRemote ) {
+      this.handleRedirect()
     }
   }
 }
