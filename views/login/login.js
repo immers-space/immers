@@ -32,6 +32,7 @@ class Login extends React.Component {
       tab: 'Login',
       username: data.username || '',
       immer: data.immer || '',
+      isPrefilled: data.username?.length && data.immer?.length,
       passwordError: qParams.has('passwordfail'),
       ...this.initialState
     }
@@ -343,7 +344,7 @@ class Login extends React.Component {
 
   componentDidUpdate () {
     // if handle pre-filled and remote, click proceed button
-    if (this.state.username && this.state.immer && this.state.isRemote ) {
+    if (this.state.isPrefilled && this.state.isRemote ) {
       this.handleRedirect()
     }
   }
