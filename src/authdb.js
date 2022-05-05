@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt')
 const crypto = require('crypto')
 const { domain, hub, name } = process.env
 
+const hubs = hub.split(',')
 const saltRounds = 10
 const tokenAge = 24 * 60 * 60 * 1000 // one day
 const anonClientPrefix = '_anonymous:'
@@ -48,7 +49,7 @@ module.exports = {
     }, {
       name,
       clientId: `https://${domain}/o/immer`,
-      redirectUri: `https://${hub}`,
+      redirectUri: `https://${hubs[0]}`,
       isTrusted: true
     }, { upsert: true })
   },

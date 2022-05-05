@@ -28,7 +28,7 @@ class Login extends React.Component {
     this.state = {
       data,
       currentState: undefined,
-      tabs: ['Login', 'Register', 'Reset password'],
+      tabs: data.enablePublicRegistration === 'true' ? ['Login', 'Register', 'Reset password'] : ['Login', 'Reset password'],
       tab: 'Login',
       username: data.username || '',
       immer: data.immer || '',

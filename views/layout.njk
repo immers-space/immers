@@ -5,7 +5,7 @@
       window._serverData = {
         domain: '{{ domain }}',
         name: '{{ name }}',
-        hub: '{{ hub }}',
+        hub: '{{ hub[0] }}',
         homepage: '{{ homepage }}',
         imageAttributionUrl: '{{ imageAttributionUrl }}',
         imageAttributionText: '{{ imageAttributionText }}',
@@ -17,7 +17,8 @@
         loggedInUser: '{{ loggedInUser }}',
         preferredScope: '{{ preferredScope }}'.split(' '),
         emailOptInURL: '{{ emailOptInURL }}',
-        loginTab: '{{ loginTab }}'
+        loginTab: '{{ loginTab }}',
+        enablePublicRegistration: '{{ enablePublicRegistration }}'
       }
       {% if icon %}window._serverData.icon = '/static/{{ icon }}'{% endif %}
     </script>
