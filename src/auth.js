@@ -288,7 +288,7 @@ async function checkImmer (req, res, next) {
         body: {
           name,
           clientId: `https://${domain}/o/immer`,
-          redirectUri: `https://${hubs[0]}`
+          redirectUri: hubs.map(h => `https://${h}`)
         },
         json: true
       })
