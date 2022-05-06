@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  immer1:
+    build: ../.
+    restart: unless-stopped
+    ports:
+      - 8081:8081
+    env_file: '../.env'
+    environment:
+      dbString: 'mongodb://mongodb:27017/immers'
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
+    depends_on:
+      - mongodb
+    volumes:
+      - ../certs:/usr/src/immers/certs
+  immer2:
+    build: ../.
+    restart: unless-stopped
+    ports:
+      - 8082:8082
+    env_file: '../.env'
+    environment:
+      port: 8082
+      domain: 'immer2:8082'
+      name: 'Immer No. 2'
+      dbString: 'mongodb://mongodb:27017/immers2'
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
+    depends_on:
+      - mongodb
+    volumes:
+      - ../certs:/usr/src/immers/certs
+
+  mongodb:
+    image: mongo:4.2
+    restart: unless-stopped
+    volumes:
+      - /data/db
