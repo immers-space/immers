@@ -366,7 +366,7 @@ module.exports = {
         transactionId: request.oauth2.transactionID,
         username: request.user.username,
         clientName: request.oauth2.client.name,
-        redirectUri: request.oauth2.client.redirectUri,
+        redirectUri: request.oauth2.redirectURI,
         preferredScope: request.oauth2.req.scope.join(' '),
         name,
         monetizationPointer,
