@@ -2,7 +2,7 @@
 
 ### Added
 
-* Support for `hub` configuration option to be a comma separated list of CORS domains
+* Support for multiple `hub` domains, each will be enabled for CORS and OAuth client redirectURIs
 
 
 ### Changed
