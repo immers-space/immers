@@ -51,7 +51,7 @@ Variable | Value | Example
 --- | --- | ---
 name | Name of your immer | Immers Space
 domain | Domain name for your immers server | immers.space
-hub | Domain name for your Mozilla Hubs Cloud or other connected immersive experience. Can either be a single domain or comma separated list with additional CORS & OAuth redirect domains. Users will be redirected to the first domain listed. | hub.immers.space
+hub | Domain name for your Mozilla Hubs Cloud or other connected immersive experience. Can either be a single domain or comma separated list. Each domain listed will be enabled for CORS & trusted OAuth client requests. Users will be redirected to the first domain listed. | hub.immers.space
 dbString | Full MongoDB connection string, with credentials and database name, e.g. `mongodb://localhost:27017/immers`
 smtpHost | Mail service domain (for password resets) | smtp.sendgrid.net
 smtpPort | Mail service port | 587
