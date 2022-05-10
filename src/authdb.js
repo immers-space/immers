@@ -124,7 +124,11 @@ module.exports = {
       return done(err)
     }
     jwt.verify(rawToken, client.jwtPublicKeyPem, (err, verifiedJwt) => {
-      done(err, client, { verifiedJwt })
+      if (err) {
+        // invalid JWT
+        return done(null, false)
+      }
+      done(null, client, { verifiedJwt })
     })
   },
   serializeUser (user, done) {
