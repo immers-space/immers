@@ -51,7 +51,7 @@ module.exports = {
       $set: {
         name,
         clientId: `https://${domain}/o/immer`,
-        redirectUri: `https://${hubs[0]}`,
+        redirectUri: hubs.map(h => `https://${h}`),
         isTrusted: true
       }
     }, { upsert: true })
