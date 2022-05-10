@@ -1,15 +1,18 @@
 'use strict'
 
-const isTrue = (settingName) => {
-  return isEqualTo(settingName, 'true')
+const isTrue = (settingName, overrideCheck) => {
+  return isEqualTo(settingName, 'true', overrideCheck)
 }
 
-const isFalse = (settingName) => {
-  return isEqualTo(settingName, 'false')
+const isFalse = (settingName, overrideCheck) => {
+  return isEqualTo(settingName, 'false', overrideCheck)
 }
 
-const isEqualTo = (settingName, value) => {
+const isEqualTo = (settingName, value, overrideCheck) => {
   return (req, res, next) => {
+    if (overrideCheck?.(req, res)) {
+      return next()
+    }
     if (process.env[settingName] !== value) {
       const validMessage = 'Method unavailable due to Immers configuration.'
       return res.status(405).format({
