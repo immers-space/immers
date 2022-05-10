@@ -19,12 +19,41 @@ system client and outputs the private key that you need to save.
 docker-compose exec immer /usr/src/immers/bin/install-admin-key.mjs > immersAdminPrivateKey.pem
 ```
 
-## Create user accounts
+## (server-side only) Create user accounts
 
-User accounts can be created programatically without passwords (disabling direct login)
+User accounts can be created programatically without passwords (disabling direct login), and you'll probably want to disable user
+self-registration on your Immers server so that all sign-ups go
+through your primary account system.
+
+In your `.env` add:
 
 ```
-Post  https://yourDomain.com/auth/user` application/json { username, email }
+enablePublicRegistration=false
+```
+
+From your application server, make an authenticated POST
+to the user endpoint to register accounts.
+Your admin private key must be kept private on your server and never sent to the client.
+
+```js
+const { readFileSync } = require('fs')
+const jwt = require('jsonwebtoken')
+const axios = require('axios') // any request library will do
+const immersAdminPrivateKey = readFileSync('immersAdminPrivateKey.pem')
+const auth = jwt.sign({}, immersAdminPrivateKey, {
+  algorithm: "RS256",
+  issuer: `https://yourDomain.com/o/immer`,
+  audience: `https://yourDomain.com/o/immer`,
+  expiresIn: "1h"
+})
+axios.post(
+  `https://${immerDomain}/auth/user`,
+  {
+    username,
+    email
+  },
+  { headers: { Authorization: `Bearer ${auth}` } }
+)
 ```
 
 ## (server-side only) Exchange service JWT for user access token
@@ -33,7 +62,11 @@ Your admin private key must be kept private on your server and never sent to the
 Sign a JWT and send it as a OAuth2 token exchange to retrieve a user access token.
 
 ```js
-jwt.sign(
+const { readFileSync } = require('fs')
+const jwt = require('jsonwebtoken')
+const axios = require('axios') // any request library will do
+const immersAdminPrivateKey = readFileSync('immersAdminPrivateKey.pem')
+const auth = jwt.sign(
   {
     scope: "*",
     origin: "https://hub.yourDomain.com" // make this match the origin where the tokens will be used
@@ -47,13 +80,20 @@ jwt.sign(
     subject: "user[yourdomain.dom]" // the user that you will login as
   }
 );
-
-```
-POST https://yourDomain.com/auth/exchange application/x-www-form-urlencoded
-{
+const params = new url.URLSearchParams({
   grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-  assertion: jwt
-}
+  assertion: oAuthJwt
+});
+axios.post(
+  `https://yourDomain.com/auth/exchange`,
+  new url.URLSearchParams({
+    grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+    assertion: oAuthJwt
+  }).toString()
+).then(response => {
+  const { access_token, scope } = response.data
+  // send token to front-end
+});
 ```
 
 The response from the exchange request will be
