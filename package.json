@@ -1,6 +1,6 @@
 {
   "name": "immers",
-  "version": "2.1.2",
+  "version": "2.2.1",
   "description": "ActivityPub server for the metaverse",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -41,7 +41,7 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
-    "dotenv": "^16.0.0",
+    "dotenv-defaults": "^5.0.0",
     "easy-no-password": "^1.2.2",
     "email-validator": "^2.0.4",
     "emoji-mart": "^3.0.1",

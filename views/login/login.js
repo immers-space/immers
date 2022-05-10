@@ -28,10 +28,11 @@ class Login extends React.Component {
     this.state = {
       data,
       currentState: undefined,
-      tabs: ['Login', 'Register', 'Reset password'],
+      tabs: data.enablePublicRegistration === 'true' ? ['Login', 'Register', 'Reset password'] : ['Login', 'Reset password'],
       tab: 'Login',
       username: data.username || '',
       immer: data.immer || '',
+      isPrefilled: data.username.length && data.immer.length,
       passwordError: qParams.has('passwordfail'),
       ...this.initialState
     }
@@ -355,6 +356,13 @@ class Login extends React.Component {
     // if handle pre-filled, click lookup button
     if (this.state.username && this.state.immer) {
       this.handleLookup()
+    }
+  }
+
+  componentDidUpdate () {
+    // if handle pre-filled and remote, click proceed button
+    if (this.state.isPrefilled && this.state.isRemote) {
+      this.handleRedirect()
     }
   }
 }

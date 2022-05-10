@@ -30,6 +30,7 @@ const {
   imageAttributionText,
   imageAttributionUrl
 } = process.env
+const hubs = hub.split(',')
 const emailCheck = require('email-validator')
 const handleCheck = '^[A-Za-z0-9-]{3,32}$'
 const nameCheck = '^[A-Za-z0-9_~ -]{3,32}$'
@@ -137,7 +138,7 @@ const hubCors = cors(function (req, done) {
   try {
     const origin = new URL(req.header('Origin')).host
     if (
-      origin === hub ||
+      hubs.indexOf(origin) !== -1 ||
       // CORS for authorized remote clients
       (req.authInfo && origin === new URL(req.authInfo.origin).host)
     ) {
@@ -287,7 +288,7 @@ async function checkImmer (req, res, next) {
         body: {
           name,
           clientId: `https://${domain}/o/immer`,
-          redirectUri: `https://${hub}`
+          redirectUri: hubs.map(h => `https://${h}`)
         },
         json: true
       })
@@ -365,7 +366,7 @@ module.exports = {
         transactionId: request.oauth2.transactionID,
         username: request.user.username,
         clientName: request.oauth2.client.name,
-        redirectUri: request.oauth2.client.redirectUri,
+        redirectUri: request.oauth2.redirectURI,
         preferredScope: request.oauth2.req.scope.join(' '),
         name,
         monetizationPointer,
@@ -396,7 +397,7 @@ module.exports = {
 
 // misc utils
 function respondRedirect (req, res) {
-  let redirect = `https://${hub}`
+  let redirect = `https://${hubs[0]}`
   if (req.session && req.session.returnTo) {
     redirect = req.session.returnTo
     delete req.session.returnTo
@@ -405,7 +406,7 @@ function respondRedirect (req, res) {
 }
 
 function returnTo (req, res) {
-  let redirect = `https://${hub}`
+  let redirect = `https://${hubs[0]}`
   if (req.session && req.session.returnTo) {
     redirect = req.session.returnTo
     delete req.session.returnTo
