@@ -14,7 +14,7 @@
 ### Changed
 
 * Skip waiting for user input and automatically redirect to home immer when opening the login view and the user's handle is already known and the user is from a different immer.
-* Whe public registration is disabled, `/auth/user` can still be POSTed when a service account JWT is provided as a bearer token
+* When public registration is disabled, `/auth/user` can still be POSTed when a service account JWT is provided as a bearer token
 * Password is no longer required for `/auth/user` POST (direct login will not be possible for the user account unless a password is set later)
 
 ## 2.2.1 (2022-05-04)
