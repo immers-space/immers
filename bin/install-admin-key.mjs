@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 'use strict'
+/**
+ * This script can be used to generate and install
+ * a service account keypair to enable Controlled Accounts feature.
+ * See ../doc/ControlledAccounts.md
+ */
 import 'dotenv/config'
 import crypto from 'crypto'
 import { MongoClient } from 'mongodb'
