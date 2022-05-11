@@ -49,6 +49,10 @@ class Login extends React.Component {
     this.handleLogin = this.handleLogin.bind(this)
     this.handleRegister = this.handleRegister.bind(this)
     this.handleForgot = this.handleForgot.bind(this)
+    this.onEnter = this.onEnter.bind(this)
+    this.submitForm = this.submitForm.bind(this)
+
+    this.form = React.createRef()
   }
 
   setLoginState (status) {
@@ -216,6 +220,18 @@ class Login extends React.Component {
     return false
   }
 
+  onEnter (cb) {
+    return e => {
+      if (e.key === 'Enter') {
+        cb()
+      }
+    }
+  }
+
+  submitForm () {
+    this.form.current.submit()
+  }
+
   render () {
     const topClass = c({
       'aesthetic-windows-95-tabbed-container': true,
@@ -235,12 +251,13 @@ class Login extends React.Component {
         <div className='aesthetic-windows-95-container'>
           {this.state.tab === 'Login' &&
             <div id='login-form' className='aesthetic-windows-95-container-indent'>
-              <form method='post' onSubmit={this.handleLogin}>
+              <form method='post' onSubmit={this.handleLogin} ref={this.form}>
                 <HandleInput
                   onChange={this.handleHandleInput}
                   username={this.state.username} immer={this.state.immer}
+                  onKeyPress={this.onEnter(this.handleLookup)}
                 />
-                <PasswordInput hide={!this.state.local} autoFocus />
+                <PasswordInput hide={!this.state.local} autoFocus onKeyPress={this.onEnter(this.submitForm)} />
                 <div className={c({ 'form-item': true, hidden: !this.state.isRemote })}>
                   You will be redirected to your home immer to login
                 </div>
