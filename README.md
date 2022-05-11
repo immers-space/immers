@@ -138,7 +138,7 @@ If you have an existing user account system, you may not want to bother users wi
 another account for immers features. In this case, you can setup a service account
 with total authority to create users, login as them, and act on their behalf.
 
-[Controlled accounts docs](./ControlledAccounts.md)
+[Controlled accounts docs](./doc/ControlledAccounts.md)
 
 
 ## Manual Hubs Cloud Config

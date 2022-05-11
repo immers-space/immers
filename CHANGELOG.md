@@ -1,13 +1,21 @@
 ## Unreleased
 
+### Breaking Changes
+
+* Include pending, outgoing friends requests in response from `/u/:actor/friends` endpoint. In these activities, the `object` field will be populated with the requestee actor object - this may break existing code that expects `actor` to be populated with an object as is the case with all other activities in this response
+
 ### Added
 
 * Support for multiple `hub` domains, each will be enabled for CORS and OAuth client redirectURIs
 * Added keyboard 'Enter' handling for Immers handle and password fields on login.
+* Added ability for authorized service accounts to obtain tokens on behalf of users via 2-legged OAuth JWT exchange. [More info](./doc/ControlledAccounts.md)
+* New socket event `outbox-update` fires with activities posted to the user's outbox
 
 ### Changed
 
 * Skip waiting for user input and automatically redirect to home immer when opening the login view and the user's handle is already known and the user is from a different immer.
+* Whe public registration is disabled, `/auth/user` can still be POSTed when a service account JWT is provided as a bearer token
+* Password is no longer required for `/auth/user` POST (direct login will not be possible for the user account unless a password is set later)
 
 ## 2.2.1 (2022-05-04)
 
