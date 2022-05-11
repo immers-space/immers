@@ -3,7 +3,7 @@
 ### Added
 
 * Support for multiple `hub` domains, each will be enabled for CORS and OAuth client redirectURIs
-
+* Added keyboard 'Enter' handling for Immers handle and password fields on login.
 
 ### Changed
 
