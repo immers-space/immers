@@ -189,19 +189,7 @@ async function registerActor (req, res, next) {
     next()
   } catch (err) { next(err) }
 }
-app.post(
-  '/auth/user',
-  // optional client login for registration setting override
-  passport.authenticate(['oauth2-client-jwt', 'anonymous'], { session: false }),
-  settings.isTrue(
-    'enablePublicRegistration',
-    req => req.user?.canControlUserAccounts
-  ),
-  auth.validateNewUser,
-  auth.logout,
-  registerActor,
-  auth.registration
-)
+app.post('/auth/user', settings.isTrue('enablePublicRegistration'), auth.validateNewUser, auth.logout, registerActor, auth.registration)
 // users are sent here from Hub to get access token, but it may interrupt with redirect
 // to login and further redirect to login at their home immer if they are remote
 app.get('/auth/authorize', auth.authorization)

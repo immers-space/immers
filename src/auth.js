@@ -122,9 +122,9 @@ passport.use(new BearerStrategy(authdb.validateAccessToken))
 passport.use(new AnonymousStrategy())
 // OAuth2 client login
 passport.use('oauth2-client-jwt', new CustomStrategy(async (req, done) => {
-  const rawToken = req.body?.assertion ?? req.get('authorization')?.split('Bearer ')[1]
+  const rawToken = req.body?.assertion
   if (!rawToken) {
-    return done(null, false, 'missing assertion body field or Bearer authorization header')
+    return done(null, false, 'missing assertion body field')
   }
   authdb.authenticateClientJwt(rawToken, done)
 }))
