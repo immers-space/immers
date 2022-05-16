@@ -122,9 +122,9 @@ passport.use(new BearerStrategy(authdb.validateAccessToken))
 passport.use(new AnonymousStrategy())
 // OAuth2 client login
 passport.use('oauth2-client-jwt', new CustomStrategy(async (req, done) => {
-  const rawToken = req.body?.assertion
+  const rawToken = req.body?.assertion ?? req.get('authorization')?.split('Bearer ')[1]
   if (!rawToken) {
-    return done(null, false, 'missing assertion body field')
+    return done(null, false, 'missing assertion body field or Bearer authorization header')
   }
   authdb.authenticateClientJwt(rawToken, done)
 }))
@@ -210,6 +210,29 @@ const hubCors = cors(function (req, done) {
     done(null, { origin: false })
   } catch (err) { done(err) }
 })
+
+// for endpoints that behave differently for authorized requests
+const passIfNotAuthorized = (req, res, next) => {
+  if (!req.get('authorization')) {
+    return next('route')
+  }
+  next()
+}
+
+/**
+ * Middlware factory that requires the given prop is
+ * present on the authenticated user document with a value
+ * of true, responding 403 otherwise
+ * @param  {string} propName
+ */
+const requirePrivilege = (propName) => {
+  return (req, res, next) => {
+    if (!req.user?.[propName] === true) {
+      return res.sendStatus(403)
+    }
+    next()
+  }
+}
 // auth for private routes only accessible with user access token (e.g. outbox POST)
 const priv = [passport.authenticate('bearer', { session: false }), hubCors]
 // auth for public routes that need dynamic cors and/or that can include additional private information (e.g. outbox GET)
@@ -395,6 +418,8 @@ module.exports = {
   friendsScope,
   localToken: [hubCors, localToken],
   logout: [hubCors, logout],
+  passIfNotAuthorized,
+  requirePrivilege,
   userToActor,
   registerUser,
   changePassword,
