@@ -66,7 +66,7 @@ const { readFileSync } = require('fs')
 const jwt = require('jsonwebtoken')
 const axios = require('axios') // any request library will do
 const immersAdminPrivateKey = readFileSync('immersAdminPrivateKey.pem')
-const auth = jwt.sign(
+const oAuthJwt = jwt.sign(
   {
     scope: "*",
     origin: "https://hub.yourDomain.com" // make this match the origin where the tokens will be used
@@ -80,10 +80,6 @@ const auth = jwt.sign(
     subject: "user[yourdomain.dom]" // the user that you will login as
   }
 );
-const params = new url.URLSearchParams({
-  grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-  assertion: oAuthJwt
-});
 axios.post(
   `https://yourDomain.com/auth/exchange`,
   new url.URLSearchParams({
