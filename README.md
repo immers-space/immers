@@ -132,6 +132,15 @@ Log out of session without having to navigate to immers profile page:
 fetch('https://your.immer/auth/logout', { method: 'POST', credentials: 'include' })
 ```
 
+## Controlled Accounts
+
+If you have an existing user account system, you may not want to bother users with having
+another account for immers features. In this case, you can setup a service account
+with total authority to create users, login as them, and act on their behalf.
+
+[Controlled accounts docs](./doc/ControlledAccounts.md)
+
+
 ## Manual Hubs Cloud Config
 
 These steps are not necessary if you're using our docker Hubs deployer.

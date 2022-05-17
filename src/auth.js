@@ -6,12 +6,21 @@ const login = require('connect-ensure-login')
 const request = require('request-promise-native')
 const nodemailer = require('nodemailer')
 const cors = require('cors')
+const jwt = require('jsonwebtoken')
+// strategies for user authentication
 const EasyNoPassword = require('easy-no-password').Strategy
 const LocalStrategy = require('passport-local').Strategy
 const BearerStrategy = require('passport-http-bearer').Strategy
 const AnonymousStrategy = require('passport-anonymous').Strategy
+// strategies for OAuth client authentication
+const CustomStrategy = require('passport-custom').Strategy
+// additional OAuth exchange protocols
+const jwtBearer = require('oauth2orize-jwt-bearer').Exchange
+
 const overlaps = require('overlaps')
 const authdb = require('./authdb')
+const { scopes } = require('../common/scopes')
+
 const {
   domain,
   name,
@@ -32,8 +41,10 @@ const {
 } = process.env
 const hubs = hub.split(',')
 const emailCheck = require('email-validator')
+const { parseHandle } = require('./utils')
 const handleCheck = '^[A-Za-z0-9-]{3,32}$'
 const nameCheck = '^[A-Za-z0-9_~ -]{3,32}$'
+const oauthJwtExchangeType = 'urn:ietf:params:oauth:grant-type:jwt-bearer'
 let transporter
 if (process.env.NODE_ENV === 'production') {
   transporter = nodemailer.createTransport({
@@ -109,13 +120,61 @@ passport.use(new LocalStrategy(authdb.validateUser))
 passport.use(new BearerStrategy(authdb.validateAccessToken))
 // allow passthrough for routes with public info
 passport.use(new AnonymousStrategy())
+// OAuth2 client login
+passport.use('oauth2-client-jwt', new CustomStrategy(async (req, done) => {
+  const rawToken = req.body?.assertion ?? req.get('authorization')?.split('Bearer ')[1]
+  if (!rawToken) {
+    return done(null, false, 'missing assertion body field or Bearer authorization header')
+  }
+  authdb.authenticateClientJwt(rawToken, done)
+}))
 
 // Configure authorization server (grant access to remote clients)
 const server = oauth2orize.createServer()
 server.serializeClient(authdb.serializeClient)
 server.deserializeClient(authdb.deserializeClient)
-// Implicit grant only
+// Implicit grant
 server.grant(oauth2orize.grant.token(authdb.createAccessToken))
+// jwt bearer exchange for admin service accounts (2-Legged OAuth)
+server.exchange(oauthJwtExchangeType, jwtBearer(
+  // Authorize client token exchange request
+  function authorizeClientJwt (client, jwtBearer, done) {
+    const jwtRequires = { audience: `https://${domain}/o/immer`, maxAge: '1h' }
+    jwt.verify(jwtBearer, client.jwtPublicKeyPem, jwtRequires, async (err, validated) => {
+      if (err) {
+        console.error(`2LO error verifying jwt: ${err.toString()}`)
+        return done(null, false, 'invalid jwt')
+      }
+      if (!client.canControlUserAccounts) {
+        return done(null, false, 403)
+      }
+      let user
+      try {
+        if (validated.sub) {
+          const { username, immer } = parseHandle(validated.sub)
+          if (immer !== domain) {
+            throw new Error(`User ${validated.sub} not from this domain`)
+          }
+          user = await authdb.getUserByName(username)
+        }
+        if (!user) {
+          throw new Error(`User ${validated.sub} not found`)
+        }
+      } catch (err) {
+        console.log(`2LO failed user lookup: ${err}`)
+        return done(null, false, 'invalid sub claim')
+      }
+      if (!validated.scope) {
+        return done(null, false, 'missing scope claim')
+      }
+      const params = {}
+      const origin = new URL(client.redirectUri)
+      params.origin = validated.origin || `${origin.protocol}//${origin.host}`
+      params.issuer = `https://${domain}`
+      params.scope = validated.scope.split(' ')
+      authdb.createAccessToken(client, user, params, done)
+    })
+  }))
 // token grant for logged-in users in immers client
 function localToken (req, res) {
   if (!req.user) {
@@ -151,11 +210,37 @@ const hubCors = cors(function (req, done) {
     done(null, { origin: false })
   } catch (err) { done(err) }
 })
-// auth for public v. private routes, with cors enabled for client origins
-const publ = [passport.authenticate(['bearer', 'anonymous'], { session: false }), hubCors]
-// like public but with wide-open CORS
-const open = [passport.authenticate(['bearer', 'anonymous'], { session: false }), cors()]
+
+// for endpoints that behave differently for authorized requests
+const passIfNotAuthorized = (req, res, next) => {
+  if (!req.get('authorization')) {
+    return next('route')
+  }
+  next()
+}
+
+/**
+ * Middlware factory that requires the given prop is
+ * present on the authenticated user document with a value
+ * of true, responding 403 otherwise
+ * @param  {string} propName
+ */
+const requirePrivilege = (propName) => {
+  return (req, res, next) => {
+    if (!req.user?.[propName] === true) {
+      return res.sendStatus(403)
+    }
+    next()
+  }
+}
+// auth for private routes only accessible with user access token (e.g. outbox POST)
 const priv = [passport.authenticate('bearer', { session: false }), hubCors]
+// auth for public routes that need dynamic cors and/or that can include additional private information (e.g. outbox GET)
+const publ = [passport.authenticate(['bearer', 'anonymous'], { session: false }), hubCors]
+// like public but with wide-open CORS (user profile lookup from destinations)
+const open = [passport.authenticate(['bearer', 'anonymous'], { session: false }), cors()]
+// auth for OAuth client / service account jwt login (e.g. in Authorization code grant)
+const clnt = passport.authenticate('oauth2-client-jwt', { session: false })
 // simple scoping limits acess to entire route by scope
 function scope (scopeNames) {
   let hasScope
@@ -172,6 +257,8 @@ function scope (scopeNames) {
     next()
   }
 }
+const viewScope = scope(scopes.viewPrivate.name)
+const friendsScope = scope([scopes.viewPrivate.name, scopes.viewFriends.name])
 
 function logout (req, res, next) {
   req.logout()
@@ -325,9 +412,14 @@ module.exports = {
   publ,
   open,
   priv,
+  clnt,
   scope,
+  viewScope,
+  friendsScope,
   localToken: [hubCors, localToken],
   logout: [hubCors, logout],
+  passIfNotAuthorized,
+  requirePrivilege,
   userToActor,
   registerUser,
   changePassword,
@@ -392,6 +484,11 @@ module.exports = {
       params.scope = req.body.scope?.split(' ') || []
       done(null, params)
     })
+  ],
+  tokenExchange: [
+    clnt, // authorize the client
+    server.token(),
+    server.errorHandler()
   ]
 }
 
