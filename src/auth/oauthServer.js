@@ -6,7 +6,6 @@
  */
 const oauth2orize = require('oauth2orize')
 const passport = require('passport')
-const jwt = require('jsonwebtoken')
 const login = require('connect-ensure-login')
 // strategies for OAuth client authentication
 const CustomStrategy = require('passport-custom').Strategy
@@ -15,7 +14,6 @@ const jwtBearer = require('oauth2orize-jwt-bearer').Exchange
 
 const authdb = require('./authdb')
 const { clnt } = require('./resourceServer')
-const { parseHandle } = require('../utils')
 const {
   domain,
   name,
@@ -72,40 +70,15 @@ server.grant(oauth2orize.grant.token(authdb.createAccessToken))
 server.exchange(oauthJwtExchangeType, jwtBearer(
   // Authorize client token exchange request
   function authorizeClientJwt (client, jwtBearer, done) {
-    const jwtRequires = { audience: `https://${domain}/o/immer`, maxAge: '1h' }
-    jwt.verify(jwtBearer, client.jwtPublicKeyPem, jwtRequires, async (err, validated) => {
-      if (err) {
-        console.error(`2LO error verifying jwt: ${err.toString()}`)
-        return done(null, false, 'invalid jwt')
-      }
-      if (!client.canControlUserAccounts) {
-        return done(null, false, 403)
-      }
-      let user
-      try {
-        if (validated.sub) {
-          const { username, immer } = parseHandle(validated.sub)
-          if (immer !== domain) {
-            throw new Error(`User ${validated.sub} not from this domain`)
-          }
-          user = await authdb.getUserByName(username)
-        }
-        if (!user) {
-          throw new Error(`User ${validated.sub} not found`)
-        }
-      } catch (err) {
-        console.log(`2LO failed user lookup: ${err}`)
-        return done(null, false, 'invalid sub claim')
-      }
-      if (!validated.scope) {
-        return done(null, false, 'missing scope claim')
-      }
+    authdb.authorizeAccountControl(client, jwtBearer).then(({ validatedPayload, user }) => {
       const params = {}
       const origin = new URL(client.redirectUri)
-      params.origin = validated.origin || `${origin.protocol}//${origin.host}`
+      params.origin = validatedPayload.origin || `${origin.protocol}//${origin.host}`
       params.issuer = `https://${domain}`
-      params.scope = validated.scope.split(' ')
+      params.scope = validatedPayload.scope.split(' ')
       authdb.createAccessToken(client, user, params, done)
+    }).catch(err => {
+      done(null, false, err.message)
     })
   })
 )

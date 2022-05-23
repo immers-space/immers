@@ -142,6 +142,13 @@ app.use(express.urlencoded({ extended: false }))
 app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
 
 /// auth related routes ///
+// route for getting a login session cookie with controlled accounts
+app.post(
+  '/auth/login',
+  auth.passIfNotAuthorized,
+  auth.controlledAccountLogin
+)
+// routes for normal user login
 app.route('/auth/login')
   .get((req, res) => {
     const data = Object.assign({}, renderConfig)
@@ -234,8 +241,7 @@ const register = [auth.validateNewUser, auth.logout, registerActor, auth.registe
 app.post(
   '/auth/user',
   auth.passIfNotAuthorized,
-  passport.authenticate('oauth2-client-jwt', { session: false }),
-  auth.requirePrivilege('canControlUserAccounts'),
+  auth.authorizeServiceAccount,
   register,
   auth.respondRedirect
 )

@@ -4,6 +4,8 @@ const bcrypt = require('bcrypt')
 const crypto = require('crypto')
 const jwt = require('jsonwebtoken')
 const { USER_ROLES } = require('./consts')
+const { parseHandle } = require('../utils')
+
 const { domain, hub, name, adminEmail } = process.env
 
 const hubs = hub.split(',')
@@ -14,7 +16,7 @@ function hashEmail (email) {
   return crypto.createHash('sha256').update(email.toLowerCase()).digest('base64')
 }
 let db
-module.exports = {
+const authdb = {
   async setup (connection) {
     db = connection
     // token expiration via record deletion
@@ -178,7 +180,43 @@ module.exports = {
       done(null, tokenDoc.user, { scope: tokenDoc.scope, origin: tokenDoc.origin })
     } catch (err) { done(err) }
   },
-  // immers api methods (promises instead of callbacks)
+  /// immers api methods (promises instead of callbacks)
+  // validate a client request to control a user account
+  async authorizeAccountControl (client, jwtBearer) {
+    if (!client.canControlUserAccounts) {
+      throw new Error('forbidden')
+    }
+    const validatedPayload = await new Promise((resolve, reject) => {
+      const jwtRequires = { audience: `https://${domain}/o/immer`, maxAge: '1h' }
+      jwt.verify(jwtBearer, client.jwtPublicKeyPem, jwtRequires, async (err, validated) => {
+        if (err) {
+          console.error(`2LO error verifying jwt: ${err.toString()}`)
+          reject(err)
+        }
+        resolve(validated)
+      })
+    })
+    let user
+    try {
+      if (validatedPayload.sub) {
+        const { username, immer } = parseHandle(validatedPayload.sub)
+        if (immer !== domain) {
+          throw new Error(`User ${validatedPayload.sub} not from this domain`)
+        }
+        user = await authdb.getUserByName(username)
+      }
+      if (!user) {
+        throw new Error(`User ${validatedPayload.sub} not found`)
+      }
+    } catch (err) {
+      console.log(`2LO failed user lookup: ${err}`)
+      throw new Error('invalid sub claim')
+    }
+    if (!validatedPayload.scope) {
+      throw new Error('missing scope claim')
+    }
+    return { validatedPayload, user }
+  },
   getUserByName (username) {
     username = username.toLowerCase()
     return db.collection('users').findOne({ username })
@@ -250,3 +288,5 @@ module.exports = {
   }
 
 }
+
+module.exports = authdb
