@@ -89,6 +89,7 @@ keyPath, certPath, caPath | Local development only. Relative paths to certificat
 proxyMode | Enable use behind an SSL-terminating proxy or load balancer, serves over http instead of https and sets Express `trust proxy` setting to the value of `proxyMode` (e.g. `1`, [other options](https://expressjs.com/en/guide/behind-proxies.html)) | none (serves over https with AutoEncrypt)
 enablePublicRegistration | Allow new user self-registration | true
 enableClientRegistration | Allow new remote immers servers to register - if this is `false`, users will not be able to login with their accounts from other servers unless that server is already registered | true
+cookieName | Changes the key associated with session cookies, useful to differentiate sessions if you have multiple immers servers on the same apex domain | `connect.sid`
 
 **Notes on use with a reverse proxy**: When setting `proxyMode`, you must ensure your reverse proxy sets the following headers: X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto (example for nginx below). If you are load balancing multiple immers server instances, you will also need to setup sticky sessions in order for streaming updates to work. 
 

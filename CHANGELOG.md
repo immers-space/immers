@@ -4,6 +4,7 @@
 
 * Alternate version of `POST /auth/login` for controlled accounts that uses service account authentication instead of password
 [More info](./doc/ControlledAccounts.md)
+* Configuration option to alter session cookie id
 
 ## v3.4.0 (2022-09-16)
 

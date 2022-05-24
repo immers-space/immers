@@ -61,7 +61,8 @@ const {
   systemDisplayName,
   welcome,
   proxyMode,
-  enablePublicRegistration
+  enablePublicRegistration,
+  cookieName
 } = process.env
 let welcomeContent
 if (welcome && fs.existsSync(path.join(__dirname, 'static-ext', welcome))) {
@@ -114,6 +115,7 @@ app.use(session({
   resave: true,
   saveUninitialized: false,
   store: sessionStore,
+  name: cookieName,
   cookie: {
     maxAge: 365 * 24 * 60 * 60 * 1000,
     secure: true,
