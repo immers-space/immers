@@ -1,3 +1,10 @@
+## Unreleased
+
+### Added
+
+* Alternate version of `POST /auth/login` for controlled accounts that uses service account authentication instead of password
+[More info](./doc/ControlledAccounts.md)
+
 ## v3.4.0 (2022-09-16)
 
 **Urgent update**: Your SSL certificates may not be able to renew
