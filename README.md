@@ -74,6 +74,7 @@ customCSS | Additional CSS file to load | None
 icon | Image file | vaporwave-icon.png
 imageAttributionText | Attribution for backgroundImage, if needed | Vectors by Vecteezy
 imageAttributionUrl | Attribution for backgroundImage, if needed | https://www.vecteezy.com/free-vector/vector
+maxUploadSize | Limit on media upload file size in Mb | 20
 monetizationPointer | [Payment pointer](https://webmonetization.org/docs/ilp-wallets/#payment-pointers) for Web Monetization on login & profile pages | Immers Space organization wallet
 port | Port number for immers sever | 8081
 smtpFrom | From address for emails | noreplay@mail.`domain`

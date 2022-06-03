@@ -261,6 +261,8 @@ app.use('/media', media.router)
 /// Custom side effects
 app.on('apex-inbox', onInbox)
 app.on('apex-outbox', onOutbox)
+app.on('apex-inbox', media.fileCleanupOnDelete)
+app.on('apex-outbox', media.fileCleanupOnDelete)
 
 app.use(clientApi.router)
 // static files included in repo/docker image

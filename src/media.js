@@ -11,7 +11,7 @@ const auth = require('./auth')
 const { scopes } = require('../common/scopes')
 const { apex, outboxPost } = require('./apex')
 
-const { dbString, domain } = process.env
+const { dbString, domain, maxUploadSize } = process.env
 const router = express.Router()
 const bucketName = 'uploads'
 let bucket
@@ -28,7 +28,7 @@ const upload = multer({
           }
           const filename = buf.toString('hex') + path.extname(file.originalname)
           const fileInfo = {
-            filename: filename,
+            filename,
             bucketName
           }
           resolve(fileInfo)
@@ -37,7 +37,7 @@ const upload = multer({
     }
   }),
   limits: {
-    fileSize: 20 * 1024 * 1024 // 20Mb
+    fileSize: maxUploadSize * 1024 * 1024
   }
 })
 
@@ -55,6 +55,7 @@ router.post(
   (req, res, next) => {
     const file = req.files.file[0]
     const icon = req.files.icon?.[0]
+    const fileIds = [file.id]
     let object
     try {
       object = JSON.parse(req.body.object)
@@ -73,7 +74,10 @@ router.post(
         mediaType: icon.mimetype,
         url: `https://${domain}/media/${icon.filename}`
       }
+      fileIds.push(icon.id)
     }
+    object._meta = object._meta ?? {}
+    object._meta.files = fileIds
     // forward to outbox route, alter request to look like object post
     req.body = object
     req.headers['content-type'] = apex.consts.jsonldOutgoingType
@@ -89,11 +93,7 @@ router.post(
         bucket = new GridFSBucket(apex.store.db, { bucketName })
       }
       for (const fileArray in req.files) {
-        req.files[fileArray].forEach(file => {
-          bucket.delete(file.id)
-            .then(() => console.log(`Deleted unused file ${file.filename}`))
-            .catch(err => console.error(`Error deleting unused file ${file.filename}: ${err}`))
-        })
+        req.files[fileArray].forEach(file => deleteFileIfUnused(file.id))
       }
     }
     next(err)
@@ -121,13 +121,30 @@ router.get(
   }
 )
 
-async function fileCleanupOnDelete ({ actor, activity, object }) {
+function fileCleanupOnDelete ({ activity, object }) {
   if (!activity.type === 'Delete' || !object) {
     return
   }
-  const deletes = []
-  // todo: delete linked files
-  return Promise.all(deletes)
+  object._meta?.files?.forEach?.(fileId => deleteFileIfUnused(fileId))
+}
+
+async function deleteFileIfUnused (fileId) {
+  if (!bucket) {
+    bucket = new GridFSBucket(apex.store.db, { bucketName })
+  }
+  try {
+    const count = await apex.store.db
+      .collection('objects')
+      .countDocuments({ '_meta.files': fileId })
+    if (!count) {
+      console.log(`Deleting file no longer in use: ${fileId}`)
+      await bucket.delete(fileId)
+    } else {
+      console.log(`Retaining file still used by ${count} objects`)
+    }
+  } catch (err) {
+    console.warn(`Unable to perform file cleanup for ${fileId}: ${err}`)
+  }
 }
 
 module.exports = {
