@@ -2,8 +2,10 @@ const { ObjectId } = require('mongodb')
 const uid = require('uid-safe')
 const bcrypt = require('bcrypt')
 const crypto = require('crypto')
+const jwt = require('jsonwebtoken')
 const { domain, hub, name } = process.env
 
+const hubs = hub.split(',')
 const saltRounds = 10
 const tokenAge = 24 * 60 * 60 * 1000 // one day
 const anonClientPrefix = '_anonymous:'
@@ -43,15 +45,15 @@ module.exports = {
     })
 
     // trusted client entry for local hub
-    const url = new URL(`https://${hub}`)
-    const redirectUri = `${url.protocol}//${url.host}`
-    await db.collection('clients').findOneAndReplace({
+    await db.collection('clients').findOneAndUpdate({
       clientId: `https://${domain}/o/immer`
     }, {
-      name,
-      clientId: `https://${domain}/o/immer`,
-      redirectUri,
-      isTrusted: true
+      $set: {
+        name,
+        clientId: `https://${domain}/o/immer`,
+        redirectUri: hubs.map(h => `https://${h}`),
+        isTrusted: true
+      }
     }, { upsert: true })
   },
   // passport / oauth2orize methods
@@ -96,6 +98,39 @@ module.exports = {
       return done(null, client, redirectUriFull)
     } catch (err) { done(err) }
   },
+  // login as client by proving you have the private key matching our saved public key
+  async authenticateClientJwt (rawToken, done) {
+    let claims
+    try {
+      claims = jwt.decode(rawToken)
+      if (!claims) {
+        throw new Error('invalid jwt')
+      }
+    } catch (err) {
+      return done(null, false, 'invalid jwt')
+    }
+    if (!claims.iss) {
+      return done(null, false, 'missing claim: issuer')
+    }
+    let client
+    try {
+      client = await db
+        .collection('clients')
+        .findOne({ clientId: claims.iss })
+      if (!client?.jwtPublicKeyPem) {
+        return done(null, false)
+      }
+    } catch (err) {
+      return done(err)
+    }
+    jwt.verify(rawToken, client.jwtPublicKeyPem, (err, verifiedJwt) => {
+      if (err) {
+        // invalid JWT
+        return done(null, false)
+      }
+      done(null, client, { verifiedJwt })
+    })
+  },
   serializeUser (user, done) {
     done(null, user._id)
   },
@@ -133,7 +168,9 @@ module.exports = {
   },
   async createUser (username, password, email) {
     const user = { username }
-    user.passwordHash = await bcrypt.hash(password, saltRounds)
+    if (password) {
+      user.passwordHash = await bcrypt.hash(password, saltRounds)
+    }
     user.email = hashEmail(email)
     await db.collection('users').insertOne(user)
     return user

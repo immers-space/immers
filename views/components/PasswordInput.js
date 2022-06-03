@@ -82,6 +82,7 @@ export default class PasswordInput extends React.Component {
               value={this.state.password}
               onChange={(e) => { this.setState({ password: e.target.value }) }}
               autoFocus={this.props.autoFocus}
+              onKeyPress={this.props.onKeyPress}
             />
             <span
               className='form-item-feedback'

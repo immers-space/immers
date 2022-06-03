@@ -1,14 +1,44 @@
-2.1.2
+## v3.0.0 (2022-05-18)
 
+### Breaking Changes
+
+* Include pending, outgoing friends requests in response from `/u/:actor/friends` endpoint. In these activities, the `object` field will be populated with the requestee actor object - this may break existing code that expects `actor` to be populated with an object as is the case with all other activities in this response
+
+### Added
+
+* Support for multiple `hub` domains, each will be enabled for CORS and OAuth client redirectURIs
+* Added keyboard 'Enter' handling for Immers handle and password fields on login.
+* Added ability for authorized service accounts to obtain tokens on behalf of users via 2-legged OAuth JWT exchange. [More info](./doc/ControlledAccounts.md)
+* New socket event `outbox-update` fires with activities posted to the user's outbox
+
+### Changed
+
+* Skip waiting for user input and automatically redirect to home immer when opening the login view and the user's handle is already known and the user is from a different immer.
+* When public registration is disabled, `/auth/user` can still be POSTed when a service account JWT is provided as a bearer token
+* Password is no longer required for `/auth/user` POST (direct login will not be possible for the user account unless a password is set later)
+
+## 2.2.1 (2022-05-04)
+
+### Fixed
+
+* Fix incorrect package lock breaking signature verification on incoming messages
+
+## 2.2.0 (2022-05-03) - [YANKED]
+
+### Added
+
+* New configuration options `enablePublicRegistration` and `enableClientRegistration` that can be altered to limit access to your immer (default behavior remains unchanged)
+
+## 2.1.2
 * Fix an issue causing migrations to fail if a system user was in use
 * Fix system users not have full immers actor config
 * Dependency update to fix audit alert
 * Support more database setups (Mongo Atlas, credentials) by changing db config to use full connection string via `dbString` env var (keep backwards compat for `dbHost`/`dbName`/`dbPort` config)
 
-2.1.1
+## 2.1.1
 * Fix issue with federated delivery not resuming after migration
 
-2.1.0 nodeinfo and proxy services
+## 2.1.0 nodeinfo and proxy services
 * Update stale dependencies and resolve most audit issues
 * Finally on to Parcel v2 (had to change out the HTML sanitizer for it to work)
 * New federation feature: nodeinfo standard is implemented to allow discovery of server and features from other servers/crawlers

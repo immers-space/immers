@@ -1,5 +1,5 @@
 'use strict'
-require('dotenv').config()
+require('dotenv-defaults').config()
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
@@ -23,9 +23,11 @@ const { onShutdown } = require('node-graceful-shutdown')
 const morgan = require('morgan')
 const { debugOutput, parseHandle, parseProxyMode, apexDomain } = require('./src/utils')
 const { apex, createImmersActor, deliverWelcomeMessage, routes, onInbox, onOutbox, outboxPost } = require('./src/apex')
+const clientApi = require('./src/clientApi.js')
 const { migrate } = require('./src/migrate')
 const { scopes } = require('./common/scopes')
 const { generateMetaTags } = require('./src/openGraph')
+const settings = require('./src/settings')
 
 const {
   port,
@@ -55,7 +57,8 @@ const {
   systemUserName,
   systemDisplayName,
   welcome,
-  proxyMode
+  proxyMode,
+  enablePublicRegistration
 } = process.env
 let welcomeContent
 if (welcome && fs.existsSync(path.join(__dirname, 'static-ext', welcome))) {
@@ -65,10 +68,11 @@ if (welcome && fs.existsSync(path.join(__dirname, 'static-ext', welcome))) {
   // internal default
   welcomeContent = fs.readFileSync(path.join(__dirname, 'static', welcome), 'utf8')
 }
+const hubs = hub.split(',')
 const renderConfig = {
   name,
   domain,
-  hub,
+  hub: hubs,
   homepage,
   monetizationPointer,
   googleFont,
@@ -78,7 +82,8 @@ const renderConfig = {
   icon,
   imageAttributionText,
   imageAttributionUrl,
-  emailOptInURL
+  emailOptInURL,
+  enablePublicRegistration
 }
 
 // fallback to building string from parts for backwards compat
@@ -146,7 +151,7 @@ app.get('/auth/logout', auth.logout, (req, res) => res.redirect('/'))
 app.post('/auth/logout', auth.logout, (req, res) => {
   return res.sendStatus(200)
 })
-app.post('/auth/client', auth.registerClient)
+app.post('/auth/client', settings.isTrue('enableClientRegistration'), auth.registerClient)
 
 app.post('/auth/forgot', passport.authenticate('easy'), (req, res) => {
   return res.json({ emailed: true })
@@ -186,39 +191,51 @@ async function registerActor (req, res, next) {
     next()
   } catch (err) { next(err) }
 }
-app.post('/auth/user', auth.validateNewUser, auth.logout, registerActor, auth.registration)
+
+// user registration
+const register = [auth.validateNewUser, auth.logout, registerActor, auth.registration]
+// authorized service account user regisration
+app.post(
+  '/auth/user',
+  auth.passIfNotAuthorized,
+  passport.authenticate('oauth2-client-jwt', { session: false }),
+  auth.requirePrivilege('canControlUserAccounts'),
+  register
+)
+// public user registration, if enabled
+app.post('/auth/user', settings.isTrue('enablePublicRegistration'), register)
+
 // users are sent here from Hub to get access token, but it may interrupt with redirect
 // to login and further redirect to login at their home immer if they are remote
 app.get('/auth/authorize', auth.authorization)
 app.post('/auth/decision', auth.decision)
+app.post('/auth/exchange', auth.tokenExchange)
 // get actor from token
 app.get('/auth/me', auth.priv, auth.userToActor, apex.net.actor.get)
 // token endpoint for immers web client
 app.post('/auth/token', auth.localToken)
 
 // AP routes
-const viewAuth = auth.scope(scopes.viewPrivate.name)
-const friendsAuth = auth.scope([scopes.viewPrivate.name, scopes.viewFriends.name])
 app.route(routes.inbox)
-  .get(auth.publ, viewAuth, apex.net.inbox.get)
+  .get(auth.publ, auth.viewScope, apex.net.inbox.get)
   .post(auth.publ, apex.net.inbox.post)
 app.route(routes.outbox)
-  .get(auth.publ, viewAuth, apex.net.outbox.get)
+  .get(auth.publ, auth.viewScope, apex.net.outbox.get)
   .post(auth.priv, outboxPost)
 app.route(routes.actor)
   // open auth allows cross-origin fetching to support user discovery from destinations
   .get(auth.open, auth.scope(scopes.viewProfile.name), apex.net.actor.get)
-app.get(routes.object, auth.publ, viewAuth, apex.net.object.get)
-app.get(routes.activity, auth.publ, viewAuth, apex.net.activityStream.get)
-app.get(routes.followers, auth.publ, friendsAuth, apex.net.followers.get)
-app.get(routes.following, auth.publ, friendsAuth, apex.net.following.get)
-app.get(routes.liked, auth.publ, viewAuth, apex.net.liked.get)
-app.get(routes.collections, auth.publ, viewAuth, apex.net.collections.get)
-app.get(routes.shares, auth.publ, viewAuth, apex.net.shares.get)
-app.get(routes.likes, auth.publ, viewAuth, apex.net.likes.get)
-app.get(routes.blocked, auth.priv, friendsAuth, apex.net.blocked.get)
-app.get(routes.rejections, auth.priv, friendsAuth, apex.net.rejections.get)
-app.get(routes.rejected, auth.priv, friendsAuth, apex.net.rejected.get)
+app.get(routes.object, auth.publ, auth.viewScope, apex.net.object.get)
+app.get(routes.activity, auth.publ, auth.viewScope, apex.net.activityStream.get)
+app.get(routes.followers, auth.publ, auth.friendsScope, apex.net.followers.get)
+app.get(routes.following, auth.publ, auth.friendsScope, apex.net.following.get)
+app.get(routes.liked, auth.publ, auth.viewScope, apex.net.liked.get)
+app.get(routes.collections, auth.publ, auth.viewScope, apex.net.collections.get)
+app.get(routes.shares, auth.publ, auth.viewScope, apex.net.shares.get)
+app.get(routes.likes, auth.publ, auth.viewScope, apex.net.likes.get)
+app.get(routes.blocked, auth.priv, auth.friendsScope, apex.net.blocked.get)
+app.get(routes.rejections, auth.priv, auth.friendsScope, apex.net.rejections.get)
+app.get(routes.rejected, auth.priv, auth.friendsScope, apex.net.rejected.get)
 app.get('/.well-known/webfinger', cors(), apex.net.webfinger.get)
 app.get('/.well-known/nodeinfo', cors(), apex.net.nodeInfoLocation.get)
 app.get('/nodeinfo/:version', cors(), apex.net.nodeInfo.get)
@@ -245,54 +262,7 @@ app.use('/media', media.router)
 app.on('apex-inbox', onInbox)
 app.on('apex-outbox', onOutbox)
 
-// custom c2s apis
-const friendUpdateTypes = ['Arrive', 'Leave', 'Accept', 'Follow', 'Reject']
-async function friendsLocations (req, res, next) {
-  const locals = res.locals.apex
-  const actor = locals.target
-  const inbox = actor.inbox[0]
-  const followers = actor.followers[0]
-  const rejected = apex.utils.nameToRejectedIRI(actor.preferredUsername)
-  const friends = await apex.store.db.collection('streams').aggregate([
-    {
-      $match: {
-        $and: [
-          { '_meta.collection': inbox },
-          // filter only pending follow requests
-          { '_meta.collection': { $nin: [followers, rejected] } }
-        ],
-        type: { $in: friendUpdateTypes }
-      }
-    },
-    // most recent activity per actor
-    { $sort: { _id: -1 } },
-    { $group: { _id: '$actor', loc: { $first: '$$ROOT' } } },
-    // sort actors by most recent activity
-    { $sort: { _id: -1 } },
-    { $replaceRoot: { newRoot: '$loc' } },
-    { $sort: { _id: -1 } },
-    { $lookup: { from: 'objects', localField: 'actor', foreignField: 'id', as: 'actor' } },
-    { $project: { _id: 0, 'actor.publicKey': 0 } }
-  ]).toArray()
-  locals.result = {
-    id: `https://${domain}${req.originalUrl}`,
-    type: 'OrderedCollection',
-    totalItems: friends.length,
-    orderedItems: friends
-  }
-  next()
-}
-app.get('/u/:actor/friends', [
-  // check content type first in case this is HTML request
-  apex.net.validators.jsonld,
-  auth.priv,
-  friendsAuth,
-  apex.net.validators.targetActor,
-  apex.net.security.verifyAuthorization,
-  apex.net.security.requireAuthorized,
-  friendsLocations,
-  apex.net.responders.result
-])
+app.use(clientApi.router)
 // static files included in repo/docker image
 app.use('/static', express.static('static'))
 // static files added on deployed server
@@ -303,7 +273,7 @@ app.get('/', (req, res) => {
   res.redirect(
     req.user
       ? apex.utils.usernameToIRI(req.user.username)
-      : `${req.protocol}://${homepage || hub}`
+      : `${req.protocol}://${homepage || hubs[0]}`
   )
 })
 // for SPA routing in activity pub pages
@@ -398,6 +368,7 @@ migrate(mongoURI).catch((err) => {
   })
 
   // live stream of feed updates to client inbox-update goes to chat & friends-update to people list
+  const friendUpdateTypes = ['Arrive', 'Leave', 'Accept', 'Follow', 'Reject', 'Undo']
   async function onInboxFriendUpdate (msg) {
     const liveSocket = profilesSockets.get(msg.recipient.id)
     msg.activity.actor = [msg.actor]
@@ -409,6 +380,19 @@ migrate(mongoURI).catch((err) => {
     }
   }
   app.on('apex-inbox', onInboxFriendUpdate)
+
+  // live stream of feed updates to client outbox-update goes to chat & friends-update to people list
+  async function onOutboxFriendUpdate (msg) {
+    const liveSocket = profilesSockets.get(msg.actor.id)
+    msg.activity.actor = [msg.actor]
+    msg.activity.object = [msg.object]
+    // convert to same format as inbox endpoint and strip any private properties
+    liveSocket?.emit('outbox-update', apex.stringifyPublicJSONLD(await apex.toJSONLD(msg.activity)))
+    if (friendUpdateTypes.includes(msg.activity.type)) {
+      liveSocket?.emit('friends-update')
+    }
+  }
+  app.on('apex-outbox', onOutboxFriendUpdate)
 
   if (process.env.NODE_ENV !== 'production') {
     debugOutput(app)
@@ -430,7 +414,7 @@ migrate(mongoURI).catch((err) => {
     id: `https://${domain}/o/immer`,
     type: 'Place',
     name,
-    url: `https://${hub}`,
+    url: `https://${hubs[0]}`,
     audience: apex.consts.publicAddress
   })
   await apex.store.setup(immer)

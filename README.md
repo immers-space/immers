@@ -51,7 +51,7 @@ Variable | Value | Example
 --- | --- | ---
 name | Name of your immer | Immers Space
 domain | Domain name for your immers server | immers.space
-hub | Domain name for your Mozilla Hubs Cloud or other connected immersive experience | hub.immers.space
+hub | Domain name for your Mozilla Hubs Cloud or other connected immersive experience. Can either be a single domain or comma separated list. Each domain listed will be enabled for CORS & trusted OAuth client requests. Users will be redirected to the first domain listed. | hub.immers.space
 dbString | Full MongoDB connection string, with credentials and database name, e.g. `mongodb://localhost:27017/immers`
 smtpHost | Mail service domain (for password resets) | smtp.sendgrid.net
 smtpPort | Mail service port | 587
@@ -85,6 +85,16 @@ systemDisplayName | Sets the display name for the service actor | none
 welcome | HTML file for a message that will be delivered from the system user to new user's inboxes (requires `systemUserName`) | none (does not send message)
 keyPath, certPath, caPath | Local development only. Relative paths to certificate files | None
 proxyMode | Enable use behind an SSL-terminating proxy or load balancer, serves over http instead of https and sets Express `trust proxy` setting to the value of `proxyMode` (e.g. `1`, [other options](https://expressjs.com/en/guide/behind-proxies.html)) | none (serves over https with AutoEncrypt)
+enablePublicRegistration | Allow new user self-registration | true
+enableClientRegistration | Allow new remote immers servers to register - if this is `false`, users will not be able to login with their accounts from other servers unless that server is already registered | true
+
+**Notes on use with a reverse proxy**: When setting `proxyMode`, you must ensure your reverse proxy sets the following headers: X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto (example for nginx below). If you are load balancing multiple immers server instances, you will also need to setup sticky sessions in order for streaming updates to work. 
+
+```
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Host $host;
+proxy_set_header X-Forwarded-Proto $scheme;
+```
 
 ## API access
 
@@ -123,6 +133,15 @@ Log out of session without having to navigate to immers profile page:
 ```js
 fetch('https://your.immer/auth/logout', { method: 'POST', credentials: 'include' })
 ```
+
+## Controlled Accounts
+
+If you have an existing user account system, you may not want to bother users with having
+another account for immers features. In this case, you can setup a service account
+with total authority to create users, login as them, and act on their behalf.
+
+[Controlled accounts docs](./doc/ControlledAccounts.md)
+
 
 ## Manual Hubs Cloud Config
 
@@ -171,6 +190,14 @@ npm run build:client
 Default immers server is `https://localhost:8081`, override with entry `IMMERS_SERVER` in hubs repo root folder `.env` file.
 
 If working on immers server web client, run both `npm run dev:client` and `npm run dev` at the same time.
+
+### Creating a new release
+
+1. Update `CHANGELOG.md` - Update top section header from "Unreleased" to "vx.x.x (yyyy-mm-dd)" with the version and date of the new release
+2. Update package version: `npm version [patch|minor|major]`
+3. Build new docker image: `npm run build:image`
+4. Login to docker hub: `docker login -u your_user_name` (if needed)
+5. Publish new docker image: `npm run publish:image`
 
 ## Creator Members
 
