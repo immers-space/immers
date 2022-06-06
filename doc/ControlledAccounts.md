@@ -171,3 +171,32 @@ fetch('https://application-api-server.com/proxy-login', {
   // also include credentials necessary to authenticate this user
 })
 ```
+
+### Custom login redirect
+
+While proxy-login above will allow users to seamlessly use
+their controlled account identities on other immers-enabled sites,
+in the off chance they attempt to use that identity in a browser
+where they haven't arleady completed a proxy login, you can
+customize the login experience they will see in that flow
+by redirecting to you app with the `loginRedirect` config setting.
+
+Set it to the url of your login experience,
+e.g. `loginRedirect=https://yourdomain.com/login`,
+and users will see this page instead of the Immers Server login page
+when a login is required to complete an authorization request.
+
+In your app's login flow, you must perform a proxy login as described
+above and check for a `redirectAfterLogin`
+query parameter on the login page and redirect there after a
+successful login.
+
+```
+// after successful login & proxy login
+const searchParams = new URLSearchParams(window.location.search);
+const redirect = searchParams.get("redirectAfterLogin");
+if (searchParams.has("redirectAfterLogin")) {
+  // return to interrupted OAuth authorization flow
+  window.location.href = searchParams.get("redirectAfterLogin");
+}
+```

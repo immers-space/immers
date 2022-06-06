@@ -90,6 +90,7 @@ proxyMode | Enable use behind an SSL-terminating proxy or load balancer, serves 
 enablePublicRegistration | Allow new user self-registration | true
 enableClientRegistration | Allow new remote immers servers to register - if this is `false`, users will not be able to login with their accounts from other servers unless that server is already registered | true
 cookieName | Changes the key associated with session cookies, useful to differentiate sessions if you have multiple immers servers on the same apex domain | `connect.sid`
+loginRedirect | Replace the immers login experience with your custom page ([details](./doc/ControlledAccounts.md#custom-login-redirect)) | none
 
 **Notes on use with a reverse proxy**: When setting `proxyMode`, you must ensure your reverse proxy sets the following headers: X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto (example for nginx below). If you are load balancing multiple immers server instances, you will also need to setup sticky sessions in order for streaming updates to work. 
 

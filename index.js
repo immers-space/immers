@@ -62,7 +62,8 @@ const {
   welcome,
   proxyMode,
   enablePublicRegistration,
-  cookieName
+  cookieName,
+  loginRedirect
 } = process.env
 let welcomeContent
 if (welcome && fs.existsSync(path.join(__dirname, 'static-ext', welcome))) {
@@ -153,6 +154,14 @@ app.post(
 // routes for normal user login
 app.route('/auth/login')
   .get((req, res) => {
+    if (loginRedirect) {
+      const redirect = new URL(loginRedirect)
+      if (req.session?.returnTo) {
+        redirect.searchParams.set('redirectAfterLogin', `https://${domain}${req.session.returnTo}`)
+        delete req.session.returnTo
+      }
+      return res.redirect(redirect.href)
+    }
     const data = Object.assign({}, renderConfig)
     if (req.session && req.session.handle) {
       Object.assign(data, parseHandle(req.session.handle))
