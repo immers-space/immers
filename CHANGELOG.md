@@ -1,3 +1,9 @@
+## Unreleased
+
+### Changed
+
+* Reorganized `auth.js` into `oauthClient.js`, `oauthServer.js`, and `resourceServer.js`. No api changes.
+
 ## v3.0.0 (2022-05-18)
 
 ### Breaking Changes
