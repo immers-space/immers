@@ -1,8 +1,15 @@
 ## Unreleased
 
+### Added
+
+* New `blocked-update` socket event fires whenever a user's blocklist chagnes (users added or removed)
 ### Changed
 
 * Reorganized `auth.js` into `oauthClient.js`, `oauthServer.js`, and `resourceServer.js`. No api changes.
+* `friends` endpoint now filters out any activity from users that have been blocked
+* `friends-update` socket event now fires when blocklist changes
+* Unblocking can be achieved by sending an Undo with the actor IRI as the object
+if you don't have the original Block activity IRI handy (via updated activitypub-express)
 
 ## v3.0.0 (2022-05-18)
 

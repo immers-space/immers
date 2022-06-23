@@ -354,7 +354,7 @@ migrate(mongoURI).catch((err) => {
   })
 
   // live stream of feed updates to client inbox-update goes to chat & friends-update to people list
-  const friendUpdateTypes = ['Arrive', 'Leave', 'Accept', 'Follow', 'Reject', 'Undo']
+  const friendUpdateTypes = ['Arrive', 'Leave', 'Accept', 'Follow', 'Reject', 'Undo', 'Block']
   async function onInboxFriendUpdate (msg) {
     const liveSocket = profilesSockets.get(msg.recipient.id)
     msg.activity.actor = [msg.actor]
@@ -376,6 +376,10 @@ migrate(mongoURI).catch((err) => {
     liveSocket?.emit('outbox-update', apex.stringifyPublicJSONLD(await apex.toJSONLD(msg.activity)))
     if (friendUpdateTypes.includes(msg.activity.type)) {
       liveSocket?.emit('friends-update')
+    }
+    // live updates for addition/removal from blocklist
+    if (msg.activity.type === 'Block' || (msg.activity.type === 'Undo' && msg.object?.type === 'Block')) {
+      liveSocket?.emit('blocked-update')
     }
   }
   app.on('apex-outbox', onOutboxFriendUpdate)
