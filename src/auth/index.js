@@ -36,5 +36,7 @@ module.exports = {
   // oauth2 client
   checkImmer: oauthClient.checkImmer,
   // openId Connect server
-  oidcServerRouter: openIdServer.router
+  oidcServerRouter: openIdServer.router,
+  oidcWebfingerPassIfNotIssuer: openIdServer.webfingerPassIfNotIssuer,
+  oidcWebfingerRespond: openIdServer.webfingerRespond
 }

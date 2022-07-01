@@ -234,6 +234,16 @@ app.get(routes.likes, auth.publ, auth.viewScope, apex.net.likes.get)
 app.get(routes.blocked, auth.priv, auth.friendsScope, apex.net.blocked.get)
 app.get(routes.rejections, auth.priv, auth.friendsScope, apex.net.rejections.get)
 app.get(routes.rejected, auth.priv, auth.friendsScope, apex.net.rejected.get)
+
+// metadata & discovery routes
+app.get(
+  '/.well-known/webfinger',
+  auth.oidcWebfingerPassIfNotIssuer,
+  cors(),
+  apex.net.wellKnown.parseWebfinger,
+  apex.net.validators.targetActor,
+  auth.oidcWebfingerRespond
+)
 app.get('/.well-known/webfinger', cors(), apex.net.webfinger.get)
 app.get('/.well-known/nodeinfo', cors(), apex.net.nodeInfoLocation.get)
 app.get('/nodeinfo/:version', cors(), apex.net.nodeInfo.get)
