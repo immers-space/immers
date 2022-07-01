@@ -267,6 +267,7 @@ app.get('/', (req, res) => {
       : `${req.protocol}://${homepage || hubs[0]}`
   )
 })
+app.use(auth.oidcServerRouter)
 // for SPA routing in activity pub pages
 app.use(history({
   index: '/ap.html'

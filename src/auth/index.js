@@ -6,6 +6,8 @@ const authdb = require('./authdb')
 const resourceServer = require('./resourceServer')
 const authorizationServer = require('./oauthServer')
 const oauthClient = require('./oauthClient')
+const openIdServer = require('./openIdServer')
+
 module.exports = {
   authdb,
   // resource server
@@ -32,5 +34,7 @@ module.exports = {
   decision: authorizationServer.decision,
   tokenExchange: authorizationServer.tokenExchange,
   // oauth2 client
-  checkImmer: oauthClient.checkImmer
+  checkImmer: oauthClient.checkImmer,
+  // openId Connect server
+  oidcServerRouter: openIdServer.router
 }
