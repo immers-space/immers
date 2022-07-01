@@ -1,6 +1,7 @@
 // const { router } = require()
 const { Provider } = require('oidc-provider')
-const { domain } = process.env
+const { apexDomain } = require('../utils')
+const { domain, proxyMode, sessionSecret } = process.env
 const OICD_ISSUER_REL = 'http://openid.net/specs/connect/1.0/issuer'
 const configuration = {
   // ... see the available options in Configuration options section
@@ -9,11 +10,16 @@ const configuration = {
     client_secret: 'bar',
     redirect_uris: ['http://lvh.me:8080/cb']
     // + other client properties
-  }]
+  }],
+  cookies: {
+    keys: [sessionSecret]
+  }
   // ...
 }
 
 const oidc = new Provider('http://localhost:3000', configuration)
+// match app proxy config
+oidc.proxy = !!proxyMode
 
 /// exports ///
 module.exports = {
