@@ -6,12 +6,14 @@
  * in order to accesss their account and post activities on their behalf
  */
 const request = require('request-promise-native')
+const { Issuer } = require('openid-client')
 const authdb = require('./authdb')
 
 const {
   domain,
   name,
-  hub
+  hub,
+  icon
 } = process.env
 const hubs = hub.split(',')
 
@@ -24,9 +26,29 @@ module.exports = {
 async function checkImmer (req, res, next) {
   let { username, immer } = req.query
   if (!(username && immer)) { return res.status(400).send('Missing user handle') }
+  immer = immer.toLowerCase()
+  username = username.toLowerCase()
+  // OpenId Connect Discovery
   try {
-    immer = immer.toLowerCase()
-    username = username.toLowerCase()
+    // TODO: check if client already saved
+    // else discover and register new client
+    const issuer = await Issuer.webfinger(`acct:${username}@${immer}`)
+    console.log(issuer)
+    if (!issuer.registration_endpoint) { /* dyn client reg not supported */ }
+    const client = await issuer.Client.register({
+      client_name: name,
+      logo_uri: `https://${domain}/static/${icon}`,
+      client_uri: `https://${domain}`,
+      redirect_uris: hubs.map(h => `https://${h}`)
+      // response_types: [],
+      // grant_types: [],
+    })
+    console.log('client', client)
+  } catch (err) {
+    console.error(err)
+  }
+  // legacy immers discovery
+  try {
     if (immer === domain.toLowerCase()) {
       return res.json({ local: true })
     }

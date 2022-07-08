@@ -96,10 +96,7 @@ nunjucks.configure({
   watch: app.get('env') === 'development'
 })
 
-// parsers
-app.use(cookieParser())
-app.use(express.urlencoded({ extended: false }))
-app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
+/// sessions, logging, core middlwares ///
 app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status Accepts ":req[accept]" ":referrer" ":user-agent"'))
 const sessionStore = new MongoSessionStore({
   uri: mongoURI,
@@ -125,7 +122,20 @@ app.use(apex)
 // cannot check authorized origins in preflight, so open to all
 app.options('*', cors())
 
-/// auth related routes
+/// oidc-provider wants to do its own parsing, so mount it before parsers ///
+app.get('/.well-known/openid-configuration', (req, res, next) => {
+  // correct for openid-provider mounting well-known under subpath
+  req.url = '/oidc/.well-known/openid-configuration'
+  next('route')
+})
+app.use('/oidc', auth.oidcServerRouter)
+
+/// parsers ///
+app.use(cookieParser())
+app.use(express.urlencoded({ extended: false }))
+app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
+
+/// auth related routes ///
 app.route('/auth/login')
   .get((req, res) => {
     const data = Object.assign({}, renderConfig)
@@ -277,7 +287,7 @@ app.get('/', (req, res) => {
       : `${req.protocol}://${homepage || hubs[0]}`
   )
 })
-app.use(auth.oidcServerRouter)
+
 // for SPA routing in activity pub pages
 app.use(history({
   index: '/ap.html'
