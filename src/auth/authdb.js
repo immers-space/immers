@@ -33,6 +33,11 @@ module.exports = {
     }, {
       unique: true
     })
+    await db.collection('oidcRemoteClients').createIndex({
+      domain: 1
+    }, {
+      unique: true
+    })
     await db.collection('users').createIndex({
       username: 1
     }, {
@@ -198,6 +203,18 @@ module.exports = {
       domain,
       clientId: client.clientId,
       redirectUri: client.redirectUri
+    })
+    if (!result.acknowledged) { throw new Error('Error saving remove client') }
+  },
+  /// OpenID Connect clients for other servers
+  oidcGetRemoteClient (domain) {
+    return db.collection('oidcRemoteClients').findOne({ domain })
+  },
+  async oidcSaveRemoteClient (domain, issuer, client) {
+    const result = await db.collection('oidcRemoteClients').insertOne({
+      domain,
+      issuer: issuer.metadata,
+      client: client.metadata
     })
     if (!result.acknowledged) { throw new Error('Error saving remove client') }
   }

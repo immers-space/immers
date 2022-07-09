@@ -131,7 +131,7 @@ app.get('/.well-known/openid-configuration', (req, res, next) => {
 app.use('/oidc', auth.oidcServerRouter)
 
 /// parsers ///
-app.use(cookieParser())
+app.use(cookieParser()) // TODO - this might be unnecesary with express-session
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
 
@@ -188,6 +188,7 @@ app.get('/auth/optin', (req, res) => {
   url.search = search
   res.redirect(url)
 })
+app.get('/auth/return', auth.handleOAuthReturn)
 
 async function registerActor (req, res, next) {
   const preferredUsername = req.body.username

@@ -6,7 +6,7 @@
  * in order to accesss their account and post activities on their behalf
  */
 const request = require('request-promise-native')
-const { Issuer } = require('openid-client')
+const { Issuer, generators } = require('openid-client')
 const authdb = require('./authdb')
 
 const {
@@ -19,10 +19,12 @@ const hubs = hub.split(',')
 
 /// exports ///
 module.exports = {
-  checkImmer
+  checkImmer,
+  handleOAuthReturn
 }
 
 /// utils ///
+let tempClientStore
 async function checkImmer (req, res, next) {
   let { username, immer } = req.query
   if (!(username && immer)) { return res.status(400).send('Missing user handle') }
@@ -30,23 +32,51 @@ async function checkImmer (req, res, next) {
   username = username.toLowerCase()
   // OpenId Connect Discovery
   try {
-    // TODO: check if client already saved
-    // else discover and register new client
-    const issuer = await Issuer.webfinger(`acct:${username}@${immer}`)
-    console.log(issuer)
-    if (!issuer.registration_endpoint) { /* dyn client reg not supported */ }
-    const client = await issuer.Client.register({
-      client_name: name,
-      logo_uri: `https://${domain}/static/${icon}`,
-      client_uri: `https://${domain}`,
-      redirect_uris: hubs.map(h => `https://${h}`)
-      // response_types: [],
-      // grant_types: [],
+    let issuer
+    let client
+    // check if client already saved
+    const clientMetadata = await authdb.oidcGetRemoteClient(immer)
+    if (clientMetadata) {
+      console.info(`loaded existing oidc client for ${immer}`)
+      issuer = new Issuer(clientMetadata.issuer)
+      client = new issuer.Client(clientMetadata.client)
+    } else {
+      // else discover and register new client
+      issuer = await Issuer.webfinger(`acct:${username}@${immer}`)
+      if (!issuer.registration_endpoint) {
+        throw new Error(`${immer} does not support dynamic client registration`)
+      }
+      client = await issuer.Client.register({
+        client_name: name,
+        logo_uri: `https://${domain}/static/${icon}`,
+        client_uri: `https://${domain}`,
+        redirect_uris: [`https://${domain}/auth/return`]
+        // response_types: [],
+        // grant_types: [],
+      })
+      // await authdb.oidcSaveRemoteClient(immer, issuer, client)
+      // TEMP:
+      tempClientStore = { client: client.metadata, issuer: issuer.metadata }
+    }
+    console.log(issuer, client)
+    const codeVerifier = generators.codeVerifier()
+    req.session.oicdClientState = { codeVerifier, clientDomain: immer }
+    // store the code_verifier in your framework's session mechanism, if it is a cookie based solution
+    // it should be httpOnly (not readable by javascript) and encrypted.
+    const codeChallenge = generators.codeChallenge(codeVerifier)
+    const redirect = client.authorizationUrl({
+      scope: 'openid email profile',
+      resource: `https://${immer}/u/${username}`,
+      code_challenge: codeChallenge,
+      code_challenge_method: 'S256',
+      redirect_uri: `https://${domain}/auth/return`
     })
-    console.log('client', client)
+    console.log('result', codeVerifier, redirect)
+    return res.json({ redirect })
   } catch (err) {
     console.error(err)
   }
+
   // legacy immers discovery
   try {
     if (immer === domain.toLowerCase()) {
@@ -76,4 +106,25 @@ async function checkImmer (req, res, next) {
     url.search = search.toString()
     return res.json({ redirect: url.toString() })
   } catch (err) { next(err) }
+}
+
+async function handleOAuthReturn (req, res, next) {
+  const { codeVerifier, clientDomain } = req.session.oicdClientState
+  // TODO read from DB
+  const issuer = new Issuer(tempClientStore.issuer)
+  const client = new issuer.Client(tempClientStore.client)
+  const params = client.callbackParams(req)
+  const tokenSet = await client.callback('https://client.example.com/callback', params, { code_verifier: codeVerifier })
+  console.log('received and validated tokens %j', tokenSet)
+  console.log('validated ID Token claims %j', tokenSet.claims())
+  // const userinfo = await client.userinfo(access_token)
+  // console.log('userinfo %j', userinfo)
+  // And later refresh the tokenSet if it had a refresh_token.
+
+  // const newTokenSet = await client.refresh(refresh_token)
+  // console.log('refreshed and validated tokens %j', newTokenSet)
+  // console.log('refreshed ID Token claims %j', newTokenSet.claims())
+
+  // TODO: redirect to session.returnTo, with token in hashparams
+  res.send('OK')
 }
