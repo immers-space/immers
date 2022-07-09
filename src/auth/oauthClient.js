@@ -66,7 +66,6 @@ async function checkImmer (req, res, next) {
     const codeChallenge = generators.codeChallenge(codeVerifier)
     const redirect = client.authorizationUrl({
       scope: 'openid email profile',
-      resource: `https://${immer}/u/${username}`,
       code_challenge: codeChallenge,
       code_challenge_method: 'S256',
       redirect_uri: `https://${domain}/auth/return`
@@ -114,7 +113,7 @@ async function handleOAuthReturn (req, res, next) {
   const issuer = new Issuer(tempClientStore.issuer)
   const client = new issuer.Client(tempClientStore.client)
   const params = client.callbackParams(req)
-  const tokenSet = await client.callback('https://client.example.com/callback', params, { code_verifier: codeVerifier })
+  const tokenSet = await client.callback(`https://${domain}/auth/return`, params, { code_verifier: codeVerifier })
   console.log('received and validated tokens %j', tokenSet)
   console.log('validated ID Token claims %j', tokenSet.claims())
   // const userinfo = await client.userinfo(access_token)
