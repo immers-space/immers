@@ -24,7 +24,6 @@ module.exports = {
 }
 
 /// utils ///
-let tempClientStore
 async function checkImmer (req, res, next) {
   let { username, immer } = req.query
   if (!(username && immer)) { return res.status(400).send('Missing user handle') }
@@ -54,9 +53,7 @@ async function checkImmer (req, res, next) {
         // response_types: [],
         // grant_types: [],
       })
-      // await authdb.oidcSaveRemoteClient(immer, issuer, client)
-      // TEMP:
-      tempClientStore = { client: client.metadata, issuer: issuer.metadata }
+      await authdb.oidcSaveRemoteClient(immer, issuer, client)
     }
     console.log(issuer, client)
     const codeVerifier = generators.codeVerifier()
@@ -109,9 +106,9 @@ async function checkImmer (req, res, next) {
 
 async function handleOAuthReturn (req, res, next) {
   const { codeVerifier, clientDomain } = req.session.oicdClientState
-  // TODO read from DB
-  const issuer = new Issuer(tempClientStore.issuer)
-  const client = new issuer.Client(tempClientStore.client)
+  const savedClient = await authdb.oidcGetRemoteClient(clientDomain)
+  const issuer = new Issuer(savedClient.issuer)
+  const client = new issuer.Client(savedClient.client)
   const params = client.callbackParams(req)
   const tokenSet = await client.callback(`https://${domain}/auth/return`, params, { code_verifier: codeVerifier })
   console.log('received and validated tokens %j', tokenSet)

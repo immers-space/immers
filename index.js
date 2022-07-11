@@ -26,6 +26,7 @@ const clientApi = require('./src/clientApi.js')
 const { migrate } = require('./src/migrate')
 const { scopes } = require('./common/scopes')
 const settings = require('./src/settings')
+const { MongoAdapter } = require('./src/auth/openIdServerDb')
 
 const {
   port,
@@ -421,6 +422,7 @@ migrate(mongoURI).catch((err) => {
   // server startup
   await client.connect()
   apex.store.db = client.db()
+  await MongoAdapter.Initialize(apex.store.db)
   // Place object representing this node
   const immer = await apex.fromJSONLD({
     id: `https://${domain}/o/immer`,

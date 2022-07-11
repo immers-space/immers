@@ -1,10 +1,11 @@
 // const { router } = require()
 const { Provider } = require('oidc-provider')
-const { OICD_ISSUER_REL } = require('./consts')
 const { ObjectId } = require('mongodb')
 const uid = require('uid-safe')
+const { MongoAdapter } = require('./openIdServerDb')
 const authdb = require('./authdb')
 const { apex } = require('../apex')
+const { OICD_ISSUER_REL } = require('./consts')
 const { domain, proxyMode, sessionSecret, enableClientRegistration } = process.env
 const configuration = {
   routes: {
@@ -21,6 +22,7 @@ const configuration = {
     token: '/token',
     userinfo: '/me'
   },
+  adapter: MongoAdapter,
   clients: [],
   cookies: {
     keys: [sessionSecret]
