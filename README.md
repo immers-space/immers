@@ -168,9 +168,10 @@ npm ci
 ```
 mkdir certs
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/server.key -out certs/server.cert
+sudo chown $USER certs/*
 ```
 * Install [mongodb](https://docs.mongodb.com/manual/installation/)
-* Run immer with `npm run dev` 
+* Run immer with `npm run dev:server` 
 
 hubs
 
@@ -187,7 +188,7 @@ npm run build:client
 
 Default immers server is `https://localhost:8081`, override with entry `IMMERS_SERVER` in hubs repo root folder `.env` file.
 
-If working on immers server web client, run both `npm run dev:client` and `npm run dev` at the same time.
+If working on immers server web client, run both `npm run dev:client` and `npm run dev:server` at the same time.
 
 ### Creating a new release
 
