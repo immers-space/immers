@@ -35,7 +35,7 @@ module.exports = {
   tokenExchange: authorizationServer.tokenExchange,
   // oauth2 client
   checkImmer: oauthClient.checkImmer,
-  handleOAuthReturn: oauthClient.handleOAuthReturn,
+  handleOAuthReturn: [oauthClient.handleOAuthReturn, resourceServer.returnTo],
   // openId Connect server
   oidcServerRouter: openIdServer.router,
   oidcWebfingerPassIfNotIssuer: openIdServer.webfingerPassIfNotIssuer,

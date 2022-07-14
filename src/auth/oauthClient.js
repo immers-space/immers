@@ -8,6 +8,7 @@
 const request = require('request-promise-native')
 const { Issuer, generators } = require('openid-client')
 const authdb = require('./authdb')
+const { scopes } = require('../../common/scopes')
 
 const {
   domain,
@@ -57,11 +58,11 @@ async function checkImmer (req, res, next) {
     }
     console.log(issuer, client)
     const codeVerifier = generators.codeVerifier()
-    req.session.oicdClientState = { codeVerifier, clientDomain: immer }
-    // store the code_verifier in your framework's session mechanism, if it is a cookie based solution
-    // it should be httpOnly (not readable by javascript) and encrypted.
+    req.session.oidcClientState = { codeVerifier, providerDomain: immer }
     const codeChallenge = generators.codeChallenge(codeVerifier)
     const redirect = client.authorizationUrl({
+      // TODO: check issuer.scopes_supported to determine if the remote client is a full immer or just an identity provider,
+      // update scope request to match
       scope: 'openid email profile',
       code_challenge: codeChallenge,
       code_challenge_method: 'S256',
@@ -105,22 +106,45 @@ async function checkImmer (req, res, next) {
 }
 
 async function handleOAuthReturn (req, res, next) {
-  const { codeVerifier, clientDomain } = req.session.oicdClientState
-  const savedClient = await authdb.oidcGetRemoteClient(clientDomain)
+  const { codeVerifier, providerDomain } = req.session.oidcClientState
+  delete req.session.oidcClientState
+  const savedClient = await authdb.oidcGetRemoteClient(providerDomain)
   const issuer = new Issuer(savedClient.issuer)
   const client = new issuer.Client(savedClient.client)
   const params = client.callbackParams(req)
   const tokenSet = await client.callback(`https://${domain}/auth/return`, params, { code_verifier: codeVerifier })
   console.log('received and validated tokens %j', tokenSet)
   console.log('validated ID Token claims %j', tokenSet.claims())
-  // const userinfo = await client.userinfo(access_token)
-  // console.log('userinfo %j', userinfo)
-  // And later refresh the tokenSet if it had a refresh_token.
 
-  // const newTokenSet = await client.refresh(refresh_token)
-  // console.log('refreshed and validated tokens %j', newTokenSet)
-  // console.log('refreshed ID Token claims %j', newTokenSet.claims())
-
-  // TODO: redirect to session.returnTo, with token in hashparams
-  res.send('OK')
+  const scopesGranted = tokenSet.scope?.split(' ') || []
+  const claims = tokenSet.claims()
+  if (scopesGranted.includes(scopes.viewProfile)) {
+    // TODO provider is an immer, pass access_token back to hub (I think maybe ?redirect_uri of req.session.returnTo)
+    const userinfo = await client.userinfo(tokenSet.access_token)
+    console.log('userinfo %j', userinfo)
+  } else if (claims.email) {
+    // this is an identity provider, find/create local account
+    const user = await authdb.getUserByEmail(claims.email)
+    if (!user) {
+      // https://trello.com/c/BPfpx4De/48-openid-registration-flow
+    } else if (!user.oidcProviders?.includes(providerDomain)) {
+      /* because we allow dynamic client registration, we must take
+         care to rule out a malicious provider granting fraudulent
+         id_tokens for an email corresponding to a user in our system
+         that registered via other means
+      */
+      // TODO send an easyNoPassword email to get user consent to add this provider
+      // TODO render view explaining consent is needed to add new provider to existing account
+      return res.status(403).send(`${providerDomain} not authorized for this accout`)
+    }
+    // establish login session
+    req.login(user, next)
+    // next in route will return to OAuth authorize endpoint, which will autogrant token now that user
+    // is logged in with local account and return them to the hub
+  }
 }
+
+// And later refresh the tokenSet if it had a refresh_token.
+// const newTokenSet = await client.refresh(refresh_token)
+// console.log('refreshed and validated tokens %j', newTokenSet)
+// console.log('refreshed ID Token claims %j', newTokenSet.claims())

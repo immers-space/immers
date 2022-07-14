@@ -68,7 +68,8 @@ module.exports = {
     returnTo
   ],
   validateNewUser,
-  registration: [registerUser, respondRedirect]
+  registration: [registerUser, respondRedirect],
+  returnTo
 }
 
 /// side effects ///
