@@ -4,6 +4,7 @@ import { Router } from '@reach/router'
 import Profile from './Profile'
 import { IntlProvider } from 'react-intl'
 import ServerDataContext from './ServerDataContext'
+import Admin from '../admin/Admin'
 
 const mountNode = document.getElementById('app')
 ReactDOM.render(<Root />, mountNode)
@@ -40,6 +41,7 @@ function Root () {
       <ServerDataContext.Provider value={dataContext}>
         <Router>
           <Profile path='/u/:actor/*' />
+          <Admin path='/admin' />
         </Router>
       </ServerDataContext.Provider>
     </IntlProvider>

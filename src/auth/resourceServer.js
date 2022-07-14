@@ -28,7 +28,8 @@ const {
   smtpFrom,
   smtpUser,
   smtpPassword,
-  easySecret
+  easySecret,
+  adminEmail
 } = process.env
 const hubs = hub.split(',')
 const emailCheck = require('email-validator')
@@ -47,6 +48,7 @@ module.exports = {
   open: [passport.authenticate(['bearer', 'anonymous'], { session: false }), cors()],
   /** auth for OAuth client / service account jwt login (e.g. in Authorization code grant) */
   clnt: passport.authenticate('oauth2-client-jwt', { session: false }),
+  admn: [passport.authenticate('bearer', { session: false }), requireAdmin],
   scope,
   /** Require access to view private information */
   viewScope: scope(scopes.viewPrivate.name),
@@ -329,4 +331,14 @@ function returnTo (req, res) {
     delete req.session.returnTo
   }
   res.redirect(redirect)
+}
+
+async function requireAdmin (req, res, next) {
+  const admin = await authdb.getUserByEmail(adminEmail)
+  const isAdmin = admin?.username === req.user.username
+  if (isAdmin) {
+    next()
+  } else {
+    return res.sendStatus(403)
+  }
 }
