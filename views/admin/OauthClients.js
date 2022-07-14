@@ -30,7 +30,7 @@ export default function OauthClients ({ onEdit }) {
     return (
       <div>
         <div className='postHeader'>
-          <div><strong>{name}</strong> - <em>({domain})</em></div> <div className="emojiButtonContainer"><EmojiButton emoji='bomb' title='Delete' onClick={() => deleteClient(_id)} /> <EmojiButton emoji='pencil2' title='Edit' onClick={() => editClient(_id)} /></div>
+          <div><strong>{name}</strong> - <em>({domain})</em></div> <div className='emojiButtonContainer'><EmojiButton emoji='bomb' title='Delete' onClick={() => deleteClient(_id)} /> <EmojiButton emoji='pencil2' title='Edit' onClick={() => editClient(_id)} /></div>
         </div>
       </div>
     )

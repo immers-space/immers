@@ -65,7 +65,7 @@ export default function Admin () {
     window.location = '/auth/login'
   }
 
-  function buttonHandler() {
+  function buttonHandler () {
     if (!loading && mode !== modes.NEW_OAUTH_CLIENT) {
       setButtons(<EmojiButton emoji='heavy_plus_sign' title='Add Oauth Client' onClick={handleNewOauth} />)
     } else if (!loading && mode !== modes.LIST_OAUTH_CLIENTS) {
