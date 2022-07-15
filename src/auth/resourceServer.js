@@ -267,50 +267,53 @@ function changePassword (req, res, next) {
 }
 
 async function validateNewUser (req, res, next) {
-  // check validity
-  let validMessage = ''
-  if (!emailCheck.validate(req.body.email)) {
-    validMessage += 'Invalid email. '
-  } else {
-    req.body.email = req.body.email.toLowerCase()
-  }
+  try {
+    // check validity
+    let validMessage = ''
+    if (!emailCheck.validate(req.body.email)) {
+      validMessage += 'Invalid email. '
+    } else {
+      req.body.email = req.body.email.toLowerCase()
+    }
 
-  if (!RegExp(handleCheck).test(req.body.username)) {
-    validMessage += `Username must match ${handleCheck}. `
-  } else {
-    req.body.username = req.body.username.toLowerCase()
-  }
-  if (req.body.name && !RegExp(nameCheck).test(req.body.name)) {
-    validMessage += `Display name must match ${nameCheck}. `
-  } else if (!req.body.name) {
-    // display name is optional in registration, default to username
-    req.body.name = req.body.username
-  }
+    if (!RegExp(handleCheck).test(req.body.username)) {
+      validMessage += `Username must match ${handleCheck}. `
+    } else {
+      req.body.username = req.body.username.toLowerCase()
+    }
+    if (req.body.name && !RegExp(nameCheck).test(req.body.name)) {
+      validMessage += `Display name must match ${nameCheck}. `
+    } else if (!req.body.name) {
+      // display name is optional in registration, default to username
+      req.body.name = req.body.username
+    }
 
-  if (validMessage) {
-    return res.status(400).format({
-      text: () => res.send(validMessage),
-      json: () => res.json({ error: validMessage })
-    })
-  }
-  // check availability
-  let availableMessage = ''
-  if (await authdb.getUserByEmail(req.body.email)) {
-    availableMessage += 'Email already registered. '
-  }
+    if (validMessage) {
+      return res.status(400).format({
+        text: () => res.send(validMessage),
+        json: () => res.json({ error: validMessage })
+      })
+    }
+    // check availability
+    let availableMessage = ''
+    if (await authdb.getUserByEmail(req.body.email)) {
+      availableMessage += 'Email already registered. '
+    }
 
-  if (await authdb.getUserByName(req.body.username)) {
-    availableMessage += 'Username already registered. '
-  }
+    if (await authdb.getUserByName(req.body.username)) {
+      availableMessage += 'Username already registered. '
+    }
 
-  if (availableMessage) {
-    return res.status(409).format({
-      text: () => res.send(availableMessage),
-      json: () => res.json({ error: availableMessage, taken: true })
-    })
+    if (availableMessage) {
+      return res.status(409).format({
+        text: () => res.send(availableMessage),
+        json: () => res.json({ error: availableMessage, taken: true })
+      })
+    }
+    next()
+  } catch (err) {
+    next(err)
   }
-
-  next()
 }
 
 function respondRedirect (req, res) {
