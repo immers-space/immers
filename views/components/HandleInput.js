@@ -58,3 +58,7 @@ export default class HandleInput extends React.Component {
     }
   }
 }
+
+HandleInput.defaultProps = {
+  onKeyPress: () => {}
+}

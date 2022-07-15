@@ -171,10 +171,13 @@ module.exports = {
     email = hashEmail(email)
     return db.collection('users').findOne({ email })
   },
-  async createUser (username, password, email) {
+  async createUser (username, password, email, oidcProviders) {
     const user = { username }
     if (password) {
       user.passwordHash = await bcrypt.hash(password, saltRounds)
+    }
+    if (Array.isArray(oidcProviders)) {
+      user.oidcProviders = oidcProviders
     }
     user.email = hashEmail(email)
     await db.collection('users').insertOne(user)

@@ -204,17 +204,22 @@ async function registerActor (req, res, next) {
 }
 
 // user registration
-const register = [auth.validateNewUser, auth.logout, registerActor, auth.registration]
+const register = [auth.validateNewUser, auth.logout, registerActor, auth.registerUser]
 // authorized service account user regisration
 app.post(
   '/auth/user',
   auth.passIfNotAuthorized,
   passport.authenticate('oauth2-client-jwt', { session: false }),
   auth.requirePrivilege('canControlUserAccounts'),
-  register
+  register,
+  auth.respondRedirect
 )
 // public user registration, if enabled
-app.post('/auth/user', settings.isTrue('enablePublicRegistration'), register)
+app.post('/auth/user', settings.isTrue('enablePublicRegistration'), register, auth.respondRedirect)
+// complete registration started via oidc identity provider
+app.route('/auth/oidc-interstitial')
+  .get((req, res) => res.render('dist/oidc-interstitial/oidc-interstitial.html', renderConfig))
+  .post(auth.oidcPreRegister, register, auth.oidcPostRegister, auth.respondRedirect)
 
 // users are sent here from Hub to get access token, but it may interrupt with redirect
 // to login and further redirect to login at their home immer if they are remote

@@ -24,11 +24,12 @@ module.exports = {
   passIfNotAuthorized: resourceServer.passIfNotAuthorized,
   requirePrivilege: resourceServer.requirePrivilege,
   userToActor: resourceServer.userToActor,
-  registration: resourceServer.registration,
   registerUser: resourceServer.registerUser,
   changePassword: resourceServer.changePassword,
   changePasswordAndReturn: resourceServer.changePasswordAndReturn,
   validateNewUser: resourceServer.validateNewUser,
+  returnTo: resourceServer.returnTo,
+  respondRedirect: resourceServer.respondRedirect,
   // oauth2 authorization server
   registerClient: authorizationServer.registerClient,
   authorization: authorizationServer.authorization,
@@ -37,6 +38,8 @@ module.exports = {
   // oauth2 client
   checkImmer: oauthClient.checkImmer,
   handleOAuthReturn: [oauthClient.handleOAuthReturn, resourceServer.returnTo],
+  oidcPreRegister: oauthClient.oidcPreRegister,
+  oidcPostRegister: oauthClient.oidcPostRegister,
   // openId Connect server
   oidcServerRouter: openIdServer.router,
   oidcWebfingerPassIfNotIssuer: openIdServer.webfingerPassIfNotIssuer,
