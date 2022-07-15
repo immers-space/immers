@@ -221,6 +221,9 @@ app.route('/auth/oidc-interstitial')
   .get((req, res) => res.render('dist/oidc-interstitial/oidc-interstitial.html', renderConfig))
   .post(auth.oidcPreRegister, register, auth.oidcPostRegister, auth.respondRedirect)
 
+// data for "login with x" buttons
+app.get('/auth/oidc-providers', auth.oidcLoginProviders)
+
 // users are sent here from Hub to get access token, but it may interrupt with redirect
 // to login and further redirect to login at their home immer if they are remote
 app.get('/auth/authorize', auth.authorization)

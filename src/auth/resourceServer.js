@@ -58,6 +58,7 @@ module.exports = {
   localToken: [hubCors, localToken],
   /** terminate login session */
   logout: [hubCors, logout],
+  oidcLoginProviders,
   /** for endpoints that behave differently for authorized requests */
   passIfNotAuthorized,
   requirePrivilege,
@@ -190,6 +191,13 @@ function dynamicCorsFromToken (req, done) {
     }
     done(null, { origin: false })
   } catch (err) { done(err) }
+}
+
+/** List OpenId providers that should have custom login buttons */
+function oidcLoginProviders (req, res, next) {
+  authdb.getOidcLoginProviders().then(providers => {
+    res.json(providers)
+  }).catch(next)
 }
 
 /** for endpoints that behave differently for authorized requests */

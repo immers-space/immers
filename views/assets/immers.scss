@@ -231,6 +231,13 @@ button[disabled] {
   vertical-align: bottom;
 }
 
+.provider-logins {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-around;
+  max-width: 642px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .aesthetic-effect-crt::after,
   .aesthetic-effect-text-glitch::before,

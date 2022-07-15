@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react'
 import ServerDataContext from '../ap/ServerDataContext'
 import GlitchError from '../components/GlitchError'
+import ProviderLogin from '../components/ProviderLogin'
 import './Admin.css'
 
 export default function AddEditOauthClient ({ showClientList, editId }) {
@@ -225,7 +226,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
               </div>
               {showButton &&
                 <div className='form-item'>
-                  Preview: <button onClick={login} className='marginLeft loginButton'><img src={buttonIcon} />{buttonLabel}</button>
+                  Preview: <ProviderLogin onClick={login} providerDomain={domain} buttonIcon={buttonIcon} buttonLabel={buttonLabel} />
                 </div>}
             </fieldset>
             {error === 'discovery' && (

@@ -21,6 +21,7 @@ module.exports = {
   friendsScope: resourceServer.friendsScope,
   localToken: resourceServer.localToken,
   logout: resourceServer.logout,
+  oidcLoginProviders: resourceServer.oidcLoginProviders,
   passIfNotAuthorized: resourceServer.passIfNotAuthorized,
   requirePrivilege: resourceServer.requirePrivilege,
   userToActor: resourceServer.userToActor,
