@@ -130,7 +130,8 @@ app.get('/.well-known/openid-configuration', (req, res, next) => {
   req.url = '/oidc/.well-known/openid-configuration'
   next('route')
 })
-app.use('/oidc', auth.oidcServerRouter)
+// OIDC provider is still WIP, immer-to-immer login remains on legacy OAuth 2.0
+// app.use('/oidc', auth.oidcServerRouter)
 
 /// parsers ///
 app.use(cookieParser()) // TODO - this might be unnecesary with express-session
@@ -257,6 +258,7 @@ app.get(routes.rejections, auth.priv, auth.friendsScope, apex.net.rejections.get
 app.get(routes.rejected, auth.priv, auth.friendsScope, apex.net.rejected.get)
 
 // metadata & discovery routes
+/* OIDC server is WIP
 app.get(
   '/.well-known/webfinger',
   auth.oidcWebfingerPassIfNotIssuer,
@@ -265,6 +267,7 @@ app.get(
   apex.net.validators.targetActor,
   auth.oidcWebfingerRespond
 )
+*/
 app.get('/.well-known/webfinger', cors(), apex.net.webfinger.get)
 app.get('/.well-known/nodeinfo', cors(), apex.net.nodeInfoLocation.get)
 app.get('/nodeinfo/:version', cors(), apex.net.nodeInfo.get)

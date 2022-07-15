@@ -168,8 +168,3 @@ function oidcPostRegister (req, res, next) {
   delete req.session.oidcClientState
   next()
 }
-
-// And later refresh the tokenSet if it had a refresh_token.
-// const newTokenSet = await client.refresh(refresh_token)
-// console.log('refreshed and validated tokens %j', newTokenSet)
-// console.log('refreshed ID Token claims %j', newTokenSet.claims())

@@ -6,7 +6,7 @@ const authdb = require('./authdb')
 const resourceServer = require('./resourceServer')
 const authorizationServer = require('./oauthServer')
 const oauthClient = require('./oauthClient')
-const openIdServer = require('./openIdServer')
+// const openIdServer = require('./openIdServer')
 
 module.exports = {
   authdb,
@@ -40,9 +40,11 @@ module.exports = {
   checkImmer: oauthClient.checkImmer,
   handleOAuthReturn: [oauthClient.handleOAuthReturn, resourceServer.returnTo],
   oidcPreRegister: oauthClient.oidcPreRegister,
-  oidcPostRegister: oauthClient.oidcPostRegister,
-  // openId Connect server
+  oidcPostRegister: oauthClient.oidcPostRegister
+  // openId Connect server (WIP)
+  /*
   oidcServerRouter: openIdServer.router,
   oidcWebfingerPassIfNotIssuer: openIdServer.webfingerPassIfNotIssuer,
   oidcWebfingerRespond: openIdServer.webfingerRespond
+  */
 }
