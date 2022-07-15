@@ -278,7 +278,6 @@ class Login extends React.Component {
         <div className='aesthetic-windows-95-container'>
           {this.state.tab === 'Login' &&
             <div id='login-form' className='aesthetic-windows-95-container-indent'>
-              <div>Login with Immers Space:</div>
               <form method='post' onSubmit={this.handleLogin} ref={this.form}>
                 <HandleInput
                   onChange={this.handleHandleInput}
