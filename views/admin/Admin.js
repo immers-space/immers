@@ -32,6 +32,9 @@ export default function Admin () {
     setEditId(id)
     setMode(modes.NEW_OAUTH_CLIENT)
   }
+  const handleAdd = () => {
+    setMode(modes.NEW_OAUTH_CLIENT)
+  }
 
   function checkAdmin () {
     window.clearTimeout(adminTimeout)
@@ -81,8 +84,8 @@ export default function Admin () {
         <div className='aesthetic-windows-95-loader'>
           <div /><div /><div />
         </div>}
-      {!loading && mode === modes.LIST_OAUTH_CLIENTS && <OauthClients onEdit={handleEdit} />}
-      {!loading && mode === modes.NEW_OAUTH_CLIENT && <AddEditOauthClient onSuccess={handleListOauth} editId={editId} />}
+      {!loading && mode === modes.LIST_OAUTH_CLIENTS && <OauthClients onEdit={handleEdit} onAdd={handleAdd} />}
+      {!loading && mode === modes.NEW_OAUTH_CLIENT && <AddEditOauthClient showClientList={handleListOauth} editId={editId} />}
     </Layout>
   )
 }

@@ -53,7 +53,9 @@ async function postOauthClient (req, res) {
       name: req.body.name,
       domain: req.body.domain,
       clientId: req.body.clientId,
-      clientSecret: req.body.clientSecret
+      clientSecret: req.body.clientSecret,
+      buttonIcon: req.body.buttonIcon,
+      buttonLabel: req.body.buttonLabel
     })
     return res.json({ success: true })
   } catch (err) { return res.status(500) }
@@ -83,7 +85,9 @@ async function updateOauthClient (req, res) {
           name: req.body.name,
           domain: req.body.domain,
           clientId: req.body.clientId,
-          clientSecret: req.body.clientSecret
+          clientSecret: req.body.clientSecret,
+          buttonIcon: req.body.buttonIcon,
+          buttonLabel: req.body.buttonLabel
         }
       }
     )

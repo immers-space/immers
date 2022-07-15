@@ -4,7 +4,7 @@ import EmojiButton from '../ap/EmojiButton'
 import './Admin.css'
 import './OauthClients.css'
 
-export default function OauthClients ({ onEdit }) {
+export default function OauthClients ({ onEdit, onAdd }) {
   const { token } = useContext(ServerDataContext)
   const [items, setItems] = useState([])
   useEffect(() => {
@@ -60,11 +60,12 @@ export default function OauthClients ({ onEdit }) {
   }
 
   return (
-    <div>
+    <div className='adminContainer'>
       <h3>Oauth Clients</h3>
       <div className='aesthetic-windows-95-container'>
         {items.map(item => <Client key={item._id} {...item} />)}
       </div>
+      <button className='adminButton marginTop' onClick={onAdd}>Add OAuth Client</button>
     </div>
   )
 }
