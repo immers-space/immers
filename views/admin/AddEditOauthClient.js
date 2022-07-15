@@ -92,8 +92,9 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
     }
   }
 
-  function login () {
-    alert('This login button is only a preview.')
+  function login (e) {
+    e.preventDefault()
+    window.alert('This login button is only a preview.')
   }
 
   return (
