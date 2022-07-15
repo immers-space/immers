@@ -49,6 +49,7 @@ or in a `.env` file in the project root.
 
 Variable | Value | Example
 --- | --- | ---
+adminEmail | e-mail of user with administrative privileges | none
 name | Name of your immer | Immers Space
 domain | Domain name for your immers server | immers.space
 hub | Domain name for your Mozilla Hubs Cloud or other connected immersive experience. Can either be a single domain or comma separated list. Each domain listed will be enabled for CORS & trusted OAuth client requests. Users will be redirected to the first domain listed. | hub.immers.space

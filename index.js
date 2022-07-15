@@ -26,6 +26,8 @@ const clientApi = require('./src/clientApi.js')
 const { migrate } = require('./src/migrate')
 const { scopes } = require('./common/scopes')
 const settings = require('./src/settings')
+const { MongoAdapter } = require('./src/auth/openIdServerDb')
+const adminApi = require('./src/adminApi.js')
 
 const {
   port,
@@ -96,10 +98,7 @@ nunjucks.configure({
   watch: app.get('env') === 'development'
 })
 
-// parsers
-app.use(cookieParser())
-app.use(express.urlencoded({ extended: false }))
-app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
+/// sessions, logging, core middlwares ///
 app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status Accepts ":req[accept]" ":referrer" ":user-agent"'))
 const sessionStore = new MongoSessionStore({
   uri: mongoURI,
@@ -125,7 +124,21 @@ app.use(apex)
 // cannot check authorized origins in preflight, so open to all
 app.options('*', cors())
 
-/// auth related routes
+/// oidc-provider wants to do its own parsing, so mount it before parsers ///
+app.get('/.well-known/openid-configuration', (req, res, next) => {
+  // correct for openid-provider mounting well-known under subpath
+  req.url = '/oidc/.well-known/openid-configuration'
+  next('route')
+})
+// OIDC provider is still WIP, immer-to-immer login remains on legacy OAuth 2.0
+// app.use('/oidc', auth.oidcServerRouter)
+
+/// parsers ///
+app.use(cookieParser()) // TODO - this might be unnecesary with express-session
+app.use(express.urlencoded({ extended: false }))
+app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
+
+/// auth related routes ///
 app.route('/auth/login')
   .get((req, res) => {
     const data = Object.assign({}, renderConfig)
@@ -143,7 +156,28 @@ app.route('/auth/login')
     successReturnToOrRedirect: '/',
     failureRedirect: '/auth/login?passwordfail'
   }))
-// find username & home from handle; if user is remote, get remote authorization url
+
+/**
+ * @openapi
+ *  /auth/home:
+ *    get:
+ *    summary: Find a user's home authorization server
+ *    descripion: Identifies home server from user handle, registers a client with that server if needed, and returns an authorization url
+ *    responses:
+ *    200:
+ *      description: object with result info
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              local:
+ *                type: boolean
+ *                description: is this user local to this Immers Server?
+ *              redirect:
+ *                type: string
+ *                description: URL you need to redirect the user to in order to authorize with their remote home server
+ */
 app.get('/auth/home', auth.checkImmer)
 app.get('/auth/logout', auth.logout, (req, res) => res.redirect('/'))
 app.post('/auth/logout', auth.logout, (req, res) => {
@@ -178,6 +212,7 @@ app.get('/auth/optin', (req, res) => {
   url.search = search
   res.redirect(url)
 })
+app.get('/auth/return', auth.handleOAuthReturn)
 
 async function registerActor (req, res, next) {
   const preferredUsername = req.body.username
@@ -191,17 +226,52 @@ async function registerActor (req, res, next) {
 }
 
 // user registration
-const register = [auth.validateNewUser, auth.logout, registerActor, auth.registration]
+const register = [auth.validateNewUser, auth.logout, registerActor, auth.registerUser]
 // authorized service account user regisration
 app.post(
   '/auth/user',
   auth.passIfNotAuthorized,
   passport.authenticate('oauth2-client-jwt', { session: false }),
   auth.requirePrivilege('canControlUserAccounts'),
-  register
+  register,
+  auth.respondRedirect
 )
 // public user registration, if enabled
-app.post('/auth/user', settings.isTrue('enablePublicRegistration'), register)
+app.post('/auth/user', settings.isTrue('enablePublicRegistration'), register, auth.respondRedirect)
+// complete registration started via oidc identity provider
+app.route('/auth/oidc-interstitial')
+  .get((req, res) => res.render('dist/oidc-interstitial/oidc-interstitial.html', renderConfig))
+  .post(auth.oidcPreRegister, register, auth.oidcPostRegister, auth.respondRedirect)
+
+/**
+ * @openapi
+ * /auth/oidc-providers:
+ *  get:
+ *    summary: OpenId provider listing
+ *    description: Retreive data necessary to display other provider login buttons
+ *    responses:
+ *      200:
+ *        description: All clients requiting discrete login buttons
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: array
+ *              items:
+ *                type: object
+ *                properties:
+ *                  domain:
+ *                    type: string
+ *                    description: OIDC provider domain, pass as 'immer' param to /auth/home to trigger OIDC login
+ *                  buttonIcon:
+ *                    type: string
+ *                    description: url of icon to display
+ *                  buttonLabel:
+ *                    type: string
+ *                    description: text to to display next to icon
+ *                required:
+ *                  - domain
+ */
+app.get('/auth/oidc-providers', auth.oidcLoginProviders)
 
 // users are sent here from Hub to get access token, but it may interrupt with redirect
 // to login and further redirect to login at their home immer if they are remote
@@ -234,6 +304,18 @@ app.get(routes.likes, auth.publ, auth.viewScope, apex.net.likes.get)
 app.get(routes.blocked, auth.priv, auth.friendsScope, apex.net.blocked.get)
 app.get(routes.rejections, auth.priv, auth.friendsScope, apex.net.rejections.get)
 app.get(routes.rejected, auth.priv, auth.friendsScope, apex.net.rejected.get)
+
+// metadata & discovery routes
+/* OIDC server is WIP
+app.get(
+  '/.well-known/webfinger',
+  auth.oidcWebfingerPassIfNotIssuer,
+  cors(),
+  apex.net.wellKnown.parseWebfinger,
+  apex.net.validators.targetActor,
+  auth.oidcWebfingerRespond
+)
+*/
 app.get('/.well-known/webfinger', cors(), apex.net.webfinger.get)
 app.get('/.well-known/nodeinfo', cors(), apex.net.nodeInfoLocation.get)
 app.get('/nodeinfo/:version', cors(), apex.net.nodeInfo.get)
@@ -254,6 +336,7 @@ app.on('apex-inbox', onInbox)
 app.on('apex-outbox', onOutbox)
 
 app.use(clientApi.router)
+app.use(adminApi.router)
 // static files included in repo/docker image
 app.use('/static', express.static('static'))
 // static files added on deployed server
@@ -267,6 +350,7 @@ app.get('/', (req, res) => {
       : `${req.protocol}://${homepage || hubs[0]}`
   )
 })
+
 // for SPA routing in activity pub pages
 app.use(history({
   index: '/ap.html'
@@ -399,6 +483,7 @@ migrate(mongoURI).catch((err) => {
   // server startup
   await client.connect()
   apex.store.db = client.db()
+  await MongoAdapter.Initialize(apex.store.db)
   // Place object representing this node
   const immer = await apex.fromJSONLD({
     id: `https://${domain}/o/immer`,

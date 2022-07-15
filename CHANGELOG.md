@@ -1,3 +1,16 @@
+## Unreleased
+
+### Added
+
+* OpenID Connect client. Users can now login to your immer using any OpenID Connect
+identity provider instead of a password. OIDC providers can be automatically
+discovered based on user's immer domain entered on the login screen or manually configured.
+See [docs](doc/OpenIdConnectProviders.md).
+* Initial admin interface. Set new `adminEmail` environment variable to designate
+the account that can access `/admin`
+* Admin interface: OpenID Connect Clients. Add, edit, and delete OIDC clients.
+Choose which clients get their own special login button.
+
 ## v3.1.0 (2022-06-23)
 
 ### Added

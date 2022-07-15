@@ -3,7 +3,8 @@ const uid = require('uid-safe')
 const bcrypt = require('bcrypt')
 const crypto = require('crypto')
 const jwt = require('jsonwebtoken')
-const { domain, hub, name } = process.env
+const { USER_ROLES } = require('./consts')
+const { domain, hub, name, adminEmail } = process.env
 
 const hubs = hub.split(',')
 const saltRounds = 10
@@ -33,6 +34,11 @@ module.exports = {
     }, {
       unique: true
     })
+    await db.collection('oidcRemoteClients').createIndex({
+      domain: 1
+    }, {
+      unique: true
+    })
     await db.collection('users').createIndex({
       username: 1
     }, {
@@ -55,6 +61,21 @@ module.exports = {
         isTrusted: true
       }
     }, { upsert: true })
+
+    if (adminEmail) {
+      // grant admin access to user specifid in config
+      const adminGrant = await db.collection('users').findOneAndUpdate({
+        email: hashEmail(adminEmail),
+        role: { $ne: USER_ROLES.ADMIN }
+      }, {
+        $set: {
+          role: USER_ROLES.ADMIN
+        }
+      })
+      if (adminGrant.value) {
+        console.log(`Granted admin access to ${adminGrant.value.username}, ${adminEmail}`)
+      }
+    }
   },
   // passport / oauth2orize methods
   async validateUser (username, password, done) {
@@ -166,12 +187,20 @@ module.exports = {
     email = hashEmail(email)
     return db.collection('users').findOne({ email })
   },
-  async createUser (username, password, email) {
+  async createUser (username, password, email, oidcProviders) {
     const user = { username }
     if (password) {
       user.passwordHash = await bcrypt.hash(password, saltRounds)
     }
+    if (Array.isArray(oidcProviders)) {
+      user.oidcProviders = oidcProviders
+    }
     user.email = hashEmail(email)
+    user.role = USER_ROLES.USER
+    if (email === adminEmail) {
+      console.log(`Granting admin acccess to ${username}, ${adminEmail}`)
+      user.role = USER_ROLES.ADMIN
+    }
     await db.collection('users').insertOne(user)
     return user
   },
@@ -200,6 +229,24 @@ module.exports = {
       redirectUri: client.redirectUri
     })
     if (!result.acknowledged) { throw new Error('Error saving remove client') }
+  },
+  /// OpenID Connect clients for other servers
+  oidcGetRemoteClient (domain) {
+    return db.collection('oidcRemoteClients').findOne({ domain })
+  },
+  async oidcSaveRemoteClient (domain, issuer, client, metadata) {
+    const result = await db.collection('oidcRemoteClients').insertOne({
+      ...metadata,
+      domain,
+      issuer: issuer.metadata,
+      client: client.metadata
+    })
+    if (!result.acknowledged) { throw new Error('Error saving remove client') }
+  },
+  async getOidcLoginProviders () {
+    return db.collection('oidcRemoteClients')
+      .find({ showButton: true }, { projection: { _id: 0, domain: 1, buttonIcon: 1, buttonLabel: 1 } })
+      .toArray()
   }
 
 }
