@@ -28,11 +28,11 @@ const {
   smtpFrom,
   smtpUser,
   smtpPassword,
-  easySecret,
-  adminEmail
+  easySecret
 } = process.env
 const hubs = hub.split(',')
 const emailCheck = require('email-validator')
+const { USER_ROLES } = require('./consts')
 const handleCheck = '^[A-Za-z0-9-]{3,32}$'
 const nameCheck = '^[A-Za-z0-9_~ -]{3,32}$'
 
@@ -336,9 +336,8 @@ function returnTo (req, res) {
   res.redirect(redirect)
 }
 
-async function requireAdmin (req, res, next) {
-  const admin = await authdb.getUserByEmail(adminEmail)
-  const isAdmin = admin?.username === req.user.username
+function requireAdmin (req, res, next) {
+  const isAdmin = req.user?.role === USER_ROLES.ADMIN
   if (isAdmin) {
     next()
   } else {

@@ -3,7 +3,8 @@ const uid = require('uid-safe')
 const bcrypt = require('bcrypt')
 const crypto = require('crypto')
 const jwt = require('jsonwebtoken')
-const { domain, hub, name } = process.env
+const { USER_ROLES } = require('./consts')
+const { domain, hub, name, adminEmail } = process.env
 
 const hubs = hub.split(',')
 const saltRounds = 10
@@ -60,6 +61,21 @@ module.exports = {
         isTrusted: true
       }
     }, { upsert: true })
+
+    if (adminEmail) {
+      // grant admin access to user specifid in config
+      const adminGrant = await db.collection('users').findOneAndUpdate({
+        email: hashEmail(adminEmail),
+        role: { $ne: USER_ROLES.ADMIN }
+      }, {
+        $set: {
+          role: USER_ROLES.ADMIN
+        }
+      })
+      if (adminGrant.value) {
+        console.log(`Granted admin access to ${adminGrant.value.username}, ${adminEmail}`)
+      }
+    }
   },
   // passport / oauth2orize methods
   async validateUser (username, password, done) {
@@ -180,6 +196,11 @@ module.exports = {
       user.oidcProviders = oidcProviders
     }
     user.email = hashEmail(email)
+    user.role = USER_ROLES.USER
+    if (email === adminEmail) {
+      console.log(`Granting admin acccess to ${username}, ${adminEmail}`)
+      user.role = USER_ROLES.ADMIN
+    }
     await db.collection('users').insertOne(user)
     return user
   },
