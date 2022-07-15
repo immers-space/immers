@@ -48,6 +48,7 @@ const clientProjection = {
   name: 1,
   domain: 1,
   'client.client_id': 1,
+  showButton: 1,
   buttonIcon: 1,
   buttonLabel: 1
 }
@@ -93,6 +94,7 @@ async function updateOauthClient (req, res) {
     const update = {
       name: req.body.name,
       'client.client_id': req.body.clientId,
+      showButton: req.body.showButton,
       buttonIcon: req.body.buttonIcon,
       buttonLabel: req.body.buttonLabel
     }
@@ -109,19 +111,20 @@ async function updateOauthClient (req, res) {
 
 /// utils ///
 function toFrontEndClientFormat (dbClient) {
-  const { _id, name, domain: providerDomain, buttonIcon, buttonLabel, client } = dbClient
+  const { _id, name, domain: providerDomain, showButton, buttonIcon, buttonLabel, client } = dbClient
   return {
     _id,
     name,
     domain: providerDomain,
+    showButton,
     buttonIcon,
     buttonLabel,
-    clientId: client.client_id
+    clientId: client?.client_id
   }
 }
 
 async function processClientFromFrontEnd (data) {
-  const { name, domain: providerDomain, clientId, clientSecret, buttonIcon, buttonLabel } = data
+  const { name, domain: providerDomain, clientId, clientSecret, showButton, buttonIcon, buttonLabel } = data
   const providerOriginOrDisdoveryUrl = providerDomain.includes('://') ? providerDomain : `https://${providerDomain}`
   const issuer = await Issuer.discover(providerOriginOrDisdoveryUrl)
   const client = new issuer.Client({
@@ -131,5 +134,5 @@ async function processClientFromFrontEnd (data) {
     response_types: ['code']
   })
   const cleanDomain = new URL(providerOriginOrDisdoveryUrl).host
-  return { domain: cleanDomain, issuer, client, metadata: { name, buttonIcon, buttonLabel } }
+  return { domain: cleanDomain, issuer, client, metadata: { name, showButton, buttonIcon, buttonLabel } }
 }

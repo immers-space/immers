@@ -242,6 +242,11 @@ module.exports = {
       client: client.metadata
     })
     if (!result.acknowledged) { throw new Error('Error saving remove client') }
+  },
+  async getOidcLoginProviders () {
+    return db.collection('oidcRemoteClients')
+      .find({ showButton: true }, { projection: { _id: 0, domain: 1, buttonIcon: 1, buttonLabel: 1 } })
+      .toArray()
   }
 
 }

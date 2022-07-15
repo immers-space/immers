@@ -8,6 +8,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
   const [domain, setDomain] = useState('')
   const [clientId, setClientId] = useState('')
   const [clientSecret, setClientSecret] = useState('')
+  const [showButton, setShowButton] = useState(false)
   const [buttonIcon, setButtonIcon] = useState('')
   const [buttonLabel, setButtonLabel] = useState('')
   const [error, setError] = useState(false)
@@ -27,6 +28,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
           setName(response.name ?? '')
           setClientId(response.clientId ?? '')
           setClientSecret(response.clientSecret ?? '')
+          setShowButton(response.showButton ?? false)
           setButtonIcon(response?.buttonIcon ?? '')
           setButtonLabel(response?.buttonLabel ?? '')
         })
@@ -36,6 +38,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
       setDomain('')
       setClientId('')
       setClientSecret('')
+      setShowButton(false)
       setButtonIcon('')
       setButtonLabel('')
     }
@@ -54,6 +57,9 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
         break
       case 'clientSecret':
         setClientSecret(e.target.value)
+        break
+      case 'showButton':
+        setShowButton(e.target.checked)
         break
       case 'buttonIcon':
         setButtonIcon(e.target.value)
@@ -78,7 +84,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, domain, clientId, clientSecret, buttonIcon, buttonLabel })
+        body: JSON.stringify({ name, domain, clientId, clientSecret, showButton, buttonIcon, buttonLabel })
       }).then(res => res.json())
         .then(response => {
           if (response.success) {
@@ -93,7 +99,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, domain, clientId, clientSecret, buttonIcon, buttonLabel })
+        body: JSON.stringify({ name, domain, clientId, clientSecret, showButton, buttonIcon, buttonLabel })
       }).then(res => res.json())
         .then(response => {
           if (response.success) {
@@ -129,7 +135,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
               <div>
                 <input
                   onChange={handleInput}
-                  id='name' className='aesthetic-windows-95-text-input handle'
+                  id='name' className='aesthetic-windows-95-text-input'
                   type='text' inputMode='text' name='name'
                   placeholder='Name'
                   required pattern='^[A-Za-z0-9-]{3,32}$'
@@ -140,12 +146,12 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
               </div>
             </div>
             <div className='form-item'>
-              <label htmlFor='domain'>Provider domain or discovery url:</label>
+              <label htmlFor='domain'>Provider domain:</label>
               <div>
                 <input
                   disabled={!!editId}
                   onChange={handleInput}
-                  id='domain' className='aesthetic-windows-95-text-input handle'
+                  id='domain' className='aesthetic-windows-95-text-input'
                   type='text' inputMode='text' name='domain'
                   placeholder='accounts.domain.com'
                   autoCapitalize='off' autoCorrect='off' spellCheck='false'
@@ -158,7 +164,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
               <div>
                 <input
                   onChange={handleInput}
-                  id='clientId' className='aesthetic-windows-95-text-input handle'
+                  id='clientId' className='aesthetic-windows-95-text-input'
                   type='text' inputMode='text' name='clientId'
                   placeholder='Provided Client Id'
                   autoCapitalize='off' autoCorrect='off' spellCheck='false'
@@ -171,7 +177,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
               <div>
                 <input
                   onChange={handleInput}
-                  id='clientSecret' className='aesthetic-windows-95-text-input handle'
+                  id='clientSecret' className='aesthetic-windows-95-text-input'
                   type='text' inputMode='text' name='clientSecret'
                   placeholder={editId ? '(not shown)' : 'Provided Client Secret'}
                   autoCapitalize='off' autoCorrect='off' spellCheck='false'
@@ -181,12 +187,22 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
             </div>
             <fieldset className='marginBottom'>
               <legend>Optional Login Button</legend>
+              <label className='aesthetic-windows-95-checkbox'>
+                Show
+                <input
+                  onChange={handleInput}
+                  id='showButton'
+                  type='checkbox' name='showButton'
+                  checked={showButton}
+                />
+                <span className='aesthetic-windows-95-checkmark' />
+              </label>
               <div className='form-item'>
                 <label htmlFor='buttonIcon'>Button Icon:</label>
                 <div>
                   <input
                     onChange={handleInput}
-                    id='buttonIcon' className='aesthetic-windows-95-text-input handle'
+                    id='buttonIcon' className='aesthetic-windows-95-text-input'
                     type='text' inputMode='text' name='buttonIcon'
                     placeholder='Image URL'
                     autoCapitalize='off' autoCorrect='off' spellCheck='false'
@@ -199,7 +215,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
                 <div>
                   <input
                     onChange={handleInput}
-                    id='buttonLabel' className='aesthetic-windows-95-text-input handle'
+                    id='buttonLabel' className='aesthetic-windows-95-text-input'
                     type='text' inputMode='text' name='buttonLabel'
                     placeholder='Button Label'
                     autoCapitalize='off' autoCorrect='off' spellCheck='false'
@@ -207,7 +223,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
                   />
                 </div>
               </div>
-              {(buttonIcon || buttonLabel) &&
+              {showButton &&
                 <div className='form-item'>
                   Preview: <button onClick={login} className='marginLeft loginButton'><img src={buttonIcon} />{buttonLabel}</button>
                 </div>}
