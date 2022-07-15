@@ -32,6 +32,7 @@ const {
 } = process.env
 const hubs = hub.split(',')
 const emailCheck = require('email-validator')
+const { USER_ROLES } = require('./consts')
 const handleCheck = '^[A-Za-z0-9-]{3,32}$'
 const nameCheck = '^[A-Za-z0-9_~ -]{3,32}$'
 
@@ -47,6 +48,7 @@ module.exports = {
   open: [passport.authenticate(['bearer', 'anonymous'], { session: false }), cors()],
   /** auth for OAuth client / service account jwt login (e.g. in Authorization code grant) */
   clnt: passport.authenticate('oauth2-client-jwt', { session: false }),
+  admn: [passport.authenticate('bearer', { session: false }), requireAdmin],
   scope,
   /** Require access to view private information */
   viewScope: scope(scopes.viewPrivate.name),
@@ -332,4 +334,13 @@ function returnTo (req, res) {
     delete req.session.returnTo
   }
   res.redirect(redirect)
+}
+
+function requireAdmin (req, res, next) {
+  const isAdmin = req.user?.role === USER_ROLES.ADMIN
+  if (isAdmin) {
+    next()
+  } else {
+    return res.sendStatus(403)
+  }
 }

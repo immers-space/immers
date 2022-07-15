@@ -1,0 +1,43 @@
+.adminContainer h3 {
+    margin: 0.7rem 0;
+}
+
+.adminContainer .adminButton {
+    font-family: "VT323", monospace;
+    font-size: 1.2rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    background: #BFBFBF;
+    border-bottom: 2px solid #181818;
+    border-right: 2px solid #181818;
+    padding: 0.2rem 1.2rem;
+}
+
+.marginBottom {
+    margin-bottom: 1.2rem;
+}
+
+.marginLeft {
+    margin-left: 1.2rem;
+}
+
+.marginTop {
+    margin-top: 1.2rem;
+}
+
+.loginButton {
+    font-size: 1.4rem;
+    line-height: 2.2rem;
+    font-family: "VT323", monospace;
+    font-weight: 900;
+    text-transform: uppercase;
+    background: #BFBFBF;
+    border-bottom: 2px solid #181818;
+    border-right: 2px solid #181818;
+    padding: 0.2rem 1.2rem;
+}
+
+.loginButton img {
+    max-height: 25px;
+    margin: 0.2rem 0.5rem -0.3rem -0.8rem;
+}

@@ -15,6 +15,7 @@ module.exports = {
   open: resourceServer.open,
   priv: resourceServer.priv,
   publ: resourceServer.publ,
+  admn: resourceServer.admn,
   scope: resourceServer.scope,
   viewScope: resourceServer.viewScope,
   friendsScope: resourceServer.friendsScope,

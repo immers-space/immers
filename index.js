@@ -27,6 +27,7 @@ const { migrate } = require('./src/migrate')
 const { scopes } = require('./common/scopes')
 const settings = require('./src/settings')
 const { MongoAdapter } = require('./src/auth/openIdServerDb')
+const adminApi = require('./src/adminApi.js')
 
 const {
   port,
@@ -281,6 +282,7 @@ app.on('apex-inbox', onInbox)
 app.on('apex-outbox', onOutbox)
 
 app.use(clientApi.router)
+app.use(adminApi.router)
 // static files included in repo/docker image
 app.use('/static', express.static('static'))
 // static files added on deployed server

@@ -218,6 +218,13 @@ button[disabled] {
   color: #000;
 }
 
+.aesthetic-windows-95-taskbar-services > * {
+  margin-right: 4px;
+}
+.aesthetic-windows-95-taskbar-services > *:last-child {
+  margin-right: 0;
+}
+
 .immers-icon {
   width: 28px;
   height: 28px;
