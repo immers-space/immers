@@ -9,13 +9,17 @@ import ServerDataContext from './ServerDataContext'
 import Friends from './Friends'
 import EmojiLink from '../components/EmojiLink'
 import { AvatarPreview } from '../components/AvatarPreview'
+import { useCheckAdmin } from './utils/useCheckAdmin'
 
 export default function Profile ({ actor }) {
   const navigate = useNavigate()
   const { loggedInUser, token } = useContext(ServerDataContext)
   const [actorObj, setActorObj] = useState(null)
+  const isAdmin = useCheckAdmin(token)
   const tabs = ['Outbox']
-  const taskbarButtons = []
+  const taskbarButtons = isAdmin
+    ? [<EmojiLink key='admin' emoji='princess' href='/admin' title='Administrator Settings' />]
+    : []
   let buttons
   if (loggedInUser) {
     taskbarButtons.push(<EmojiLink key='logout' emoji='end' href='/auth/logout' title='Logout' />)
