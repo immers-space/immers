@@ -21,7 +21,9 @@ const hubs = hub.split(',')
 /// exports ///
 module.exports = {
   checkImmer,
-  handleOAuthReturn
+  handleOAuthReturn,
+  oidcPreRegister,
+  oidcPostRegister
 }
 
 /// utils ///
@@ -56,7 +58,6 @@ async function checkImmer (req, res, next) {
       })
       await authdb.oidcSaveRemoteClient(immer, issuer, client)
     }
-    console.log(issuer, client)
     const codeVerifier = generators.codeVerifier()
     req.session.oidcClientState = { codeVerifier, providerDomain: immer }
     const codeChallenge = generators.codeChallenge(codeVerifier)
@@ -68,7 +69,6 @@ async function checkImmer (req, res, next) {
       code_challenge_method: 'S256',
       redirect_uri: `https://${domain}/auth/return`
     })
-    console.log('result', codeVerifier, redirect)
     return res.json({ redirect })
   } catch (err) {
     console.error(err)
@@ -106,42 +106,65 @@ async function checkImmer (req, res, next) {
 }
 
 async function handleOAuthReturn (req, res, next) {
-  const { codeVerifier, providerDomain } = req.session.oidcClientState
-  delete req.session.oidcClientState
-  const savedClient = await authdb.oidcGetRemoteClient(providerDomain)
-  const issuer = new Issuer(savedClient.issuer)
-  const client = new issuer.Client(savedClient.client)
-  const params = client.callbackParams(req)
-  const tokenSet = await client.callback(`https://${domain}/auth/return`, params, { code_verifier: codeVerifier })
-  console.log('received and validated tokens %j', tokenSet)
-  console.log('validated ID Token claims %j', tokenSet.claims())
-
-  const scopesGranted = tokenSet.scope?.split(' ') || []
-  const claims = tokenSet.claims()
-  if (scopesGranted.includes(scopes.viewProfile)) {
-    // TODO provider is an immer, pass access_token back to hub (I think maybe ?redirect_uri of req.session.returnTo)
-    const userinfo = await client.userinfo(tokenSet.access_token)
-    console.log('userinfo %j', userinfo)
-  } else if (claims.email) {
-    // this is an identity provider, find/create local account
-    const user = await authdb.getUserByEmail(claims.email)
-    if (!user) {
-      // https://trello.com/c/BPfpx4De/48-openid-registration-flow
-    } else if (!user.oidcProviders?.includes(providerDomain)) {
-      /* because we allow dynamic client registration, we must take
-         care to rule out a malicious provider granting fraudulent
-         id_tokens for an email corresponding to a user in our system
-         that registered via other means
-      */
-      // TODO send an easyNoPassword email to get user consent to add this provider
-      // TODO render view explaining consent is needed to add new provider to existing account
-      return res.status(403).send(`${providerDomain} not authorized for this accout`)
+  try {
+    const { codeVerifier, providerDomain } = req.session.oidcClientState
+    delete req.session.oidcClientState
+    const savedClient = await authdb.oidcGetRemoteClient(providerDomain)
+    const issuer = new Issuer(savedClient.issuer)
+    const client = new issuer.Client(savedClient.client)
+    const params = client.callbackParams(req)
+    const tokenSet = await client
+      .callback(`https://${domain}/auth/return`, params, { code_verifier: codeVerifier })
+    const scopesGranted = tokenSet.scope?.split(' ') || []
+    const claims = tokenSet.claims()
+    if (scopesGranted.includes(scopes.viewProfile)) {
+      // TODO provider is an immer, pass access_token back to hub (I think maybe ?redirect_uri of req.session.returnTo)
+      const userinfo = await client.userinfo(tokenSet.access_token)
+      console.log('userinfo %j', userinfo)
+      res.sendStatus(501)
+    } else if (claims.email) {
+      // this is an identity provider, find/create local account
+      const user = await authdb.getUserByEmail(claims.email)
+      if (!user) {
+        req.session.oidcClientState = { email: claims.email, providerDomain }
+        return res.redirect('/auth/oidc-interstitial')
+      } else if (!user.oidcProviders?.includes(providerDomain)) {
+        /* because we allow dynamic client registration, we must take
+           care to rule out a malicious provider granting fraudulent
+           id_tokens for an email corresponding to a user in our system
+           that registered via other means
+        */
+        // TODO send an easyNoPassword email to get user consent to add this provider
+        // TODO render view explaining consent is needed to add new provider to existing account
+        return res.status(403).send(`${providerDomain} not authorized for this accout`)
+      }
+      // establish login session
+      req.login(user, next)
+      // next in route will return to OAuth authorize endpoint, which will autogrant token now that user
+      // is logged in with local account and return them to the destination
     }
-    // establish login session
-    req.login(user, next)
-    // next in route will return to OAuth authorize endpoint, which will autogrant token now that user
-    // is logged in with local account and return them to the hub
+  } catch (err) {
+    console.error('Error processing oidc client callback')
+    return next(err)
   }
+}
+
+/** Validate oidc-registration response then pass to normal registration middlewares */
+function oidcPreRegister (req, res, next) {
+  if (!req.session?.oidcClientState?.email || !req.session.oidcClientState.providerDomain) {
+    const err = new Error('Invalid OpenID state: missing email or provider')
+    err.status = 403
+    throw err
+  }
+  const { email, providerDomain } = req.session.oidcClientState
+  req.body.email = email
+  req.body.oidcProviders = [providerDomain]
+  next()
+}
+
+function oidcPostRegister (req, res, next) {
+  delete req.session.oidcClientState
+  next()
 }
 
 // And later refresh the tokenSet if it had a refresh_token.

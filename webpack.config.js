@@ -9,7 +9,8 @@ module.exports = {
     ap: { import: './views/ap/ap.js', filename: '[name]/[name].js' },
     login: { import: './views/login/login.js', filename: '[name]/[name].js' },
     dialog: { import: './views/dialog/dialog.js', filename: '[name]/[name].js' },
-    reset: { import: './views/reset/reset.js', filename: '[name]/[name].js' }
+    reset: { import: './views/reset/reset.js', filename: '[name]/[name].js' },
+    'oidc-interstitial': { import: './views/oidc-interstitial/oidc-interstitial.js', filename: '[name]/[name].js' }
   },
   output: {
     path: path.join(__dirname, '/dist'),
@@ -55,6 +56,7 @@ module.exports = {
     new HtmlWebpackPlugin({ template: './views/ap.html', chunks: ['ap'], inject: false, filename: 'ap/ap.html' }),
     new HtmlWebpackPlugin({ template: './views/auth.html', chunks: ['login'], inject: false, filename: 'login/login.html' }),
     new HtmlWebpackPlugin({ template: './views/auth.html', chunks: ['dialog'], inject: false, filename: 'dialog/dialog.html' }),
-    new HtmlWebpackPlugin({ template: './views/auth.html', chunks: ['reset'], inject: false, filename: 'reset/reset.html' })
+    new HtmlWebpackPlugin({ template: './views/auth.html', chunks: ['reset'], inject: false, filename: 'reset/reset.html' }),
+    new HtmlWebpackPlugin({ template: './views/auth.html', chunks: ['oidc-interstitial'], inject: false, filename: 'oidc-interstitial/oidc-interstitial.html' })
   ]
 }

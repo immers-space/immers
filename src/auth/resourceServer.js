@@ -68,8 +68,8 @@ module.exports = {
     returnTo
   ],
   validateNewUser,
-  registration: [registerUser, respondRedirect],
-  returnTo
+  returnTo,
+  respondRedirect
 }
 
 /// side effects ///
@@ -242,8 +242,8 @@ function userToActor (req, res, next) {
 
 async function registerUser (req, res, next) {
   try {
-    const { username, password, email } = req.body
-    const user = await authdb.createUser(username, password, email)
+    const { username, password, email, oidcProviders } = req.body
+    const user = await authdb.createUser(username, password, email, oidcProviders)
     if (!user) {
       throw new Error('Unable to create user')
     }
