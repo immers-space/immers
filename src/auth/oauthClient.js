@@ -138,7 +138,7 @@ async function handleOAuthReturn (req, res, next) {
         */
         // TODO send an easyNoPassword email to get user consent to add this provider
         // TODO render view explaining consent is needed to add new provider to existing account
-        return res.status(403).send(`${providerDomain} not authorized for this accout`)
+        return res.status(403).send(`Existing ${domain} user account for this email has not authorized ${providerDomain} as an identity provider`)
       }
       // establish login session
       req.login(user, next)
