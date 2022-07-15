@@ -29,9 +29,6 @@ export default function Admin () {
     setEditId(id)
     setMode(modes.NEW_OAUTH_CLIENT)
   }
-  const handleAdd = () => {
-    setMode(modes.NEW_OAUTH_CLIENT)
-  }
 
   function buttonHandler () {
     if (!loading && mode !== modes.NEW_OAUTH_CLIENT) {
@@ -49,7 +46,7 @@ export default function Admin () {
         <div className='aesthetic-windows-95-loader'>
           <div /><div /><div />
         </div>}
-      {!loading && mode === modes.LIST_OAUTH_CLIENTS && <OauthClients onEdit={handleEdit} onAdd={handleAdd} />}
+      {!loading && mode === modes.LIST_OAUTH_CLIENTS && <OauthClients onEdit={handleEdit} onAdd={handleNewOauth} />}
       {!loading && mode === modes.NEW_OAUTH_CLIENT && <AddEditOauthClient showClientList={handleListOauth} editId={editId} />}
     </Layout>
   )

@@ -1,8 +1,12 @@
 const { Router } = require('express')
+const { Issuer } = require('openid-client')
 const { apex } = require('./apex')
+const { authdb } = require('./auth')
 const auth = require('./auth')
 const router = new Router()
 const ObjectId = require('mongodb').ObjectId
+
+const { domain } = process.env
 
 module.exports = {
   router
@@ -40,23 +44,31 @@ router.put('/a/oauth-client/:id', [
   updateOauthClient
 ])
 
+const clientProjection = {
+  name: 1,
+  domain: 1,
+  'client.client_id': 1,
+  buttonIcon: 1,
+  buttonLabel: 1
+}
+
 async function getOauthClients (req, res) {
   const oidcRemoteClients = await apex.store.db.collection('oidcRemoteClients')
-    .find({})
+    .find({}, { projection: clientProjection })
     .toArray()
-  res.json(oidcRemoteClients)
+  res.json(oidcRemoteClients.map(toFrontEndClientFormat))
 }
 
 async function postOauthClient (req, res) {
+  let clientData
   try {
-    await apex.store.db.collection('oidcRemoteClients').insertOne({
-      name: req.body.name,
-      domain: req.body.domain,
-      clientId: req.body.clientId,
-      clientSecret: req.body.clientSecret,
-      buttonIcon: req.body.buttonIcon,
-      buttonLabel: req.body.buttonLabel
-    })
+    clientData = await processClientFromFrontEnd(req.body)
+  } catch (err) {
+    return res.json({ success: false, step: 'discovery', error: err.toString() })
+  }
+  try {
+    const { domain: providerDomain, issuer, client, metadata } = clientData
+    await authdb.oidcSaveRemoteClient(providerDomain, issuer, client, metadata)
     return res.json({ success: true })
   } catch (err) { return res.status(500) }
 }
@@ -72,25 +84,52 @@ async function deleteOauthClient (req, res) {
 
 async function getOauthClient (req, res) {
   const oidcRemoteClients = await apex.store.db.collection('oidcRemoteClients')
-    .findOne({ _id: ObjectId(req.params.id) })
-  res.json(oidcRemoteClients)
+    .findOne({ _id: ObjectId(req.params.id) }, { projection: clientProjection })
+  res.json(toFrontEndClientFormat(oidcRemoteClients))
 }
 
 async function updateOauthClient (req, res) {
   try {
+    const update = {
+      name: req.body.name,
+      'client.client_id': req.body.clientId,
+      buttonIcon: req.body.buttonIcon,
+      buttonLabel: req.body.buttonLabel
+    }
+    if (req.body.clientSecret) {
+      update['client.client_secret'] = req.body.clientSecret
+    }
     await apex.store.db.collection('oidcRemoteClients').updateOne(
       { _id: ObjectId(req.params.id) },
-      {
-        $set: {
-          name: req.body.name,
-          domain: req.body.domain,
-          clientId: req.body.clientId,
-          clientSecret: req.body.clientSecret,
-          buttonIcon: req.body.buttonIcon,
-          buttonLabel: req.body.buttonLabel
-        }
-      }
+      { $set: update }
     )
     return res.json({ success: true })
   } catch (err) { return res.status(500) }
+}
+
+/// utils ///
+function toFrontEndClientFormat (dbClient) {
+  const { _id, name, domain: providerDomain, buttonIcon, buttonLabel, client } = dbClient
+  return {
+    _id,
+    name,
+    domain: providerDomain,
+    buttonIcon,
+    buttonLabel,
+    clientId: client.client_id
+  }
+}
+
+async function processClientFromFrontEnd (data) {
+  const { name, domain: providerDomain, clientId, clientSecret, buttonIcon, buttonLabel } = data
+  const providerOriginOrDisdoveryUrl = providerDomain.includes('://') ? providerDomain : `https://${providerDomain}`
+  const issuer = await Issuer.discover(providerOriginOrDisdoveryUrl)
+  const client = new issuer.Client({
+    client_id: clientId,
+    client_secret: clientSecret,
+    redirect_uris: [`htttps://${domain}/auth/return`],
+    response_types: ['code']
+  })
+  const cleanDomain = new URL(providerOriginOrDisdoveryUrl).host
+  return { domain: cleanDomain, issuer, client, metadata: { name, buttonIcon, buttonLabel } }
 }

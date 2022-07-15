@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react'
 import ServerDataContext from '../ap/ServerDataContext'
+import GlitchError from '../components/GlitchError'
 import './Admin.css'
 
 export default function AddEditOauthClient ({ showClientList, editId }) {
@@ -9,6 +10,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
   const [clientSecret, setClientSecret] = useState('')
   const [buttonIcon, setButtonIcon] = useState('')
   const [buttonLabel, setButtonLabel] = useState('')
+  const [error, setError] = useState(false)
   const { token } = useContext(ServerDataContext)
 
   useEffect(() => {
@@ -21,13 +23,21 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
         }
       }).then(res => res.json())
         .then(response => {
-          setName(response.name)
           setDomain(response.domain)
-          setClientId(response.clientId)
-          setClientSecret(response.clientSecret)
+          setName(response.name ?? '')
+          setClientId(response.clientId ?? '')
+          setClientSecret(response.clientSecret ?? '')
           setButtonIcon(response?.buttonIcon ?? '')
           setButtonLabel(response?.buttonLabel ?? '')
         })
+    } else {
+      // clear out if component re-used
+      setName('')
+      setDomain('')
+      setClientId('')
+      setClientSecret('')
+      setButtonIcon('')
+      setButtonLabel('')
     }
   }, [editId])
 
@@ -56,6 +66,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
 
   function handleSubmit (e) {
     e.preventDefault()
+    setError(false)
     if (!token) {
       return
     }
@@ -87,7 +98,15 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
         .then(response => {
           if (response.success) {
             showClientList()
+          } else if (response.step === 'discovery') {
+            setError('discovery')
+            console.error(response.error)
+          } else {
+            throw new Error(response.error)
           }
+        }).catch(err => {
+          console.error(err)
+          setError(true)
         })
     }
   }
@@ -121,13 +140,14 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
               </div>
             </div>
             <div className='form-item'>
-              <label htmlFor='domain'>Domain:</label>
+              <label htmlFor='domain'>Provider domain or discovery url:</label>
               <div>
                 <input
+                  disabled={!!editId}
                   onChange={handleInput}
                   id='domain' className='aesthetic-windows-95-text-input handle'
                   type='text' inputMode='text' name='domain'
-                  placeholder='Domain'
+                  placeholder='accounts.domain.com'
                   autoCapitalize='off' autoCorrect='off' spellCheck='false'
                   value={domain}
                 />
@@ -153,7 +173,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
                   onChange={handleInput}
                   id='clientSecret' className='aesthetic-windows-95-text-input handle'
                   type='text' inputMode='text' name='clientSecret'
-                  placeholder='Provided Client Secret'
+                  placeholder={editId ? '(not shown)' : 'Provided Client Secret'}
                   autoCapitalize='off' autoCorrect='off' spellCheck='false'
                   value={clientSecret}
                 />
@@ -187,11 +207,19 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
                   />
                 </div>
               </div>
-              {buttonIcon && buttonLabel &&
+              {(buttonIcon || buttonLabel) &&
                 <div className='form-item'>
                   Preview: <button onClick={login} className='marginLeft loginButton'><img src={buttonIcon} />{buttonLabel}</button>
                 </div>}
             </fieldset>
+            {error === 'discovery' && (
+              <>
+                <GlitchError show>We couldn't process that OpenId Connect Provider</GlitchError>
+                <p>Double check the domain or try putting the full discovery document url instead of the domain.</p>
+              </>
+
+            )}
+            <GlitchError show={error === true}>Something when wrong. Please Try again</GlitchError>
             <button className='adminButton' onClick={handleSubmit}>{editId ? 'Update' : 'Save'} Oauth Client</button>
             <button className='adminButton marginLeft' onClick={showClientList}>Cancel</button>
           </form>

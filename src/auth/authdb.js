@@ -234,8 +234,9 @@ module.exports = {
   oidcGetRemoteClient (domain) {
     return db.collection('oidcRemoteClients').findOne({ domain })
   },
-  async oidcSaveRemoteClient (domain, issuer, client) {
+  async oidcSaveRemoteClient (domain, issuer, client, metadata) {
     const result = await db.collection('oidcRemoteClients').insertOne({
+      ...metadata,
       domain,
       issuer: issuer.metadata,
       client: client.metadata

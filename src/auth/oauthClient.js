@@ -32,6 +32,11 @@ async function checkImmer (req, res, next) {
   if (!(username && immer)) { return res.status(400).send('Missing user handle') }
   immer = immer.toLowerCase()
   username = username.toLowerCase()
+
+  if (immer === domain.toLowerCase()) {
+    return res.json({ local: true })
+  }
+
   // OpenId Connect Discovery
   try {
     let issuer
@@ -76,9 +81,6 @@ async function checkImmer (req, res, next) {
 
   // legacy immers discovery
   try {
-    if (immer === domain.toLowerCase()) {
-      return res.json({ local: true })
-    }
     let client = await authdb.getRemoteClient(immer)
     if (!client) {
       client = await request(`https://${immer}/auth/client`, {
