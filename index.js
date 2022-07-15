@@ -156,7 +156,28 @@ app.route('/auth/login')
     successReturnToOrRedirect: '/',
     failureRedirect: '/auth/login?passwordfail'
   }))
-// find username & home from handle; if user is remote, get remote authorization url
+
+/**
+ * @openapi
+ *  /auth/home:
+ *    get:
+ *    summary: Find a user's home authorization server
+ *    descripion: Identifies home server from user handle, registers a client with that server if needed, and returns an authorization url
+ *    responses:
+ *    200:
+ *      description: object with result info
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              local:
+ *                type: boolean
+ *                description: is this user local to this Immers Server?
+ *              redirect:
+ *                type: string
+ *                description: URL you need to redirect the user to in order to authorize with their remote home server
+ */
 app.get('/auth/home', auth.checkImmer)
 app.get('/auth/logout', auth.logout, (req, res) => res.redirect('/'))
 app.post('/auth/logout', auth.logout, (req, res) => {
@@ -222,7 +243,34 @@ app.route('/auth/oidc-interstitial')
   .get((req, res) => res.render('dist/oidc-interstitial/oidc-interstitial.html', renderConfig))
   .post(auth.oidcPreRegister, register, auth.oidcPostRegister, auth.respondRedirect)
 
-// data for "login with x" buttons
+/**
+ * @openapi
+ * /auth/oidc-providers:
+ *  get:
+ *    summary: OpenId provider listing
+ *    description: Retreive data necessary to display other provider login buttons
+ *    responses:
+ *      200:
+ *        description: All clients requiting discrete login buttons
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: array
+ *              items:
+ *                type: object
+ *                properties:
+ *                  domain:
+ *                    type: string
+ *                    description: OIDC provider domain, pass as 'immer' param to /auth/home to trigger OIDC login
+ *                  buttonIcon:
+ *                    type: string
+ *                    description: url of icon to display
+ *                  buttonLabel:
+ *                    type: string
+ *                    description: text to to display next to icon
+ *                required:
+ *                  - domain
+ */
 app.get('/auth/oidc-providers', auth.oidcLoginProviders)
 
 // users are sent here from Hub to get access token, but it may interrupt with redirect

@@ -126,7 +126,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
   return (
     <div className='adminContainer'>
       <h3>
-        {editId ? 'Edit' : 'Add'} Oauth Client
+        {editId ? 'Edit' : 'Add'} OpenID Connect Client
       </h3>
       <div className='aesthetic-windows-95-container'>
         <div className='aesthetic-windows-95-container-indent'>
@@ -237,7 +237,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
 
             )}
             <GlitchError show={error === true}>Something when wrong. Please Try again</GlitchError>
-            <button className='adminButton' onClick={handleSubmit}>{editId ? 'Update' : 'Save'} Oauth Client</button>
+            <button className='adminButton' onClick={handleSubmit}>{editId ? 'Update' : 'Save'} OpenID Connect Client</button>
             <button className='adminButton marginLeft' onClick={showClientList}>Cancel</button>
           </form>
         </div>

@@ -37,7 +37,7 @@ export default function OauthClients ({ onEdit, onAdd }) {
   }
 
   function deleteClient (id, name) {
-    if (window.confirm(`Delete the "${name}" OAuth Client?`)) {
+    if (window.confirm(`Delete the "${name}" OpenID Connect Client?`)) {
       window.fetch('/a/oauth-clients', {
         method: 'DELETE',
         headers: {
@@ -61,11 +61,11 @@ export default function OauthClients ({ onEdit, onAdd }) {
 
   return (
     <div className='adminContainer'>
-      <h3>Oauth Clients</h3>
+      <h3>OpenID Connect Clients</h3>
       <div className='aesthetic-windows-95-container'>
         {items.map(item => <Client key={item._id} {...item} />)}
       </div>
-      <button className='adminButton marginTop' onClick={onAdd}>Add OAuth Client</button>
+      <button className='adminButton marginTop' onClick={onAdd}>Add OpenID Connect Client</button>
     </div>
   )
 }
