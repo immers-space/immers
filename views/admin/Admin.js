@@ -5,6 +5,7 @@ import OauthClients from './OauthClients'
 import ServerDataContext from '../ap/ServerDataContext'
 import './Admin.css'
 import EmojiButton from '../ap/EmojiButton'
+import { useCheckAdmin } from '../ap/utils/useCheckAdmin'
 
 export default function Admin () {
   const modes = {
@@ -12,14 +13,10 @@ export default function Admin () {
     NEW_OAUTH_CLIENT: 1
   }
   const { token } = useContext(ServerDataContext)
-  const [loading, setLoading] = useState(true)
-  const [adminTimeout, setAdminTimeout] = useState(null)
   const [mode, setMode] = useState(modes.LIST_OAUTH_CLIENTS)
   const [editId, setEditId] = useState(0)
   const [buttons, setButtons] = useState(null)
-  useEffect(() => {
-    checkAdmin()
-  }, [token])
+  const loading = !useCheckAdmin(token, true)
   useEffect(() => {
     buttonHandler()
   }, [loading, mode])
@@ -34,38 +31,6 @@ export default function Admin () {
   }
   const handleAdd = () => {
     setMode(modes.NEW_OAUTH_CLIENT)
-  }
-
-  function checkAdmin () {
-    window.clearTimeout(adminTimeout)
-    if (!token) {
-      setAdminTimeout(setTimeout(() => {
-        redirectToLogin()
-      }, 4000))
-      return
-    }
-    window.fetch('/a/is-admin', {
-      headers: {
-        Accept: 'application/activity+json',
-        Authorization: `Bearer ${token}`
-      }
-    }).then(res => res.json())
-      .then(res => {
-        if (res.isAdmin) {
-          setLoading(false)
-        }
-      })
-      .catch(() => {
-        redirectToProfile()
-      })
-  }
-
-  function redirectToProfile () {
-    window.location = '/'
-  }
-
-  function redirectToLogin () {
-    window.location = '/auth/login'
   }
 
   function buttonHandler () {
