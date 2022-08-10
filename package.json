@@ -66,6 +66,8 @@
     "passport-custom": "^1.1.1",
     "passport-http-bearer": "^1.0.1",
     "passport-local": "^1.0.0",
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.9",
     "rimraf": "^3.0.2",
     "socket.io": "^4.4.1",
     "uid-safe": "^2.1.5"
