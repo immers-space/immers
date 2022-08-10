@@ -1,3 +1,18 @@
+## Unreleased
+
+**Includes migration**. Backup database before starting your server with this update.
+If using [immers-app](https://github.com/immers-space/immers-app) update scripts,
+a backup will be generated for you.
+
+### Added
+* Destination history: Adds 2 new collections to users to get aggregated inbox/outbox
+Arrive activities for recent, unique destinations from your history (/u/username/destinations)
+or your friends' history (/u/username/friendsDestinations).
+
+### Changed
+
+* Include the specified favicon in the `/o/immer` object that represents this immer
+
 ## v3.2.0 (2022-07-15)
 
 ### Added
