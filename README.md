@@ -49,6 +49,7 @@ or in a `.env` file in the project root.
 
 Variable | Value | Example
 --- | --- | ---
+adminEmail | e-mail of user with administrative privileges | none
 name | Name of your immer | Immers Space
 domain | Domain name for your immers server | immers.space
 hub | Domain name for your Mozilla Hubs Cloud or other connected immersive experience. Can either be a single domain or comma separated list. Each domain listed will be enabled for CORS & trusted OAuth client requests. Users will be redirected to the first domain listed. | hub.immers.space
@@ -171,9 +172,10 @@ npm ci
 ```
 mkdir certs
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/server.key -out certs/server.cert
+sudo chown $USER certs/*
 ```
 * Install [mongodb](https://docs.mongodb.com/manual/installation/)
-* Run immer with `npm run dev` 
+* Run immer with `npm run dev:server` 
 
 hubs
 
@@ -190,7 +192,7 @@ npm run build:client
 
 Default immers server is `https://localhost:8081`, override with entry `IMMERS_SERVER` in hubs repo root folder `.env` file.
 
-If working on immers server web client, run both `npm run dev:client` and `npm run dev` at the same time.
+If working on immers server web client, run both `npm run dev:client` and `npm run dev:server` at the same time.
 
 ### Creating a new release
 

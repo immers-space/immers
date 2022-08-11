@@ -16,7 +16,7 @@ router.get('/u/:actor/friends', [
   apex.net.validators.jsonld,
   auth.priv,
   auth.friendsScope,
-  apex.net.validators.targetActor,
+  apex.net.validators.targetActorWithMeta,
   apex.net.security.verifyAuthorization,
   apex.net.security.requireAuthorized,
   friendsLocations,
@@ -41,7 +41,8 @@ async function friendsLocations (req, res, next) {
           // filter only pending follow requests
           { '_meta.collection': { $nin: [followers, rejected] } }
         ],
-        type: { $in: friendStatusTypes }
+        type: { $in: friendStatusTypes },
+        actor: { $nin: actor._local.blockList }
       }
     },
     // most recent activity per actor

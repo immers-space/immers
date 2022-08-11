@@ -1,3 +1,29 @@
+## v3.2.0 (2022-07-15)
+
+### Added
+
+* OpenID Connect client. Users can now login to your immer using any OpenID Connect
+identity provider instead of a password. OIDC providers can be automatically
+discovered based on user's immer domain entered on the login screen or manually configured.
+See [docs](doc/OpenIdConnectProviders.md).
+* Initial admin interface. Set new `adminEmail` environment variable to designate
+the account that can access `/admin`
+* Admin interface: OpenID Connect Clients. Add, edit, and delete OIDC clients.
+Choose which clients get their own special login button.
+
+## v3.1.0 (2022-06-23)
+
+### Added
+
+* New `blocked-update` socket event fires whenever a user's blocklist chagnes (users added or removed)
+### Changed
+
+* Reorganized `auth.js` into `oauthClient.js`, `oauthServer.js`, and `resourceServer.js`. No api changes.
+* `friends` endpoint now filters out any activity from users that have been blocked
+* `friends-update` socket event now fires when blocklist changes
+* Unblocking can be achieved by sending an Undo with the actor IRI as the object
+if you don't have the original Block activity IRI handy (via updated activitypub-express)
+
 ## v3.0.0 (2022-05-18)
 
 ### Breaking Changes

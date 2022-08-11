@@ -1,6 +1,6 @@
 {
   "name": "immers",
-  "version": "3.0.0",
+  "version": "3.2.0",
   "description": "ActivityPub server for the metaverse",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -32,7 +32,7 @@
   "homepage": "https://github.com/wmurphyrd/immers#readme",
   "dependencies": {
     "@small-tech/auto-encrypt": "^3.0.1",
-    "activitypub-express": "^3.1.2",
+    "activitypub-express": "^3.2.0",
     "aesthetic-css": "^1.0.1",
     "bcrypt": "^5.0.1",
     "connect-ensure-login": "^0.1.1",
@@ -59,6 +59,8 @@
     "nunjucks": "^3.2.3",
     "oauth2orize": "^1.11.1",
     "oauth2orize-jwt-bearer": "^0.2.0",
+    "oidc-provider": "^7.11.3",
+    "openid-client": "^5.1.7",
     "overlaps": "^1.0.0",
     "parse-domain": "^5.0.0",
     "passport": "^0.5.2",

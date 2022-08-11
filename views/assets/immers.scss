@@ -61,6 +61,10 @@ h1 {
   flex-shrink: 0;
 }
 
+.main-content .aesthetic-windows-95-modal-content .aesthetic-windows-95-container-indent p {
+  max-width: 642px;
+}
+
 .content form {
   margin: 20px;
   /* transition: all 1s; */
@@ -214,10 +218,24 @@ button[disabled] {
   color: #000;
 }
 
+.aesthetic-windows-95-taskbar-services > * {
+  margin-right: 4px;
+}
+.aesthetic-windows-95-taskbar-services > *:last-child {
+  margin-right: 0;
+}
+
 .immers-icon {
   width: 28px;
   height: 28px;
   vertical-align: bottom;
+}
+
+.provider-logins {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-around;
+  max-width: 642px;
 }
 
 @media (prefers-reduced-motion: reduce) {
