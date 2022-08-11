@@ -4,7 +4,7 @@ const express = require('express')
 const multer = require('multer')
 const cors = require('cors')
 const overlaps = require('overlaps')
-const { GridFSBucket } = require('mongodb')
+const { GridFSBucket, ObjectId } = require('mongodb')
 const { GridFsStorage } = require('multer-gridfs-storage')
 
 const auth = require('./auth')
@@ -55,7 +55,7 @@ router.post(
   (req, res, next) => {
     const file = req.files.file[0]
     const icon = req.files.icon?.[0]
-    const fileIds = [file.id]
+    const fileIds = [file.id.toString()]
     let object
     try {
       object = JSON.parse(req.body.object)
@@ -74,10 +74,20 @@ router.post(
         mediaType: icon.mimetype,
         url: `https://${domain}/media/${icon.filename}`
       }
-      fileIds.push(icon.id)
+      fileIds.push(icon.id.toString())
     }
-    object._meta = object._meta ?? {}
-    object._meta.files = fileIds
+    // attach file ids to object metadata after creation
+    res.locals.apex.postWork.push(sentResponse => {
+      const objId = sentResponse.locals.apex.object?.id
+      if (!objId) {
+        // post must have errored, cleanup will be handled by error handler
+        return
+      }
+      return apex.store.db.collection('objects').updateOne(
+        { id: objId },
+        { $addToSet: { '_meta.files': { $each: fileIds } } }
+      ).catch(err => console.error('Unable to save file metadata', fileIds, err))
+    })
     // forward to outbox route, alter request to look like object post
     req.body = object
     req.headers['content-type'] = apex.consts.jsonldOutgoingType
@@ -122,7 +132,7 @@ router.get(
 )
 
 function fileCleanupOnDelete ({ activity, object }) {
-  if (!activity.type === 'Delete' || !object) {
+  if (activity.type !== 'Delete' || !object) {
     return
   }
   object._meta?.files?.forEach?.(fileId => deleteFileIfUnused(fileId))
@@ -138,7 +148,7 @@ async function deleteFileIfUnused (fileId) {
       .countDocuments({ '_meta.files': fileId })
     if (!count) {
       console.log(`Deleting file no longer in use: ${fileId}`)
-      await bucket.delete(fileId)
+      await bucket.delete(ObjectId(fileId))
     } else {
       console.log(`Retaining file still used by ${count} objects`)
     }
