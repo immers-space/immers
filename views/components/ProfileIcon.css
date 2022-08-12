@@ -1,10 +1,25 @@
 .iconWrapper {
+  display: flex;
+  justify-content: center;
   max-width: 500px;
+  margin: 0 auto;
   overflow: hidden;
 }
 
 .icon {
   height: 500px;
+}
+
+.medIconWrapper {
+  display: flex;
+  justify-content: center;
+  max-width: 300px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.medIcon {
+  height: 300px;
 }
 
 .tinyIconWrapper {

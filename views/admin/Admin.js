@@ -7,7 +7,7 @@ import './Admin.css'
 import EmojiButton from '../ap/EmojiButton'
 import { useCheckAdmin } from '../ap/utils/useCheckAdmin'
 
-export default function Admin () {
+export default function Admin ({ taskbarButtons }) {
   const modes = {
     LIST_OAUTH_CLIENTS: 0,
     NEW_OAUTH_CLIENT: 1
@@ -41,7 +41,7 @@ export default function Admin () {
   }
 
   return (
-    <Layout contentTitle='Immers Admin' taskbar buttons={buttons}>
+    <Layout contentTitle='Immers Admin' taskbar buttons={buttons} taskbarButtons={taskbarButtons}>
       {loading &&
         <div className='aesthetic-windows-95-loader'>
           <div /><div /><div />

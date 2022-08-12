@@ -1,19 +1,18 @@
 import React, { useContext } from 'react'
-import DOMPurify from 'dompurify'
 import { FormattedRelativeTime } from 'react-intl'
 import ImmersHandle from '../components/ImmersHandle'
 import ProfileIcon from '../components/ProfileIcon'
+import SanitizedHTML from '../components/SanitizedHTML'
 import './Post.css'
 import ServerDataContext from './ServerDataContext'
+import { AvatarPreview } from '../components/AvatarPreview'
 
-const SanitizedHTML = ({ className, html }) =>
-  <div className={className} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize((html)) }} />
-
-export default function Post ({ actor, summary, object = {}, published }) {
+export default function Post ({ type, actor, summary, object = {}, published }) {
   const { id: actorId, icon } = actor
   const { context } = object
 
   const body = getPostBody(object)
+  const includeSummaryWithBody = ['Offer'].includes(type)
   if (body) {
     return (
       <div>
@@ -27,6 +26,7 @@ export default function Post ({ actor, summary, object = {}, published }) {
         </div>
 
         <div className='aesthetic-windows-95-container-indent'>
+          {includeSummaryWithBody && <SanitizedHTML className='bodySummary' html={summary} />}
           {body}
         </div>
       </div>
@@ -43,7 +43,8 @@ export default function Post ({ actor, summary, object = {}, published }) {
   return null
 }
 
-function getPostBody ({ type, content, url }) {
+function getPostBody (object) {
+  const { type, content, url } = object
   switch (type) {
     case 'Note':
       return <SanitizedHTML html={content} />
@@ -51,6 +52,8 @@ function getPostBody ({ type, content, url }) {
       return <img className='postMedia' src={url} />
     case 'Video':
       return <video className='postMedia' src={url} controls />
+    case 'Model':
+      return <AvatarPreview avatar={object} icon={object.icon} size='medium' />
   }
   return null
 }
