@@ -7,26 +7,15 @@ import Feed from './Feed'
 import ImmersHandle from '../components/ImmersHandle'
 import ServerDataContext from './ServerDataContext'
 import Friends from './Friends'
-import EmojiLink from '../components/EmojiLink'
 import { AvatarPreview } from '../components/AvatarPreview'
-import { useCheckAdmin } from './utils/useCheckAdmin'
 
-export default function Profile ({ actor }) {
+export default function Profile ({ actor, taskbarButtons }) {
   const navigate = useNavigate()
   const { loggedInUser, token } = useContext(ServerDataContext)
   const [actorObj, setActorObj] = useState(null)
-  const isAdmin = useCheckAdmin(token)
   const tabs = ['Outbox']
-  const taskbarButtons = isAdmin
-    ? [<EmojiLink key='admin' emoji='princess' href='/admin' title='Administrator Settings' />]
-    : []
   let buttons
-  if (loggedInUser) {
-    taskbarButtons.push(<EmojiLink key='logout' emoji='end' href='/auth/logout' title='Logout' />)
-  } else {
-    // login button
-    taskbarButtons.push(<EmojiLink key='login' emoji='passport_control' href='/auth/login' title='Log in' />)
-  }
+
   if (loggedInUser === actor) {
     tabs.unshift('Friends', 'Inbox')
     // TODO: edit profile

@@ -17,6 +17,7 @@ const request = require('request-promise-native')
 const nunjucks = require('nunjucks')
 const passport = require('passport')
 const auth = require('./src/auth')
+const media = require('./src/media')
 const AutoEncryptPromise = import('@small-tech/auto-encrypt')
 const { onShutdown } = require('node-graceful-shutdown')
 const morgan = require('morgan')
@@ -25,6 +26,7 @@ const { apex, createImmersActor, deliverWelcomeMessage, routes, onInbox, onOutbo
 const clientApi = require('./src/clientApi.js')
 const { migrate } = require('./src/migrate')
 const { scopes } = require('./common/scopes')
+const { generateMetaTags } = require('./src/openGraph')
 const settings = require('./src/settings')
 const { MongoAdapter } = require('./src/auth/openIdServerDb')
 const adminApi = require('./src/adminApi.js')
@@ -327,13 +329,22 @@ app.get('/proxy/*', auth.publ, (req, res) => {
   requestRaw(url, {
     headers: {
       Accept: req.get('Accept') || '*/*'
-    }
+    },
+    timeout: 5000
+  }).on('error', function (err) {
+    console.log('proxy error', err)
+    res.sendStatus(500)
   }).pipe(res)
 })
+
+// file upload
+app.use('/media', media.router)
 
 /// Custom side effects
 app.on('apex-inbox', onInbox)
 app.on('apex-outbox', onOutbox)
+app.on('apex-inbox', media.fileCleanupOnDelete)
+app.on('apex-outbox', media.fileCleanupOnDelete)
 
 app.use(clientApi.router)
 app.use(adminApi.router)
@@ -356,12 +367,17 @@ app.use(history({
   index: '/ap.html'
 }))
 // HTML versions of acitivty pub objects routes
-app.get('/ap.html', auth.publ, (req, res) => {
+app.get('/ap.html', auth.publ, generateMetaTags, (req, res) => {
   const data = {
-    loggedInUser: req.user?.username
+    loggedInUser: req.user?.username,
+    ...res.locals.openGraph
   }
   res.render('dist/ap/ap.html', Object.assign(data, renderConfig))
 })
+
+// final fallback to static content
+// useful for immers + static site combo so they don't have to include /static in all page urls
+app.use('/', express.static('static-ext'))
 
 const sslOptions = {
   key: keyPath && fs.readFileSync(path.join(__dirname, keyPath)),
@@ -508,6 +524,11 @@ migrate(mongoURI).catch((err) => {
       iconUrl,
       'Service'
     )
+    await apex.store.db.collection('users').findOneAndUpdate(
+      { email: null },
+      { $set: { username: systemUserName, email: null } },
+      { upsert: true }
+    )
     await apex.store.db.collection('objects').findOneAndReplace(
       { id: apex.systemUser.id },
       apex.systemUser,
@@ -516,6 +537,15 @@ migrate(mongoURI).catch((err) => {
         returnDocument: 'after'
       }
     )
+  }
+  try {
+    const pluginsRoot = path.join(__dirname, 'static-ext', 'immers-plugins', 'index.js')
+    if (fs.existsSync(pluginsRoot)) {
+      const plugins = await import(pluginsRoot)
+      await Promise.resolve(plugins.default(app, immer, apex))
+    }
+  } catch (err) {
+    console.warn('Error loading plugins', err)
   }
   server.listen(port, () => {
     console.log(`immers app listening on port ${port}`)

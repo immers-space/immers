@@ -5,13 +5,40 @@ If using [immers-app](https://github.com/immers-space/immers-app) update scripts
 a backup will be generated for you.
 
 ### Added
-* Destination history: Adds 2 new collections to users to get aggregated inbox/outbox
+
+#### Destination history
+* Adds 2 new collections to users to get aggregated inbox/outbox
 Arrive activities for recent, unique destinations from your history (/u/username/destinations)
 or your friends' history (/u/username/friendsDestinations).
+
+#### File upload and sharing
+
+* Support uploading files with Create activities.
+* When discovering avatars from other immers,
+the files can now be uploaded to and served from the users' home immer to ensure they
+can CORS fetch it from anywhere they go and that it remains available even if the source
+server does not.
+* Uses MongoDB GridFS for file storage, so no additional configuration is required.
+* [See `ImmersClient.createAvatar`](https://immers-space.github.io/immers-client/ImmersClient.html)
+for a convenience wrapper or `/media` endpoint
+(which follows [ActivityPub standard](https://www.w3.org/wiki/SocialCG/ActivityPub/MediaUpload))
+for direct use.
+* Stored files are automatically deleted when the related post is removed with a `"Delete"` activity
+* New environment variable setting `maxUploadSize`, default 20 Mb
+
+#### Social Shares
+
+* OpenGraph tags added to profile and activity pages to provide previews when links are
+shared on other social sites.
+* `<Model-Viewer>` now used for avatar or other 3D model previews, including interactive
+social previews on sites that support Twitter Player Cards (e.g. Mastodon)
+* Sharing your profile page link, e.g. https://immers.space/u/datatitian, will show
+a preview of your current avatar
 
 ### Changed
 
 * Include the specified favicon in the `/o/immer` object that represents this immer
+
 
 ## v3.2.0 (2022-07-15)
 
