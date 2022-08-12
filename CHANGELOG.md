@@ -4,6 +4,10 @@
 If using [immers-app](https://github.com/immers-space/immers-app) update scripts,
 a backup will be generated for you.
 
+**Includes new index**. [Activitypub-Express udpate](https://github.com/immers-space/activitypub-express/blob/master/CHANGELOG.md#v330-2022-08-11) indlude a new
+index added for nested object updates, expect a one-time longer
+than usual restart time when applying this upate
+
 ### Added
 
 #### Destination history
