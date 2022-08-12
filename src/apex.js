@@ -71,8 +71,8 @@ module.exports = {
   outboxPost
 }
 
-async function createImmersActor (preferredUsername, name) {
-  const actor = await apex.createActor(preferredUsername, name, 'Immerser profile')
+async function createImmersActor (preferredUsername, name, summary = 'Immerser profile', icon, type) {
+  const actor = await apex.createActor(preferredUsername, name, summary, icon, type)
   const { blocked } = apex.utils.nameToActorStreams(preferredUsername)
   actor.streams = [{
     id: `${actor.id}#streams`,

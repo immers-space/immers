@@ -519,7 +519,6 @@ migrate(mongoURI).catch((err) => {
     apex.systemUser = await createImmersActor(
       systemUserName,
       systemDisplayName || systemUserName,
-      // Below are unused??
       name,
       iconUrl,
       'Service'
