@@ -32,7 +32,7 @@
   "homepage": "https://github.com/wmurphyrd/immers#readme",
   "dependencies": {
     "@small-tech/auto-encrypt": "^3.0.1",
-    "activitypub-express": "^3.2.0",
+    "activitypub-express": "^3.3.0",
     "aesthetic-css": "^1.0.1",
     "bcrypt": "^5.0.1",
     "connect-ensure-login": "^0.1.1",
@@ -68,6 +68,8 @@
     "passport-custom": "^1.1.1",
     "passport-http-bearer": "^1.0.1",
     "passport-local": "^1.0.0",
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.9",
     "rimraf": "^3.0.2",
     "socket.io": "^4.4.1",
     "textversionjs": "^1.1.3",

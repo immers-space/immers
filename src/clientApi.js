@@ -11,6 +11,7 @@ const friendStatusTypes = ['Arrive', 'Leave', 'Accept', 'Follow', 'Reject']
 module.exports = {
   router
 }
+
 router.get('/u/:actor/friends', [
   // check content type first in case this is HTML request
   apex.net.validators.jsonld,
@@ -20,6 +21,30 @@ router.get('/u/:actor/friends', [
   apex.net.security.verifyAuthorization,
   apex.net.security.requireAuthorized,
   friendsLocations,
+  apex.net.responders.result
+])
+
+router.get('/u/:actor/destinations', [
+  // check content type first in case this is HTML request
+  apex.net.validators.jsonld,
+  auth.priv,
+  auth.friendsScope,
+  apex.net.validators.targetActorWithMeta,
+  apex.net.security.verifyAuthorization,
+  apex.net.security.requireAuthorized,
+  outboxDestinations,
+  apex.net.responders.result
+])
+
+router.get('/u/:actor/friends-destinations', [
+  // check content type first in case this is HTML request
+  apex.net.validators.jsonld,
+  auth.priv,
+  auth.friendsScope,
+  apex.net.validators.targetActorWithMeta,
+  apex.net.security.verifyAuthorization,
+  apex.net.security.requireAuthorized,
+  inboxDestinations,
   apex.net.responders.result
 ])
 
@@ -83,4 +108,53 @@ async function friendsLocations (req, res, next) {
     orderedItems: friends
   }
   next()
+}
+
+async function outboxDestinations (req, res, next) {
+  const locals = res.locals.apex
+  if (!locals.target) return next()
+  const actor = locals.target
+  try {
+    const collection = await destinationHistory(actor.streams[0].destinations, req.query.page, locals.authorized, actor._local.blockList)
+    locals.result = collection
+    next()
+  } catch (err) {
+    console.error('Error querying outbox destination history', err)
+    next(err)
+  }
+}
+
+async function inboxDestinations (req, res, next) {
+  const locals = res.locals.apex
+  if (!locals.target) return next()
+  const actor = locals.target
+  try {
+    const collection = await destinationHistory(actor.streams[0].friendsDestinations, req.query.page, locals.authorized, actor._local.blockList)
+    locals.result = collection
+    next()
+  } catch (err) {
+    console.error('Error querying inbox destination history', err)
+    next(err)
+  }
+}
+
+/** List unique visited locations, most recent first. Your destinations if collectionId is outbox or else friends' if inbox */
+function destinationHistory (collectionId, page, authorized, blockList) {
+  const recentUniqueUrls = [{
+    $sort: {
+      _id: -1
+    }
+  }, {
+    $group: {
+      _id: '$target.url',
+      recent: {
+        $first: '$$ROOT'
+      }
+    }
+  }, {
+    $replaceRoot: {
+      newRoot: '$recent'
+    }
+  }]
+  return apex.getCollection(collectionId, page, null, authorized, blockList, recentUniqueUrls)
 }

@@ -500,14 +500,19 @@ migrate(mongoURI).catch((err) => {
   await client.connect()
   apex.store.db = client.db()
   await MongoAdapter.Initialize(apex.store.db)
+  const iconUrl = icon && `https://${domain}/static/${icon}`
   // Place object representing this node
-  const immer = await apex.fromJSONLD({
+  const place = {
     id: `https://${domain}/o/immer`,
     type: 'Place',
     name,
     url: `https://${hubs[0]}`,
     audience: apex.consts.publicAddress
-  })
+  }
+  if (icon) {
+    place.icon = iconUrl
+  }
+  const immer = await apex.fromJSONLD(place)
   await apex.store.setup(immer)
   await auth.authdb.setup(apex.store.db)
   if (systemUserName) {
@@ -515,7 +520,7 @@ migrate(mongoURI).catch((err) => {
       systemUserName,
       systemDisplayName || systemUserName,
       name,
-      icon && `https://${domain}/static/${icon}`,
+      iconUrl,
       'Service'
     )
     await apex.store.db.collection('users').findOneAndUpdate(

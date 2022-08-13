@@ -1,10 +1,17 @@
-// In this file you can configure migrate-mongo
+require('dotenv-defaults').config()
+const {
+  dbHost,
+  dbPort,
+  dbName,
+  dbString
+} = process.env
+// fallback to building string from parts for backwards compat
+const mongoURI = dbString || `mongodb://${dbHost}:${dbPort}/${dbName}`
 
 const config = {
   mongodb: {
-    // TODO Change (or review) the url to your MongoDB:
     // the default below is overriden with config when migrate is called from index.js
-    url: 'mongodb://localhost:27017/immers',
+    url: mongoURI,
 
     options: {
       useNewUrlParser: true, // removes a deprecation warning when connecting
