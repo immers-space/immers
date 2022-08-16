@@ -30,6 +30,7 @@ const { generateMetaTags } = require('./src/openGraph')
 const settings = require('./src/settings')
 const { MongoAdapter } = require('./src/auth/openIdServerDb')
 const adminApi = require('./src/adminApi.js')
+const SocketManager = require('./src/streaming/SocketManager')
 
 const {
   port,
@@ -402,7 +403,7 @@ migrate(mongoURI).catch((err) => {
   }
 
   // streaming updates
-  const profilesSockets = new Map()
+  const profilesSockets = new SocketManager()
   const io = socketio(server, {
     // we have to leave CORS open for preflight regardless, and tokens are required to connect,
     // so not really worth the effort to make CORS more specific
@@ -418,7 +419,7 @@ migrate(mongoURI).catch((err) => {
       if (err) { return next(err) }
       if (!user) { return next(new Error('Not authorized')) }
       socket.authorizedUserId = apex.utils.usernameToIRI(user.username)
-      profilesSockets.set(socket.authorizedUserId, socket)
+      profilesSockets.get(socket.authorizedUserId).add(socket)
       // for future use with fine-grained CORS origins
       socket.hub = info.origin
       next()
@@ -429,7 +430,7 @@ migrate(mongoURI).catch((err) => {
     socket.on('disconnect', async (reason) => {
       console.log('socket disconnect: ', reason, socket.authorizedUserId)
       if (socket.authorizedUserId) {
-        profilesSockets.delete(socket.authorizedUserId)
+        profilesSockets.get(socket.authorizedUserId).delete(socket)
       }
       if (socket.immers.outbox && socket.immers.leave) {
         request({
@@ -456,30 +457,30 @@ migrate(mongoURI).catch((err) => {
   // live stream of feed updates to client inbox-update goes to chat & friends-update to people list
   const friendUpdateTypes = ['Arrive', 'Leave', 'Accept', 'Follow', 'Reject', 'Undo', 'Block']
   async function onInboxFriendUpdate (msg) {
-    const liveSocket = profilesSockets.get(msg.recipient.id)
+    const liveSockets = profilesSockets.get(msg.recipient.id)
     msg.activity.actor = [msg.actor]
     msg.activity.object = [msg.object]
     // convert to same format as inbox endpoint and strip any private properties
-    liveSocket?.emit('inbox-update', apex.stringifyPublicJSONLD(await apex.toJSONLD(msg.activity)))
+    liveSockets.emitAll('inbox-update', apex.stringifyPublicJSONLD(await apex.toJSONLD(msg.activity)))
     if (friendUpdateTypes.includes(msg.activity.type)) {
-      liveSocket?.emit('friends-update')
+      liveSockets.emitAll('friends-update')
     }
   }
   app.on('apex-inbox', onInboxFriendUpdate)
 
   // live stream of feed updates to client outbox-update goes to chat & friends-update to people list
   async function onOutboxFriendUpdate (msg) {
-    const liveSocket = profilesSockets.get(msg.actor.id)
+    const liveSockets = profilesSockets.get(msg.actor.id)
     msg.activity.actor = [msg.actor]
     msg.activity.object = [msg.object]
     // convert to same format as inbox endpoint and strip any private properties
-    liveSocket?.emit('outbox-update', apex.stringifyPublicJSONLD(await apex.toJSONLD(msg.activity)))
+    liveSockets.emitAll('outbox-update', apex.stringifyPublicJSONLD(await apex.toJSONLD(msg.activity)))
     if (friendUpdateTypes.includes(msg.activity.type)) {
-      liveSocket?.emit('friends-update')
+      liveSockets.emitAll('friends-update')
     }
     // live updates for addition/removal from blocklist
     if (msg.activity.type === 'Block' || (msg.activity.type === 'Undo' && msg.object?.type === 'Block')) {
-      liveSocket?.emit('blocked-update')
+      liveSockets.emitAll('blocked-update')
     }
   }
   app.on('apex-outbox', onOutboxFriendUpdate)
