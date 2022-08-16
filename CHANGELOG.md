@@ -42,6 +42,8 @@ a preview of your current avatar
 ### Changed
 
 * Include the specified favicon in the `/o/immer` object that represents this immer
+* Each user can now receive live streaming updates to multiple clients simultaneously when
+logged into more than one immer at once
 
 
 ## v3.2.0 (2022-07-15)
