@@ -1,39 +1,29 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { Router, Link, useMatch, useNavigate } from '@reach/router'
 import './Profile.css'
 import Layout from '../components/Layout'
 import Tab from '../components/Tab'
 import Feed from './Feed'
 import ImmersHandle from '../components/ImmersHandle'
-import ServerDataContext from './ServerDataContext'
 import Friends from './Friends'
 import { AvatarPreview } from '../components/AvatarPreview'
+import { immersClient, useProfile } from './utils/immersClient'
 
 export default function Profile ({ actor, taskbarButtons }) {
   const navigate = useNavigate()
-  const { loggedInUser, token } = useContext(ServerDataContext)
-  const [actorObj, setActorObj] = useState(null)
+  const profile = useProfile()
+  const actorObj = immersClient.activities.actor
+  const isMyProfile = profile.username === actor
   const tabs = ['Outbox']
   let buttons
 
-  if (loggedInUser === actor) {
+  if (isMyProfile) {
     tabs.unshift('Friends', 'Inbox')
-    tabs.push('Avatars')
+    tabs.push('Avatars', 'History')
     // TODO: edit profile
     // buttons = <EmojiButton emoji='pencil2' title='Edit profile' />
   }
   const { currentTab } = useMatch(':currentTab') || {}
-  useEffect(() => {
-    const headers = {
-      Accept: 'application/activity+json'
-    }
-    if (token) {
-      headers.Authorization = `Bearer ${token}`
-    }
-    window.fetch(`/u/${actor}`, { headers })
-      .then(res => res.json())
-      .then(setActorObj)
-  }, [actor])
   useEffect(() => {
     if (!currentTab) {
       navigate(`/u/${actor}/${tabs[0]}`, { replace: true })
@@ -58,7 +48,9 @@ export default function Profile ({ actor, taskbarButtons }) {
           <h3>
             <ImmersHandle className='userImmer' {...actorObj} />
           </h3>
-          <AvatarPreview {...actorObj} />
+          <div className='aesthetic-windows-95-container-indent'>
+            <AvatarPreview {...actorObj} />
+          </div>
           <div className='aesthetic-windows-95-container-indent profileSummary'>
             {actorObj.summary}
           </div>
@@ -79,8 +71,9 @@ export default function Profile ({ actor, taskbarButtons }) {
             <Router>
               <Feed path='Outbox' iri={actorObj.outbox} />
               <Feed path='Inbox' iri={actorObj.inbox} />
-              <Friends path='Friends' iri={`${actorObj.id}/friends`} />
-              <Feed path='Avatars' iri={actorObj.streams.avatars} />
+              <Feed path='History' iri={actorObj.streams.destinations} />
+              <Friends path='Friends' iri={actorObj.streams.friends} />
+              <Feed path='Avatars' iri={actorObj.streams.avatars} showAvatarControls={isMyProfile} />
             </Router>
           </div>
         </div>

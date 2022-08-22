@@ -5,14 +5,14 @@ import ProfileIcon from '../components/ProfileIcon'
 import SanitizedHTML from '../components/SanitizedHTML'
 import './Post.css'
 import ServerDataContext from './ServerDataContext'
-import { AvatarPreview } from '../components/AvatarPreview'
 import { Link } from '@reach/router'
+import ModelPostBody from '../components/ModelPostBody'
 
-export default function Post ({ id, type, actor, summary, object = {}, published }) {
+export default function Post ({ id, type, actor, summary, object = {}, published, settings = {} }) {
   const { id: actorId, icon } = actor
   const { context } = object
 
-  const body = getPostBody(object)
+  const body = getPostBody(object, settings)
   const includeSummaryWithBody = ['Offer'].includes(type)
   if (body) {
     return (
@@ -44,7 +44,7 @@ export default function Post ({ id, type, actor, summary, object = {}, published
   return null
 }
 
-function getPostBody (object) {
+function getPostBody (object, { showAvatarControls }) {
   const { type, content, url } = object
   switch (type) {
     case 'Note':
@@ -54,7 +54,7 @@ function getPostBody (object) {
     case 'Video':
       return <video className='postMedia' src={url} controls />
     case 'Model':
-      return <AvatarPreview avatar={object} icon={object.icon} size='medium' />
+      return <ModelPostBody model={object} icon={object.icon} size='medium' showControls={showAvatarControls} />
   }
   return null
 }

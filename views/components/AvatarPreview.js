@@ -12,7 +12,7 @@ export function AvatarPreview ({ icon, avatar, size = 'large' }) {
     ? avatar.url
     : avatar?.url?.href
   return (
-    <div className={c('aesthetic-windows-95-container-indent', 'avatarPreview', size)}>
+    <div className={c('avatarPreview', size)}>
       <model-viewer
         alt={avatar.name}
         src={aviModelURL}

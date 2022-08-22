@@ -157,6 +157,7 @@ h1 {
 
 .relative {
   position: relative;
+  z-index: 0;
 }
 
 .fetching {
@@ -166,6 +167,9 @@ h1 {
 button[disabled] {
   color: #888;
   pointer-events: none;
+  .emoji-mart-emoji {
+    filter: grayscale(0.75)
+  }
 }
 
 .password-wrapper {

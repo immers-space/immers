@@ -9,6 +9,8 @@ import ObjectView from './ObjectView'
 import EmojiLink from '../components/EmojiLink'
 import Admin from '../admin/Admin'
 import { useCheckAdmin } from './utils/useCheckAdmin'
+import { immersClient } from './utils/immersClient'
+import LayoutLoader from '../components/LayoutLoader'
 
 const mountNode = document.getElementById('app')
 ReactDOM.render(<Root />, mountNode)
@@ -22,6 +24,7 @@ function inIframe () {
 }
 
 function Root () {
+  const [loading, setLoading] = useState(true)
   const [dataContext, setDataContext] = useState({
     ...window._serverData,
     isInIframe: inIframe()
@@ -41,6 +44,7 @@ function Root () {
 
   useEffect(() => {
     if (!dataContext.loggedInUser) {
+      setLoading(false)
       return
     }
     const newData = Object.assign({}, dataContext)
@@ -50,29 +54,33 @@ function Root () {
       .then(res => res.text())
       .then(token => {
         newData.token = token
-        return window.fetch('/auth/me', {
-          headers: {
-            Accept: 'application/activity+json',
-            Authorization: `Bearer ${token}`
-          }
-        })
+        return immersClient.loginWithToken(token, dataContext.domain, '*')
       })
-      .then(res => res.json())
-      .then(actor => {
-        newData.actor = actor
+      .then(connected => {
+        if (!connected) {
+          throw new Error('Could not login')
+        }
+        newData.actor = immersClient.activities.actor
+        newData.immersClient = immersClient
+        // TODO: migrate consumers to useProfile
         setDataContext(newData)
       })
       .catch(err => console.error(err.message))
+      .finally(() => setLoading(false))
   }, [])
   return (
     <IntlProvider locale='en' defaultLocale='en'>
       <ServerDataContext.Provider value={dataContext}>
-        <Router>
-          <Profile path='/u/:actor/*' taskbarButtons={taskbarButtons} />
-          <Thread path='/s/:activityId' taskbarButtons={taskbarButtons} />
-          <ObjectView path='/o/:objectId' taskbarButtons={taskbarButtons} />
-          <Admin path='/admin' taskbarButtons={taskbarButtons} />
-        </Router>
+        {loading
+          ? <LayoutLoader />
+          : (
+            <Router>
+              <Profile path='/u/:actor/*' taskbarButtons={taskbarButtons} />
+              <Thread path='/s/:activityId' taskbarButtons={taskbarButtons} />
+              <ObjectView path='/o/:objectId' taskbarButtons={taskbarButtons} />
+              <Admin path='/admin' taskbarButtons={taskbarButtons} />
+            </Router>
+            )}
       </ServerDataContext.Provider>
     </IntlProvider>
   )
