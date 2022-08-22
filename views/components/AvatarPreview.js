@@ -2,15 +2,14 @@ import React from 'react'
 import c from 'classnames'
 import './AvatarPreview.css'
 import SanitizedHTML from './SanitizedHTML'
+import { ImmersClient } from 'immers-client'
 
 export function AvatarPreview ({ icon, avatar, size = 'large' }) {
   const iconSrc = typeof icon === 'string' ? icon : icon && icon.url
   if (!iconSrc) {
     return null
   }
-  const aviModelURL = typeof avatar?.url === 'string'
-    ? avatar.url
-    : avatar?.url?.href
+  const aviModelURL = ImmersClient.URLFromProperty(avatar?.url)
   return (
     <div className={c('avatarPreview', size)}>
       <model-viewer

@@ -6,7 +6,7 @@ import { immersClient, useProfile } from '../ap/utils/immersClient'
 
 export default function ModelPostBody ({ model, showControls, ...props }) {
   const profile = useProfile()
-  const isCurrentAvatar = profile?.avatarId === model.id
+  const isCurrentAvatar = profile?.avatarObject?.id === model.id
   const avatarTooltip = isCurrentAvatar
     ? 'This is your current avatar'
     : 'Make this your current avatar'

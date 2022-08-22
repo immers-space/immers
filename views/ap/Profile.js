@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Router, Link, useMatch, useNavigate } from '@reach/router'
 import './Profile.css'
 import Layout from '../components/Layout'
@@ -8,12 +8,13 @@ import ImmersHandle from '../components/ImmersHandle'
 import Friends from './Friends'
 import { AvatarPreview } from '../components/AvatarPreview'
 import { immersClient, useProfile } from './utils/immersClient'
+import { ImmersClient } from 'immers-client'
 
 export default function Profile ({ actor, taskbarButtons }) {
   const navigate = useNavigate()
-  const profile = useProfile()
-  const actorObj = immersClient.activities.actor
-  const isMyProfile = profile.username === actor
+  const myProfile = useProfile()
+  const [profile, setProfile] = useState()
+  const isMyProfile = myProfile?.username === actor
   const tabs = ['Outbox']
   let buttons
 
@@ -24,12 +25,23 @@ export default function Profile ({ actor, taskbarButtons }) {
     // buttons = <EmojiButton emoji='pencil2' title='Edit profile' />
   }
   const { currentTab } = useMatch(':currentTab') || {}
+
+  useEffect(async () => {
+    if (isMyProfile) {
+      setProfile(myProfile)
+      return
+    }
+    const iri = new URL(window.location)
+    iri.pathname = `/u/${actor}`
+    const actorObj = await immersClient.activities.getObject(iri)
+    setProfile(ImmersClient.ProfileFromActor(actorObj))
+  }, [actor, myProfile])
   useEffect(() => {
     if (!currentTab) {
       navigate(`/u/${actor}/${tabs[0]}`, { replace: true })
     }
   }, [currentTab])
-  if (!actorObj) {
+  if (!profile) {
     return (
       <Layout contentTitle='Immers Profile'>
         <div className='aesthetic-windows-95-loader'>
@@ -43,16 +55,16 @@ export default function Profile ({ actor, taskbarButtons }) {
       <div className='profile'>
         <div className='userContainer'>
           <h2 className='displayName'>
-            {actorObj.name}
+            {profile.displayName}
           </h2>
           <h3>
-            <ImmersHandle className='userImmer' {...actorObj} />
+            <ImmersHandle className='userImmer' id={profile.id} preferredUsername={profile.username} />
           </h3>
           <div className='aesthetic-windows-95-container-indent'>
-            <AvatarPreview {...actorObj} />
+            <AvatarPreview icon={profile.avatarImage} avatar={profile.avatarObject} />
           </div>
           <div className='aesthetic-windows-95-container-indent profileSummary'>
-            {actorObj.summary}
+            {profile.bio}
           </div>
         </div>
         <div className='aesthetic-windows-95-tabbed-container'>
@@ -69,11 +81,11 @@ export default function Profile ({ actor, taskbarButtons }) {
           </div>
           <div className='aesthetic-windows-95-container'>
             <Router>
-              <Feed path='Outbox' iri={actorObj.outbox} />
-              <Feed path='Inbox' iri={actorObj.inbox} />
-              <Feed path='History' iri={actorObj.streams.destinations} />
-              <Friends path='Friends' iri={actorObj.streams.friends} />
-              <Feed path='Avatars' iri={actorObj.streams.avatars} showAvatarControls={isMyProfile} />
+              <Feed path='Outbox' iri={profile.collections.outbox} />
+              <Feed path='Inbox' iri={profile.collections.inbox} />
+              <Feed path='History' iri={profile.collections.destinations} />
+              <Friends path='Friends' iri={profile.collections.friends} />
+              <Feed path='Avatars' iri={profile.collections.avatars} showAvatarControls={isMyProfile} />
             </Router>
           </div>
         </div>
