@@ -11,14 +11,16 @@ const auth = require('./auth')
 const { scopes } = require('../common/scopes')
 const { apex, outboxPost } = require('./apex')
 
-const { dbString, domain, maxUploadSize } = process.env
+const { dbString, dbHost, dbPort, dbName, domain, maxUploadSize } = process.env
+// fallback to building string from parts for backwards compat
+const mongoURI = dbString || `mongodb://${dbHost}:${dbPort}/${dbName}`
 const router = express.Router()
 const bucketName = 'uploads'
 let bucket
 
 const upload = multer({
   storage: new GridFsStorage({
-    url: dbString,
+    url: mongoURI,
     file: (req, file) => {
       // set random filename with original extension
       return new Promise((resolve, reject) => {

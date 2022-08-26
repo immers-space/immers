@@ -21,7 +21,6 @@
 }
 
 .postBody {
-  max-width: 75ch;
   overflow-wrap: break-word;
   overflow: hidden;
 }
