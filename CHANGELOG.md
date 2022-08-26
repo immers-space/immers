@@ -1,4 +1,4 @@
-## Unreleased
+## v3.3.0 (2022-08-26)
 
 **Includes migration**. Backup database before starting your server with this update.
 If using [immers-app](https://github.com/immers-space/immers-app) update scripts,
