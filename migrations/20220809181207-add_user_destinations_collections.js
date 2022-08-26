@@ -28,7 +28,7 @@ module.exports = {
             const colInfo = apex.utils.iriToCollectionInfo(col)
             if (colInfo?.name === 'inbox') {
               // for every inbox collection, add a friendsDestinations collection
-              newCols.push(`https://${domain}/u/${colInfo.actor}/friendsDestinations`)
+              newCols.push(`https://${domain}/u/${colInfo.actor}/friends-destinations`)
             } else if (colInfo?.name === 'outbox') {
               // for every outbox collection, add a destinations collection
               newCols.push(`https://${domain}/u/${colInfo.actor}/destinations`)
@@ -65,7 +65,7 @@ module.exports = {
           arrive._meta.collection?.forEach(col => {
             if (
               col.startsWith(destinationsPrefix) &&
-              (col.endsWith('destinations') || col.endsWith('friendsDestinations'))
+              (col.endsWith('destinations') || col.endsWith('friends-destinations'))
             ) {
               oldCols.push(col)
             }

@@ -1,10 +1,4 @@
-## v3.3.1 (2022-08-26)
-
-### Fixed
-
-* Add support for older db env config (`dbName` et. c instead og `dbString`) in media.js
-
-## v3.3.0 (2022-08-26)
+## v3.3.2 (2022-08-26)
 
 **Includes migration**. Backup database before starting your server with this update.
 If using [immers-app](https://github.com/immers-space/immers-app) update scripts,
@@ -12,7 +6,8 @@ a backup will be generated for you.
 
 **Includes new index**. [Activitypub-Express udpate](https://github.com/immers-space/activitypub-express/blob/master/CHANGELOG.md#v330-2022-08-11) indlude a new
 index added for nested object updates, expect a one-time longer
-than usual restart time when applying this upate
+than usual restart time when applying this update
+(server may not show any logs during this time)
 
 ### Added
 
@@ -66,6 +61,10 @@ logged into more than one immer at once
 * Deep links in user profiles will redirect if the tab isn't available intead of erroring
 * Incrementally porting over to use ImmersClient
 
+## ~~v3.3.1 (2022-08-26)~~ YANKED
+## ~~v3.3.0 (2022-08-26)~~ YANKED
+
+* Yanked due to error in migration script. If you deployed this, restore from backup or use `migrate-mongo down` to reverse the migration
 ## v3.2.0 (2022-07-15)
 
 ### Added
