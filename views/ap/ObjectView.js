@@ -34,7 +34,7 @@ export default function ObjectView ({ objectId, taskbarButtons }) {
   return (
     <Layout contentTitle='Object View' taskbar={!isInIframe} taskbarButtons={taskbarButtons}>
       <div className='thread-container'>
-        <Post {...activity} />
+        <Post {...activity} settings={{ expandLocationPosts: true }} />
       </div>
     </Layout>
   )

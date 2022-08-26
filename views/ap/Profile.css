@@ -24,6 +24,11 @@
   padding: 0;
 }
 
+.profile .aesthetic-windows-95-tabbed-container .aesthetic-windows-95-tabbed-container-tabs {
+  flex-wrap: wrap;
+  height: auto;
+}
+
 .profileSummary {
   width: 400px;
   margin-top: 10px;

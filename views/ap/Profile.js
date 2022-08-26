@@ -15,12 +15,16 @@ export default function Profile ({ actor, taskbarButtons }) {
   const myProfile = useProfile()
   const [profile, setProfile] = useState()
   const isMyProfile = myProfile?.username === actor
-  const tabs = ['Outbox']
+  const tabs = [{ path: 'Outbox' }]
   let buttons
 
   if (isMyProfile) {
-    tabs.unshift('Friends', 'Inbox')
-    tabs.push('Avatars', 'History')
+    tabs.unshift({ path: 'Friends' }, { path: 'Inbox' })
+    tabs.push(
+      { path: 'Avatars' },
+      { label: 'My Destinations', path: 'Destinations' },
+      { label: 'Friends Destinations', path: 'FriendsDestinations' }
+    )
     // TODO: edit profile
     // buttons = <EmojiButton emoji='pencil2' title='Edit profile' />
   }
@@ -37,10 +41,10 @@ export default function Profile ({ actor, taskbarButtons }) {
     setProfile(ImmersClient.ProfileFromActor(actorObj))
   }, [actor, myProfile])
   useEffect(() => {
-    if (!currentTab) {
-      navigate(`/u/${actor}/${tabs[0]}`, { replace: true })
+    if (!currentTab || !tabs.find(t => t.path === currentTab)) {
+      navigate(`/u/${actor}/${tabs[0].path}`, { replace: true })
     }
-  }, [currentTab])
+  }, [currentTab, tabs])
   if (!profile) {
     return (
       <Layout contentTitle='Immers Profile'>
@@ -69,13 +73,11 @@ export default function Profile ({ actor, taskbarButtons }) {
         </div>
         <div className='aesthetic-windows-95-tabbed-container'>
           <div className='aesthetic-windows-95-tabbed-container-tabs'>
-            {tabs.map(tab => {
+            {tabs.map(({ path: tab, label }) => {
               return (
-                <div key={tab}>
-                  <Tab active={tab === currentTab}>
-                    <Link to={tab}>{tab}</Link>
-                  </Tab>
-                </div>
+                <Tab key={tab} active={tab === currentTab}>
+                  <Link to={tab}>{label ?? tab}</Link>
+                </Tab>
               )
             })}
           </div>
@@ -83,7 +85,8 @@ export default function Profile ({ actor, taskbarButtons }) {
             <Router>
               <Feed path='Outbox' iri={profile.collections.outbox} />
               <Feed path='Inbox' iri={profile.collections.inbox} />
-              <Feed path='History' iri={profile.collections.destinations} />
+              <Feed path='Destinations' iri={profile.collections.destinations} expandLocationPosts />
+              <Feed path='FriendsDestinations' iri={profile.collections.friendsDestinations} expandLocationPosts />
               <Friends path='Friends' iri={profile.collections.friends} />
               <Feed path='Avatars' iri={profile.collections.avatars} showAvatarControls={isMyProfile} />
             </Router>

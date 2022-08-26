@@ -14,6 +14,7 @@ than usual restart time when applying this upate
 * Adds 2 new collections to users to get aggregated inbox/outbox
 Arrive activities for recent, unique destinations from your history (/u/username/destinations)
 or your friends' history (/u/username/friendsDestinations).
+* New destinations tabs on user profile pages display destination history
 
 #### File upload and sharing
 
@@ -45,6 +46,17 @@ a preview of your current avatar
 * Each user can now receive live streaming updates to multiple clients simultaneously when
 logged into more than one immer at once
 
+#### Web Client / Profile pages improvements
+
+* New Avatars tab displays avatar collection and allows chanding current avatar
+* New destinations tabs on user profile pages display destination history
+* Can now display individual activities or objects when navigating to their IRI
+* New expanded location post view with image previews for destination tabs and individual activity pages
+* Long posts text will now wrap instead of stretching the interface
+* Post media is scaled to fit on small displays
+* Improve how handles are inserted when clicking immer links to prevent sharing links with your handle
+* Immer links now include the destination immer's icon if available
+* Deep links in user profiles will redirect if the tab isn't available intead of erroring
 
 ## v3.2.0 (2022-07-15)
 

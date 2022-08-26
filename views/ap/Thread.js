@@ -26,7 +26,7 @@ export default function Thread ({ activityId, taskbarButtons }) {
   return (
     <Layout contentTitle='Activity Thread' taskbar={!isInIframe} taskbarButtons={taskbarButtons}>
       <div className='thread-container'>
-        <Post {...activity} />
+        <Post {...activity} settings={{ expandLocationPosts: true }} />
       </div>
     </Layout>
   )
