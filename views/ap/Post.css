@@ -1,6 +1,8 @@
 .postHeader {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 5px;
   padding-top: 5px;
 }
 
@@ -12,12 +14,23 @@
 
 .postHeader .handle {
   flex-shrink: 2;
-  display: flex;
-  align-items: center;
 }
 
 .postHeader .timestamp {
   flex-shrink: 4;
+}
+
+.postBody {
+  max-width: 75ch;
+  overflow-wrap: break-word;
+  overflow: hidden;
+}
+
+.postBody .centered {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .profileLink {
@@ -29,16 +42,29 @@
   text-decoration: underline;
 }
 
+a.timestamp {
+  text-decoration: none;
+}
+
+a.timestamp:hover {
+  text-decoration: underline;
+}
+
 
 .postMedia {
-  max-width: 600px;
+  max-width: min(600px, 100%);
   max-height: 600px;
   margin: 0 auto;
   display: block;
 }
 
 .lesserPost {
+  margin-left: 40px;
+}
+
+.muted {
   color: rgb(59, 59, 59);
+
 }
 
 @media screen and (max-width: 679px) {

@@ -58,11 +58,15 @@ h1 {
 .main-content {
   z-index: 5;
   min-width: 670px;
+  width: min(calc(100% - 2px), calc(80ch + 40px));
   flex-shrink: 0;
 }
 
 .main-content .aesthetic-windows-95-modal-content .aesthetic-windows-95-container-indent p {
-  max-width: 642px;
+  max-width: 100%;
+}
+.main-content .aesthetic-windows-95-modal-content .aesthetic-windows-95-container-indent {
+  max-width: 80ch;
 }
 
 .content form {
@@ -157,6 +161,7 @@ h1 {
 
 .relative {
   position: relative;
+  z-index: 0;
 }
 
 .fetching {
@@ -166,6 +171,9 @@ h1 {
 button[disabled] {
   color: #888;
   pointer-events: none;
+  .emoji-mart-emoji {
+    filter: grayscale(0.75)
+  }
 }
 
 .password-wrapper {
@@ -255,7 +263,6 @@ button[disabled] {
   }
   .main-content {
     min-width: unset;
-    width: 100%;
     width: calc(100% - 2px);
     margin-left: 0;
     margin-right: 0;

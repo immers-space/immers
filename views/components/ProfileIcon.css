@@ -26,6 +26,7 @@
   height: 39px;
   overflow:hidden;
   display: inline-block;
+  vertical-align: middle;
 }
 
 .tinyIcon {
