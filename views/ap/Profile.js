@@ -62,7 +62,7 @@ export default function Profile ({ actor, taskbarButtons }) {
             {profile.displayName}
           </h2>
           <h3>
-            <ImmersHandle className='userImmer' id={profile.id} preferredUsername={profile.username} />
+            <ImmersHandle id={profile.id} preferredUsername={profile.username} />
           </h3>
           <div className='aesthetic-windows-95-container-indent'>
             <AvatarPreview icon={profile.avatarImage} avatar={profile.avatarObject} />
@@ -87,7 +87,7 @@ export default function Profile ({ actor, taskbarButtons }) {
               <Feed path='Inbox' iri={profile.collections.inbox} />
               <Feed path='Destinations' iri={profile.collections.destinations} expandLocationPosts />
               <Feed path='FriendsDestinations' iri={profile.collections.friendsDestinations} expandLocationPosts />
-              <Friends path='Friends' iri={profile.collections.friends} />
+              <Friends path='Friends' />
               <Feed path='Avatars' iri={profile.collections.avatars} showAvatarControls={isMyProfile} />
             </Router>
           </div>

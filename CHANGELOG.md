@@ -50,6 +50,7 @@ logged into more than one immer at once
 
 * New Avatars tab displays avatar collection and allows chanding current avatar
 * New destinations tabs on user profile pages display destination history
+* Friends list now updates in real time
 * Can now display individual activities or objects when navigating to their IRI
 * New expanded location post view with image previews for destination tabs and individual activity pages
 * Long posts text will now wrap instead of stretching the interface
@@ -57,6 +58,7 @@ logged into more than one immer at once
 * Improve how handles are inserted when clicking immer links to prevent sharing links with your handle
 * Immer links now include the destination immer's icon if available
 * Deep links in user profiles will redirect if the tab isn't available intead of erroring
+* Incrementally porting over to use ImmersClient
 
 ## v3.2.0 (2022-07-15)
 
