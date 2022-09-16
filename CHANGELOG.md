@@ -1,3 +1,11 @@
+## Unreleased
+
+**Urgent update**: Your SSL certificates may not be able to renew
+until you apply this update
+
+### Changed
+* Updated auto-encrypt dependency to fix error generating certificates.
+
 ## v3.3.2 (2022-08-26)
 
 **Includes migration**. Backup database before starting your server with this update.
