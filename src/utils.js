@@ -1,10 +1,13 @@
+const fs = require('fs')
+const path = require('path')
 const { parseDomain, ParseResultType } = require('parse-domain')
 
 module.exports = {
   parseHandle,
   parseProxyMode,
   debugOutput,
-  apexDomain
+  apexDomain,
+  readStaticFileSync
 }
 
 function debugOutput (app) {
@@ -49,5 +52,16 @@ function apexDomain (domain) {
   } catch (err) {
     console.warn(`Unable to parse apex domain: ${err.message}`)
     return domain
+  }
+}
+
+/** Find a file in either local or docker static folder and readFileSync it  */
+function readStaticFileSync (file) {
+  if (fs.existsSync(path.join(__dirname, '..', 'static-ext', file))) {
+    // docker volume location
+    return fs.readFileSync(path.join(__dirname, '..', 'static-ext', file), 'utf8')
+  } else if (fs.existsSync(path.join(__dirname, '..', 'static', file))) {
+    // internal default
+    return fs.readFileSync(path.join(__dirname, '..', 'static', file), 'utf8')
   }
 }

@@ -3,6 +3,10 @@
 **Urgent update**: Your SSL certificates may not be able to renew
 until you apply this update
 
+### Added
+
+* Support custom Activity vocabulary extensions via `additionalContext` config option
+
 ### Changed
 * Updated auto-encrypt dependency to fix error generating certificates.
 
