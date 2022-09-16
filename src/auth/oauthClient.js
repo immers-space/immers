@@ -141,7 +141,7 @@ async function handleOAuthReturn (req, res, next) {
         return res.status(403).send(`Existing ${domain} user account for this email has not authorized ${providerDomain} as an identity provider`)
       }
       // establish login session
-      req.login(user, next)
+      req.login(user, { keepSessionInfo: true }, next)
       // next in route will return to OAuth authorize endpoint, which will autogrant token now that user
       // is logged in with local account and return them to the destination
     }

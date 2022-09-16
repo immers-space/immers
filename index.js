@@ -157,7 +157,8 @@ app.route('/auth/login')
   })
   .post(passport.authenticate('local', {
     successReturnToOrRedirect: '/',
-    failureRedirect: '/auth/login?passwordfail'
+    failureRedirect: '/auth/login?passwordfail',
+    keepSessionInfo: true
   }))
 
 /**
@@ -188,11 +189,11 @@ app.post('/auth/logout', auth.logout, (req, res) => {
 })
 app.post('/auth/client', settings.isTrue('enableClientRegistration'), auth.registerClient)
 
-app.post('/auth/forgot', passport.authenticate('easy'), (req, res) => {
+app.post('/auth/forgot', passport.authenticate('easy', { keepSessionInfo: true }), (req, res) => {
   return res.json({ emailed: true })
 })
 app.route('/auth/reset')
-  .get(passport.authenticate('easy'), (req, res) => {
+  .get(passport.authenticate('easy', { keepSessionInfo: true }), (req, res) => {
     res.render('dist/reset/reset.html', renderConfig)
   })
   .post(auth.changePasswordAndReturn)
@@ -229,7 +230,7 @@ async function registerActor (req, res, next) {
 }
 
 // user registration
-const register = [auth.validateNewUser, auth.logout, registerActor, auth.registerUser]
+const register = [auth.validateNewUser, registerActor, auth.registerUser]
 // authorized service account user regisration
 app.post(
   '/auth/user',

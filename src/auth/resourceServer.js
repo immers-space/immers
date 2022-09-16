@@ -155,8 +155,7 @@ passport.use(new AnonymousStrategy())
 /// utils ///
 /** Terminate login session */
 function logout (req, res, next) {
-  req.logout()
-  next()
+  req.logout(next)
 }
 /** token grant for logged-in users in immers client */
 function localToken (req, res) {
@@ -257,7 +256,7 @@ async function registerUser (req, res, next) {
     if (!user) {
       throw new Error('Unable to create user')
     }
-    req.login(user, next)
+    req.login(user, { keepSessionInfo: true }, next)
   } catch (err) { next(err) }
 }
 
