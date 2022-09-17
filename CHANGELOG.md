@@ -1,11 +1,13 @@
-## v3.4.0 (2022-09-16)
-
-**Urgent update**: Your SSL certificates may not be able to renew
-until you apply this update
+## Unreleased
 
 ### Added
 
 * Support custom Activity vocabulary extensions via `additionalContext` config option
+
+## v3.4.0 (2022-09-16)
+
+**Urgent update**: Your SSL certificates may not be able to renew
+until you apply this update
 
 ### Changed
 * Updated auto-encrypt dependency to fix error generating certificates.
