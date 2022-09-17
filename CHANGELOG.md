@@ -1,4 +1,4 @@
-## Unreleased
+## v3.4.0 (2022-09-16)
 
 **Urgent update**: Your SSL certificates may not be able to renew
 until you apply this update
