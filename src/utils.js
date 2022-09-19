@@ -57,6 +57,9 @@ function apexDomain (domain) {
 
 /** Find a file in either local or docker static folder and readFileSync it  */
 function readStaticFileSync (file) {
+  if (!file) {
+    return
+  }
   if (fs.existsSync(path.join(__dirname, '..', 'static-ext', file))) {
     // docker volume location
     return fs.readFileSync(path.join(__dirname, '..', 'static-ext', file), 'utf8')
