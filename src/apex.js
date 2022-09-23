@@ -3,7 +3,19 @@ const overlaps = require('overlaps')
 const immersContext = require('../static/immers-context.json')
 const { scopes } = require('../common/scopes')
 const { version } = require('../package.json')
-const { domain } = process.env
+const { readStaticFileSync } = require('./utils')
+const { domain, additionalContext } = process.env
+
+let parsedAddlContext = []
+if (additionalContext) {
+  try {
+    const addlCtx = JSON.parse(readStaticFileSync(additionalContext))
+    // normalize array or object into array
+    parsedAddlContext = parsedAddlContext.concat(addlCtx)
+  } catch (err) {
+    console.warn('Error adding activity additionalContext', err)
+  }
+}
 
 const routes = {
   actor: '/u/:actor',
@@ -29,7 +41,7 @@ const apex = ActivitypubExpress({
   actorParam: 'actor',
   objectParam: 'id',
   routes,
-  context: immersContext,
+  context: [immersContext, ...parsedAddlContext],
   endpoints: {
     oauthAuthorizationEndpoint: `https://${domain}/auth/authorize`,
     proxyUrl: `https://${domain}/proxy`,
