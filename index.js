@@ -21,7 +21,7 @@ const media = require('./src/media')
 const AutoEncryptPromise = import('@small-tech/auto-encrypt')
 const { onShutdown } = require('node-graceful-shutdown')
 const morgan = require('morgan')
-const { debugOutput, parseHandle, parseProxyMode, apexDomain } = require('./src/utils')
+const { debugOutput, parseHandle, parseProxyMode, apexDomain, readStaticFileSync } = require('./src/utils')
 const { apex, createImmersActor, deliverWelcomeMessage, routes, onInbox, onOutbox, outboxPost } = require('./src/apex')
 const clientApi = require('./src/clientApi.js')
 const { migrate } = require('./src/migrate')
@@ -65,14 +65,7 @@ const {
   cookieName,
   loginRedirect
 } = process.env
-let welcomeContent
-if (welcome && fs.existsSync(path.join(__dirname, 'static-ext', welcome))) {
-  // docker volume location
-  welcomeContent = fs.readFileSync(path.join(__dirname, 'static-ext', welcome), 'utf8')
-} else if (welcome && fs.existsSync(path.join(__dirname, 'static', welcome))) {
-  // internal default
-  welcomeContent = fs.readFileSync(path.join(__dirname, 'static', welcome), 'utf8')
-}
+const welcomeContent = readStaticFileSync(welcome)
 const hubs = hub.split(',')
 const renderConfig = {
   name,
