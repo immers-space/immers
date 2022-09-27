@@ -187,7 +187,7 @@ async function proxyLogin (req, res, next) {
   if (!user) {
     return res.sendStatus(404)
   }
-  if (!validatedPayload.scope === '*') {
+  if (validatedPayload.scope !== '*') {
     return res.status(403).send('insufficient scope')
   }
   // create a login session and set-cookie header
