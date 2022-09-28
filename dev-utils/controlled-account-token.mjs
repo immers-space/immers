@@ -30,7 +30,7 @@ await httpClient.post(
       assertion: oAuthJwt
     }).toString()
 ).then(response => {
-  const { accessToken, scope } = response.data
+  const { access_token: accessToken, scope } = response.data
   console.log(`access_token: ${accessToken}`)
   console.log(`scope: ${scope}`)
 }).catch((e) => {

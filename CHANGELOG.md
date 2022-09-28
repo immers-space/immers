@@ -2,6 +2,12 @@
 
 ### Added
 
+* Proxy logins: Enable users with controlled accounts to still use their portable
+identities throughout the metaverse.
+  * Alternate version of `POST /auth/login` for controlled accounts that uses service account authentication instead of password
+[More info](./doc/ControlledAccounts.md#logging-in-a-controlled-account)
+  * Configuration option to redirect to a custom login page for controlled accounts [More info](./doc/ControlledAccounts.md#custom-login-redirect)
+* Configuration option to alter session cookie id
 * Support custom Activity vocabulary extensions via `additionalContext` config option
 
 ## v3.4.0 (2022-09-16)

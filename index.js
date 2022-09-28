@@ -61,7 +61,9 @@ const {
   systemDisplayName,
   welcome,
   proxyMode,
-  enablePublicRegistration
+  enablePublicRegistration,
+  cookieName,
+  loginRedirect
 } = process.env
 const welcomeContent = readStaticFileSync(welcome)
 const hubs = hub.split(',')
@@ -107,6 +109,7 @@ app.use(session({
   resave: true,
   saveUninitialized: false,
   store: sessionStore,
+  name: cookieName,
   cookie: {
     maxAge: 365 * 24 * 60 * 60 * 1000,
     secure: true,
@@ -135,8 +138,23 @@ app.use(express.urlencoded({ extended: false }))
 app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
 
 /// auth related routes ///
+// route for getting a login session cookie with controlled accounts
+app.post(
+  '/auth/login',
+  auth.passIfNotAuthorized,
+  auth.controlledAccountLogin
+)
+// routes for normal user login
 app.route('/auth/login')
   .get((req, res) => {
+    if (loginRedirect) {
+      const redirect = new URL(loginRedirect)
+      if (req.session?.returnTo) {
+        redirect.searchParams.set('redirectAfterLogin', `https://${domain}${req.session.returnTo}`)
+        delete req.session.returnTo
+      }
+      return res.redirect(redirect.href)
+    }
     const data = Object.assign({}, renderConfig)
     if (req.session && req.session.handle) {
       Object.assign(data, parseHandle(req.session.handle))
@@ -227,8 +245,7 @@ const register = [auth.validateNewUser, auth.logout, registerActor, auth.registe
 app.post(
   '/auth/user',
   auth.passIfNotAuthorized,
-  passport.authenticate('oauth2-client-jwt', { session: false }),
-  auth.requirePrivilege('canControlUserAccounts'),
+  auth.authorizeServiceAccount,
   register,
   auth.respondRedirect
 )

@@ -103,3 +103,100 @@ Send the token and scope back your client, and then use it to login to the Immer
 ```js
 const success = await immersClient.loginWithToken(access_token, "yourDomain.com", scope)
 ```
+
+## Logging in a controlled account
+
+For controlled accounts to be able to use their identities on other federated immers servers,
+users will need to be able to create a logged-in session. A simple option is to allow
+users to set a password after controlled account creation using the existing forgot password
+flow - this will work automatically as long as your config inluduces SMTP mail settings.
+For a more seamless experience, you can also log users in by using your service account credentials.
+
+**Requirements:**
+* Your application API server and your immers server must be on the same apex domain
+* If your application API server is not on the same origin as your web application, it must
+set CORS headers `Access-Control-Allow-Origin` (specific origin required, not just `*`), and
+`Access-Control-Allow-Credentials: true`
+* If your application API server is not on the same origin as your web application,
+the client side fetch must specify `credentials: include`
+
+### Server-side
+
+```js
+const { readFileSync } = require('fs')
+const jwt = require('jsonwebtoken')
+const cors = require("cors")
+const axios = require('axios') // any request library will do
+const immersAdminPrivateKey = readFileSync('immersAdminPrivateKey.pem')
+
+const proxyLogin = [
+  cors({
+    origin: 'https://hub.yourdomain.com', // make this match the origin of your web application
+    credentials: true
+  }),
+  yourUserAuthenticationMiddleware,
+  (req, res, next) => {
+    const oAuthJwt = jwt.sign(
+      {
+        scope: "*",
+        origin: "https://hub.yourDomain.com" // make this match the origin where the tokens will be used
+      },
+      immersAdminPrivateKey,
+      {
+        algorithm: "RS256",
+        issuer: `https://yourDomain.com/o/immer`,
+        audience: `https://yourDomain.com/o/immer`,
+        expiresIn: "1h",
+        subject: "user[yourdomain.dom]" // the authenticated user that you will login as
+      }
+    )
+    axios({
+      method: "post",
+      url: `https://yourDomain.com/auth/login`,
+      headers: { Authorization: `Bearer ${oAuthJwt}` }
+    }).then(response => {
+      // forward the login session cookie
+      res.set("Set-Cookie", response.headers["set-cookie"]);
+      res.sendStatus(200);
+    }).catch(next)
+  }
+]
+```
+
+### Client-side
+```js
+fetch('https://application-api-server.com/proxy-login', {
+  method: 'POST',
+  credentials: 'include',
+  // also include credentials necessary to authenticate this user
+})
+```
+
+### Custom login redirect
+
+While proxy-login above will allow users to seamlessly use
+their controlled account identities on other immers-enabled sites,
+in the off chance they attempt to use that identity in a browser
+where they haven't arleady completed a proxy login, you can
+customize the login experience they will see in that flow
+by redirecting to you app with the `loginRedirect` config setting.
+
+Set it to the url of your login experience,
+e.g. `loginRedirect=https://yourdomain.com/login`,
+and users will see this page instead of the Immers Server login page
+when a login is required to complete an authorization request.
+
+In your app's login flow, you must perform a proxy login as described
+above and check for a `redirectAfterLogin`
+query parameter on the login page and redirect there after a
+successful login.
+
+```
+// after successful login & proxy login
+const searchParams = new URLSearchParams(window.location.search);
+const redirect = searchParams.get("redirectAfterLogin");
+if (searchParams.has("redirectAfterLogin")) {
+  // return to interrupted OAuth authorization flow
+  window.location.href = searchParams.get("redirectAfterLogin");
+}
+```

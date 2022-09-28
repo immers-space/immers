@@ -39,6 +39,7 @@ const nameCheck = '^[A-Za-z0-9_~ -]{3,32}$'
 /// exports ///
 /** Dynamic CORS for logged-in users */
 const hubCors = cors(dynamicCorsFromToken)
+const clnt = passport.authenticate('oauth2-client-jwt', { session: false })
 module.exports = {
   /** auth for private routes only accessible with user access token (e.g. outbox POST) */
   priv: [passport.authenticate('bearer', { session: false }), hubCors],
@@ -47,7 +48,7 @@ module.exports = {
   /** like public but with wide-open CORS (user profile lookup from destinations) */
   open: [passport.authenticate(['bearer', 'anonymous'], { session: false }), cors()],
   /** auth for OAuth client / service account jwt login (e.g. in Authorization code grant) */
-  clnt: passport.authenticate('oauth2-client-jwt', { session: false }),
+  clnt,
   admn: [passport.authenticate('bearer', { session: false }), requireAdmin],
   scope,
   /** Require access to view private information */
@@ -58,6 +59,16 @@ module.exports = {
   localToken: [hubCors, localToken],
   /** terminate login session */
   logout: [hubCors, logout],
+  /** Check permission to control user */
+  authorizeServiceAccount: [
+    clnt,
+    requirePrivilege('canControlUserAccounts')
+  ],
+  /** Create login session for user via controlled account  */
+  controlledAccountLogin: [
+    clnt,
+    proxyLogin
+  ],
   oidcLoginProviders,
   /** for endpoints that behave differently for authorized requests */
   passIfNotAuthorized,
@@ -157,6 +168,35 @@ passport.use(new AnonymousStrategy())
 function logout (req, res, next) {
   req.logout()
   next()
+}
+/**
+ * Get a login session cookie for a controlled account,
+ * jwt `sub` claim contains handle
+ */
+async function proxyLogin (req, res, next) {
+  const client = req.user // set via oauth2-client-jwt authentication
+  // re-validate the jwt because control requires authorization in addition to authentication
+  const token = req.get('authorization')?.split('Bearer ')[1]
+  let user
+  let validatedPayload
+  try {
+    ({ user, validatedPayload } = await authdb.authorizeAccountControl(client, token))
+  } catch (err) {
+    next(err)
+  }
+  if (!user) {
+    return res.sendStatus(404)
+  }
+  if (validatedPayload.scope !== '*') {
+    return res.status(403).send('insufficient scope')
+  }
+  // create a login session and set-cookie header
+  req.login(user, (err) => {
+    if (err) {
+      return next(err)
+    }
+    res.sendStatus(200)
+  })
 }
 /** token grant for logged-in users in immers client */
 function localToken (req, res) {
