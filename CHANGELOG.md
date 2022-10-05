@@ -1,3 +1,9 @@
+## Unreleased
+
+### Changed
+
+* Improved usability with custom login pages: for an authorization request where the user's identity is already known and that user is from another server, skip the local login page and redirect straight to their home login page (still do provider discovery and dynamic client registration along the way).
+
 ## v3.5.0 (2022-09-29)
 
 ### Added

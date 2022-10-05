@@ -146,7 +146,7 @@ app.post(
 )
 // routes for normal user login
 app.route('/auth/login')
-  .get((req, res) => {
+  .get(auth.checkImmerAndRedirect, (req, res) => {
     if (loginRedirect) {
       const redirect = new URL(loginRedirect)
       if (req.session?.returnTo) {
