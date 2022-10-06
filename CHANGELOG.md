@@ -1,3 +1,10 @@
+## Unreleased
+
+### Fixed
+
+* fixed broken images in posts displayed in profile if the image url was a Link object
+* fixed missing open graph image tag on image post pages
+
 ## v3.5.0 (2022-09-29)
 
 ### Added

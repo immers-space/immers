@@ -59,6 +59,8 @@ async function generateMetaTags (req, res, next) {
       }
       if (object?.type === 'Model') {
         openGraph.twitterEmbed = modelPlayer(object, apex.domain)
+      } else if (object?.type === 'Image') {
+        openGraph.ogImage = hrefFromIcon(object)
       }
     } else if (type === 'o') {
       let object = await apex.store.getObject(`https://${apex.domain}/o/${id}`)
@@ -78,6 +80,8 @@ async function generateMetaTags (req, res, next) {
       }
       if (object.type === 'Model') {
         openGraph.twitterEmbed = modelPlayer(object, apex.domain)
+      } else if (object.type === 'Image') {
+        openGraph.ogImage = hrefFromIcon(object)
       }
     }
   } catch (err) {

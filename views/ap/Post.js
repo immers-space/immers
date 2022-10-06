@@ -8,6 +8,7 @@ import { Link } from '@reach/router'
 import ModelPostBody from '../components/ModelPostBody'
 import PlacePostBody from '../components/PlacePostBody'
 import { handleImmerLink, ImmerLink } from '../components/ImmerLink'
+import { ImmersClient } from 'immers-client'
 
 const locationTypes = ['Arrive', 'Leave']
 const summaryWithBodyTypes = ['Offer']
@@ -68,9 +69,9 @@ function getPostBody (object, { showAvatarControls, expandLocationPosts }) {
     case 'Note':
       return <SanitizedHTML html={content} />
     case 'Image':
-      return <img className='postMedia' src={url} />
+      return <img className='postMedia' src={ImmersClient.URLFromProperty(url)} />
     case 'Video':
-      return <video className='postMedia' src={url} controls />
+      return <video className='postMedia' src={ImmersClient.URLFromProperty(url)} controls />
     case 'Model':
       return <ModelPostBody model={object} icon={object.icon} size='medium' showControls={showAvatarControls} />
     case 'Place':
