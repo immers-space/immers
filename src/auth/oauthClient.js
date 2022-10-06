@@ -9,7 +9,7 @@ const request = require('request-promise-native')
 const { Issuer, generators } = require('openid-client')
 const authdb = require('./authdb')
 const { scopes } = require('../../common/scopes')
-const { parseHandle } = require("../utils")
+const { parseHandle } = require('../utils')
 
 const {
   domain,
