@@ -9,6 +9,7 @@ const request = require('request-promise-native')
 const { Issuer, generators } = require('openid-client')
 const authdb = require('./authdb')
 const { scopes } = require('../../common/scopes')
+const { parseHandle } = require('../utils')
 
 const {
   domain,
@@ -21,6 +22,7 @@ const hubs = hub.split(',')
 /// exports ///
 module.exports = {
   checkImmer,
+  checkImmerAndRedirect,
   handleOAuthReturn,
   oidcPreRegister,
   oidcPostRegister
@@ -28,13 +30,49 @@ module.exports = {
 
 /// utils ///
 async function checkImmer (req, res, next) {
-  let { username, immer } = req.query
+  const { username, immer } = req.query
   if (!(username && immer)) { return res.status(400).send('Missing user handle') }
+  try {
+    const { result, oidcClientState } = await discoverAndRegisterClient(username, immer, req.session?.returnTo)
+    if (oidcClientState) {
+      req.session.oidcClientState = oidcClientState
+    }
+    res.json(result)
+  } catch (err) { next(err) }
+}
+
+/**
+ * this can shortcut the auth-login flow by taking a user directly to
+ * their home immer login without rendering our local login if
+ * we know who they are
+ */
+async function checkImmerAndRedirect (req, res, next) {
+  if (!req.session?.handle) {
+    return next()
+  }
+  try {
+    const { username, immer } = parseHandle(req.session.handle)
+    const { result, oidcClientState } = await discoverAndRegisterClient(username, immer, req.session.returnTo)
+    if (oidcClientState) {
+      req.session.oidcClientState = oidcClientState
+    }
+    if (result.redirect) {
+      return res.redirect(result.redirect)
+    }
+    return next()
+  } catch (e) {
+    console.error('Error checking immer:', e)
+    // continue on to login page
+    next()
+  }
+}
+
+async function discoverAndRegisterClient (username, immer, requestedPath) {
   immer = immer.toLowerCase()
   username = username.toLowerCase()
 
   if (immer === domain.toLowerCase()) {
-    return res.json({ local: true })
+    return { result: { local: true } }
   }
 
   // OpenId Connect Discovery
@@ -64,7 +102,7 @@ async function checkImmer (req, res, next) {
       await authdb.oidcSaveRemoteClient(immer, issuer, client)
     }
     const codeVerifier = generators.codeVerifier()
-    req.session.oidcClientState = { codeVerifier, providerDomain: immer }
+    const oidcClientState = { codeVerifier, providerDomain: immer }
     const codeChallenge = generators.codeChallenge(codeVerifier)
     const redirect = client.authorizationUrl({
       // TODO: check issuer.scopes_supported to determine if the remote client is a full immer or just an identity provider,
@@ -74,37 +112,35 @@ async function checkImmer (req, res, next) {
       code_challenge_method: 'S256',
       redirect_uri: `https://${domain}/auth/return`
     })
-    return res.json({ redirect })
+    return { result: { redirect }, oidcClientState }
   } catch (err) {
     console.error(err)
   }
 
   // legacy immers discovery
-  try {
-    let client = await authdb.getRemoteClient(immer)
-    if (!client) {
-      client = await request(`https://${immer}/auth/client`, {
-        method: 'POST',
-        body: {
-          name,
-          clientId: `https://${domain}/o/immer`,
-          redirectUri: hubs.map(h => `https://${h}`)
-        },
-        json: true
-      })
-      await authdb.saveRemoteClient(immer, client)
-    }
-    /* returnTo is /auth/authorize with client_id and redirect_uri for the destination immer
-     * so users are sent home to login and authorize the destination immer as a client,
-     * then come back the same room on the desination with their token
-     */
-    const url = new URL(`${req.protocol}://${immer}${req.session.returnTo || '/'}`)
-    const search = new URLSearchParams(url.search)
-    // handle may or may not be included depending on path here, ensure it is
-    search.set('me', `${username}[${immer}]`)
-    url.search = search.toString()
-    return res.json({ redirect: url.toString() })
-  } catch (err) { next(err) }
+  let client = await authdb.getRemoteClient(immer)
+  if (!client) {
+    client = await request(`https://${immer}/auth/client`, {
+      method: 'POST',
+      body: {
+        name,
+        clientId: `https://${domain}/o/immer`,
+        redirectUri: hubs.map(h => `https://${h}`)
+      },
+      json: true
+    })
+    await authdb.saveRemoteClient(immer, client)
+  }
+  /* returnTo is /auth/authorize with client_id and redirect_uri for the destination immer
+    * so users are sent home to login and authorize the destination immer as a client,
+    * then come back the same room on the desination with their token
+    */
+  const url = new URL(`https://${immer}${requestedPath || '/'}`)
+  const search = new URLSearchParams(url.search)
+  // handle may or may not be included depending on path here, ensure it is
+  search.set('me', `${username}[${immer}]`)
+  url.search = search.toString()
+  return { result: { redirect: url.toString() } }
 }
 
 async function handleOAuthReturn (req, res, next) {
