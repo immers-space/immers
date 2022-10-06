@@ -194,6 +194,8 @@ npm ci
 
 Default immers server is `https://localhost:8081`, override with entry `IMMERS_SERVER` in hubs repo root folder `.env` file.
 
+If running local hubs add a `.env` file with `HOST_IP=localhost`.
+
 If working on immers server web client, run both `npm run dev:client` and `npm run dev:server` at the same time.
 
 ### Creating a new release
