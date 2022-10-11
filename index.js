@@ -17,14 +17,20 @@ const request = require('request-promise-native')
 const nunjucks = require('nunjucks')
 const passport = require('passport')
 const auth = require('./src/auth')
+const media = require('./src/media')
 const AutoEncryptPromise = import('@small-tech/auto-encrypt')
 const { onShutdown } = require('node-graceful-shutdown')
 const morgan = require('morgan')
-const { debugOutput, parseHandle, parseProxyMode, apexDomain } = require('./src/utils')
+const { debugOutput, parseHandle, parseProxyMode, apexDomain, readStaticFileSync } = require('./src/utils')
 const { apex, createImmersActor, deliverWelcomeMessage, routes, onInbox, onOutbox, outboxPost } = require('./src/apex')
+const clientApi = require('./src/clientApi.js')
 const { migrate } = require('./src/migrate')
 const { scopes } = require('./common/scopes')
+const { generateMetaTags } = require('./src/openGraph')
 const settings = require('./src/settings')
+const { MongoAdapter } = require('./src/auth/openIdServerDb')
+const adminApi = require('./src/adminApi.js')
+const SocketManager = require('./src/streaming/SocketManager')
 
 const {
   port,
@@ -55,16 +61,11 @@ const {
   systemDisplayName,
   welcome,
   proxyMode,
-  enablePublicRegistration
+  enablePublicRegistration,
+  cookieName,
+  loginRedirect
 } = process.env
-let welcomeContent
-if (welcome && fs.existsSync(path.join(__dirname, 'static-ext', welcome))) {
-  // docker volume location
-  welcomeContent = fs.readFileSync(path.join(__dirname, 'static-ext', welcome), 'utf8')
-} else if (welcome && fs.existsSync(path.join(__dirname, 'static', welcome))) {
-  // internal default
-  welcomeContent = fs.readFileSync(path.join(__dirname, 'static', welcome), 'utf8')
-}
+const welcomeContent = readStaticFileSync(welcome)
 const hubs = hub.split(',')
 const renderConfig = {
   name,
@@ -95,10 +96,7 @@ nunjucks.configure({
   watch: app.get('env') === 'development'
 })
 
-// parsers
-app.use(cookieParser())
-app.use(express.urlencoded({ extended: false }))
-app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
+/// sessions, logging, core middlwares ///
 app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status Accepts ":req[accept]" ":referrer" ":user-agent"'))
 const sessionStore = new MongoSessionStore({
   uri: mongoURI,
@@ -111,6 +109,7 @@ app.use(session({
   resave: true,
   saveUninitialized: false,
   store: sessionStore,
+  name: cookieName,
   cookie: {
     maxAge: 365 * 24 * 60 * 60 * 1000,
     secure: true,
@@ -124,9 +123,38 @@ app.use(apex)
 // cannot check authorized origins in preflight, so open to all
 app.options('*', cors())
 
-/// auth related routes
+/// oidc-provider wants to do its own parsing, so mount it before parsers ///
+app.get('/.well-known/openid-configuration', (req, res, next) => {
+  // correct for openid-provider mounting well-known under subpath
+  req.url = '/oidc/.well-known/openid-configuration'
+  next('route')
+})
+// OIDC provider is still WIP, immer-to-immer login remains on legacy OAuth 2.0
+// app.use('/oidc', auth.oidcServerRouter)
+
+/// parsers ///
+app.use(cookieParser()) // TODO - this might be unnecesary with express-session
+app.use(express.urlencoded({ extended: false }))
+app.use(express.json({ type: ['application/json'].concat(apex.consts.jsonldTypes) }))
+
+/// auth related routes ///
+// route for getting a login session cookie with controlled accounts
+app.post(
+  '/auth/login',
+  auth.passIfNotAuthorized,
+  auth.controlledAccountLogin
+)
+// routes for normal user login
 app.route('/auth/login')
-  .get((req, res) => {
+  .get(auth.checkImmerAndRedirect, (req, res) => {
+    if (loginRedirect) {
+      const redirect = new URL(loginRedirect)
+      if (req.session?.returnTo) {
+        redirect.searchParams.set('redirectAfterLogin', `https://${domain}${req.session.returnTo}`)
+        delete req.session.returnTo
+      }
+      return res.redirect(redirect.href)
+    }
     const data = Object.assign({}, renderConfig)
     if (req.session && req.session.handle) {
       Object.assign(data, parseHandle(req.session.handle))
@@ -142,7 +170,28 @@ app.route('/auth/login')
     successReturnToOrRedirect: '/',
     failureRedirect: '/auth/login?passwordfail'
   }))
-// find username & home from handle; if user is remote, get remote authorization url
+
+/**
+ * @openapi
+ *  /auth/home:
+ *    get:
+ *    summary: Find a user's home authorization server
+ *    descripion: Identifies home server from user handle, registers a client with that server if needed, and returns an authorization url
+ *    responses:
+ *    200:
+ *      description: object with result info
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              local:
+ *                type: boolean
+ *                description: is this user local to this Immers Server?
+ *              redirect:
+ *                type: string
+ *                description: URL you need to redirect the user to in order to authorize with their remote home server
+ */
 app.get('/auth/home', auth.checkImmer)
 app.get('/auth/logout', auth.logout, (req, res) => res.redirect('/'))
 app.post('/auth/logout', auth.logout, (req, res) => {
@@ -177,6 +226,7 @@ app.get('/auth/optin', (req, res) => {
   url.search = search
   res.redirect(url)
 })
+app.get('/auth/return', auth.handleOAuthReturn)
 
 async function registerActor (req, res, next) {
   const preferredUsername = req.body.username
@@ -188,39 +238,97 @@ async function registerActor (req, res, next) {
     next()
   } catch (err) { next(err) }
 }
-app.post('/auth/user', settings.isTrue('enablePublicRegistration'), auth.validateNewUser, auth.logout, registerActor, auth.registration)
+
+// user registration
+const register = [auth.validateNewUser, auth.logout, registerActor, auth.registerUser]
+// authorized service account user regisration
+app.post(
+  '/auth/user',
+  auth.passIfNotAuthorized,
+  auth.authorizeServiceAccount,
+  register,
+  auth.respondRedirect
+)
+// public user registration, if enabled
+app.post('/auth/user', settings.isTrue('enablePublicRegistration'), register, auth.respondRedirect)
+// complete registration started via oidc identity provider
+app.route('/auth/oidc-interstitial')
+  .get((req, res) => res.render('dist/oidc-interstitial/oidc-interstitial.html', renderConfig))
+  .post(auth.oidcPreRegister, register, auth.oidcPostRegister, auth.respondRedirect)
+
+/**
+ * @openapi
+ * /auth/oidc-providers:
+ *  get:
+ *    summary: OpenId provider listing
+ *    description: Retreive data necessary to display other provider login buttons
+ *    responses:
+ *      200:
+ *        description: All clients requiting discrete login buttons
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: array
+ *              items:
+ *                type: object
+ *                properties:
+ *                  domain:
+ *                    type: string
+ *                    description: OIDC provider domain, pass as 'immer' param to /auth/home to trigger OIDC login
+ *                  buttonIcon:
+ *                    type: string
+ *                    description: url of icon to display
+ *                  buttonLabel:
+ *                    type: string
+ *                    description: text to to display next to icon
+ *                required:
+ *                  - domain
+ */
+app.get('/auth/oidc-providers', auth.oidcLoginProviders)
+
 // users are sent here from Hub to get access token, but it may interrupt with redirect
 // to login and further redirect to login at their home immer if they are remote
 app.get('/auth/authorize', auth.authorization)
 app.post('/auth/decision', auth.decision)
+app.post('/auth/exchange', auth.tokenExchange)
 // get actor from token
 app.get('/auth/me', auth.priv, auth.userToActor, apex.net.actor.get)
 // token endpoint for immers web client
 app.post('/auth/token', auth.localToken)
 
 // AP routes
-const viewAuth = auth.scope(scopes.viewPrivate.name)
-const friendsAuth = auth.scope([scopes.viewPrivate.name, scopes.viewFriends.name])
 app.route(routes.inbox)
-  .get(auth.publ, viewAuth, apex.net.inbox.get)
+  .get(auth.publ, auth.viewScope, apex.net.inbox.get)
   .post(auth.publ, apex.net.inbox.post)
 app.route(routes.outbox)
-  .get(auth.publ, viewAuth, apex.net.outbox.get)
+  .get(auth.publ, auth.viewScope, apex.net.outbox.get)
   .post(auth.priv, outboxPost)
 app.route(routes.actor)
   // open auth allows cross-origin fetching to support user discovery from destinations
   .get(auth.open, auth.scope(scopes.viewProfile.name), apex.net.actor.get)
-app.get(routes.object, auth.publ, viewAuth, apex.net.object.get)
-app.get(routes.activity, auth.publ, viewAuth, apex.net.activityStream.get)
-app.get(routes.followers, auth.publ, friendsAuth, apex.net.followers.get)
-app.get(routes.following, auth.publ, friendsAuth, apex.net.following.get)
-app.get(routes.liked, auth.publ, viewAuth, apex.net.liked.get)
-app.get(routes.collections, auth.publ, viewAuth, apex.net.collections.get)
-app.get(routes.shares, auth.publ, viewAuth, apex.net.shares.get)
-app.get(routes.likes, auth.publ, viewAuth, apex.net.likes.get)
-app.get(routes.blocked, auth.priv, friendsAuth, apex.net.blocked.get)
-app.get(routes.rejections, auth.priv, friendsAuth, apex.net.rejections.get)
-app.get(routes.rejected, auth.priv, friendsAuth, apex.net.rejected.get)
+app.get(routes.object, auth.publ, auth.viewScope, apex.net.object.get)
+app.get(routes.activity, auth.publ, auth.viewScope, apex.net.activityStream.get)
+app.get(routes.followers, auth.publ, auth.friendsScope, apex.net.followers.get)
+app.get(routes.following, auth.publ, auth.friendsScope, apex.net.following.get)
+app.get(routes.liked, auth.publ, auth.viewScope, apex.net.liked.get)
+app.get(routes.collections, auth.publ, auth.viewScope, apex.net.collections.get)
+app.get(routes.shares, auth.publ, auth.viewScope, apex.net.shares.get)
+app.get(routes.likes, auth.publ, auth.viewScope, apex.net.likes.get)
+app.get(routes.blocked, auth.priv, auth.friendsScope, apex.net.blocked.get)
+app.get(routes.rejections, auth.priv, auth.friendsScope, apex.net.rejections.get)
+app.get(routes.rejected, auth.priv, auth.friendsScope, apex.net.rejected.get)
+
+// metadata & discovery routes
+/* OIDC server is WIP
+app.get(
+  '/.well-known/webfinger',
+  auth.oidcWebfingerPassIfNotIssuer,
+  cors(),
+  apex.net.wellKnown.parseWebfinger,
+  apex.net.validators.targetActor,
+  auth.oidcWebfingerRespond
+)
+*/
 app.get('/.well-known/webfinger', cors(), apex.net.webfinger.get)
 app.get('/.well-known/nodeinfo', cors(), apex.net.nodeInfoLocation.get)
 app.get('/nodeinfo/:version', cors(), apex.net.nodeInfo.get)
@@ -232,62 +340,25 @@ app.get('/proxy/*', auth.publ, (req, res) => {
   requestRaw(url, {
     headers: {
       Accept: req.get('Accept') || '*/*'
-    }
+    },
+    timeout: 5000
+  }).on('error', function (err) {
+    console.log('proxy error', err)
+    res.sendStatus(500)
   }).pipe(res)
 })
+
+// file upload
+app.use('/media', media.router)
 
 /// Custom side effects
 app.on('apex-inbox', onInbox)
 app.on('apex-outbox', onOutbox)
+app.on('apex-inbox', media.fileCleanupOnDelete)
+app.on('apex-outbox', media.fileCleanupOnDelete)
 
-// custom c2s apis
-const friendUpdateTypes = ['Arrive', 'Leave', 'Accept', 'Follow', 'Reject']
-async function friendsLocations (req, res, next) {
-  const locals = res.locals.apex
-  const actor = locals.target
-  const inbox = actor.inbox[0]
-  const followers = actor.followers[0]
-  const rejected = apex.utils.nameToRejectedIRI(actor.preferredUsername)
-  const friends = await apex.store.db.collection('streams').aggregate([
-    {
-      $match: {
-        $and: [
-          { '_meta.collection': inbox },
-          // filter only pending follow requests
-          { '_meta.collection': { $nin: [followers, rejected] } }
-        ],
-        type: { $in: friendUpdateTypes }
-      }
-    },
-    // most recent activity per actor
-    { $sort: { _id: -1 } },
-    { $group: { _id: '$actor', loc: { $first: '$$ROOT' } } },
-    // sort actors by most recent activity
-    { $sort: { _id: -1 } },
-    { $replaceRoot: { newRoot: '$loc' } },
-    { $sort: { _id: -1 } },
-    { $lookup: { from: 'objects', localField: 'actor', foreignField: 'id', as: 'actor' } },
-    { $project: { _id: 0, 'actor.publicKey': 0 } }
-  ]).toArray()
-  locals.result = {
-    id: `https://${domain}${req.originalUrl}`,
-    type: 'OrderedCollection',
-    totalItems: friends.length,
-    orderedItems: friends
-  }
-  next()
-}
-app.get('/u/:actor/friends', [
-  // check content type first in case this is HTML request
-  apex.net.validators.jsonld,
-  auth.priv,
-  friendsAuth,
-  apex.net.validators.targetActor,
-  apex.net.security.verifyAuthorization,
-  apex.net.security.requireAuthorized,
-  friendsLocations,
-  apex.net.responders.result
-])
+app.use(clientApi.router)
+app.use(adminApi.router)
 // static files included in repo/docker image
 app.use('/static', express.static('static'))
 // static files added on deployed server
@@ -301,17 +372,23 @@ app.get('/', (req, res) => {
       : `${req.protocol}://${homepage || hubs[0]}`
   )
 })
+
 // for SPA routing in activity pub pages
 app.use(history({
   index: '/ap.html'
 }))
 // HTML versions of acitivty pub objects routes
-app.get('/ap.html', auth.publ, (req, res) => {
+app.get('/ap.html', auth.publ, generateMetaTags, (req, res) => {
   const data = {
-    loggedInUser: req.user?.username
+    loggedInUser: req.user?.username,
+    ...res.locals.openGraph
   }
   res.render('dist/ap/ap.html', Object.assign(data, renderConfig))
 })
+
+// final fallback to static content
+// useful for immers + static site combo so they don't have to include /static in all page urls
+app.use('/', express.static('static-ext'))
 
 const sslOptions = {
   key: keyPath && fs.readFileSync(path.join(__dirname, keyPath)),
@@ -336,7 +413,7 @@ migrate(mongoURI).catch((err) => {
   }
 
   // streaming updates
-  const profilesSockets = new Map()
+  const profilesSockets = new SocketManager()
   const io = socketio(server, {
     // we have to leave CORS open for preflight regardless, and tokens are required to connect,
     // so not really worth the effort to make CORS more specific
@@ -352,7 +429,7 @@ migrate(mongoURI).catch((err) => {
       if (err) { return next(err) }
       if (!user) { return next(new Error('Not authorized')) }
       socket.authorizedUserId = apex.utils.usernameToIRI(user.username)
-      profilesSockets.set(socket.authorizedUserId, socket)
+      profilesSockets.get(socket.authorizedUserId).add(socket)
       // for future use with fine-grained CORS origins
       socket.hub = info.origin
       next()
@@ -363,7 +440,7 @@ migrate(mongoURI).catch((err) => {
     socket.on('disconnect', async (reason) => {
       console.log('socket disconnect: ', reason, socket.authorizedUserId)
       if (socket.authorizedUserId) {
-        profilesSockets.delete(socket.authorizedUserId)
+        profilesSockets.get(socket.authorizedUserId).delete(socket)
       }
       if (socket.immers.outbox && socket.immers.leave) {
         request({
@@ -388,17 +465,35 @@ migrate(mongoURI).catch((err) => {
   })
 
   // live stream of feed updates to client inbox-update goes to chat & friends-update to people list
+  const friendUpdateTypes = ['Arrive', 'Leave', 'Accept', 'Follow', 'Reject', 'Undo', 'Block']
   async function onInboxFriendUpdate (msg) {
-    const liveSocket = profilesSockets.get(msg.recipient.id)
+    const liveSockets = profilesSockets.get(msg.recipient.id)
     msg.activity.actor = [msg.actor]
     msg.activity.object = [msg.object]
     // convert to same format as inbox endpoint and strip any private properties
-    liveSocket?.emit('inbox-update', apex.stringifyPublicJSONLD(await apex.toJSONLD(msg.activity)))
+    liveSockets.emitAll('inbox-update', apex.stringifyPublicJSONLD(await apex.toJSONLD(msg.activity)))
     if (friendUpdateTypes.includes(msg.activity.type)) {
-      liveSocket?.emit('friends-update')
+      liveSockets.emitAll('friends-update')
     }
   }
   app.on('apex-inbox', onInboxFriendUpdate)
+
+  // live stream of feed updates to client outbox-update goes to chat & friends-update to people list
+  async function onOutboxFriendUpdate (msg) {
+    const liveSockets = profilesSockets.get(msg.actor.id)
+    msg.activity.actor = [msg.actor]
+    msg.activity.object = [msg.object]
+    // convert to same format as inbox endpoint and strip any private properties
+    liveSockets.emitAll('outbox-update', apex.stringifyPublicJSONLD(await apex.toJSONLD(msg.activity)))
+    if (friendUpdateTypes.includes(msg.activity.type)) {
+      liveSockets.emitAll('friends-update')
+    }
+    // live updates for addition/removal from blocklist
+    if (msg.activity.type === 'Block' || (msg.activity.type === 'Undo' && msg.object?.type === 'Block')) {
+      liveSockets.emitAll('blocked-update')
+    }
+  }
+  app.on('apex-outbox', onOutboxFriendUpdate)
 
   if (process.env.NODE_ENV !== 'production') {
     debugOutput(app)
@@ -415,14 +510,20 @@ migrate(mongoURI).catch((err) => {
   // server startup
   await client.connect()
   apex.store.db = client.db()
+  await MongoAdapter.Initialize(apex.store.db)
+  const iconUrl = icon && `https://${domain}/static/${icon}`
   // Place object representing this node
-  const immer = await apex.fromJSONLD({
+  const place = {
     id: `https://${domain}/o/immer`,
     type: 'Place',
     name,
     url: `https://${hubs[0]}`,
     audience: apex.consts.publicAddress
-  })
+  }
+  if (icon) {
+    place.icon = iconUrl
+  }
+  const immer = await apex.fromJSONLD(place)
   await apex.store.setup(immer)
   await auth.authdb.setup(apex.store.db)
   if (systemUserName) {
@@ -430,8 +531,13 @@ migrate(mongoURI).catch((err) => {
       systemUserName,
       systemDisplayName || systemUserName,
       name,
-      icon && `https://${domain}/static/${icon}`,
+      iconUrl,
       'Service'
+    )
+    await apex.store.db.collection('users').findOneAndUpdate(
+      { email: null },
+      { $set: { username: systemUserName, email: null } },
+      { upsert: true }
     )
     await apex.store.db.collection('objects').findOneAndReplace(
       { id: apex.systemUser.id },
@@ -441,6 +547,15 @@ migrate(mongoURI).catch((err) => {
         returnDocument: 'after'
       }
     )
+  }
+  try {
+    const pluginsRoot = path.join(__dirname, 'static-ext', 'immers-plugins', 'index.js')
+    if (fs.existsSync(pluginsRoot)) {
+      const plugins = await import(pluginsRoot)
+      await Promise.resolve(plugins.default(app, immer, apex))
+    }
+  } catch (err) {
+    console.warn('Error loading plugins', err)
   }
   server.listen(port, () => {
     console.log(`immers app listening on port ${port}`)

@@ -3,7 +3,19 @@ const overlaps = require('overlaps')
 const immersContext = require('../static/immers-context.json')
 const { scopes } = require('../common/scopes')
 const { version } = require('../package.json')
-const { domain } = process.env
+const { readStaticFileSync } = require('./utils')
+const { domain, additionalContext } = process.env
+
+let parsedAddlContext = []
+if (additionalContext) {
+  try {
+    const addlCtx = JSON.parse(readStaticFileSync(additionalContext))
+    // normalize array or object into array
+    parsedAddlContext = parsedAddlContext.concat(addlCtx)
+  } catch (err) {
+    console.warn('Error adding activity additionalContext', err)
+  }
+}
 
 const routes = {
   actor: '/u/:actor',
@@ -29,10 +41,11 @@ const apex = ActivitypubExpress({
   actorParam: 'actor',
   objectParam: 'id',
   routes,
-  context: immersContext,
+  context: [immersContext, ...parsedAddlContext],
   endpoints: {
-    oauthAuthorizationEndpoint: `${domain}/auth/authorize`,
-    proxyUrl: `${domain}/proxy`
+    oauthAuthorizationEndpoint: `https://${domain}/auth/authorize`,
+    proxyUrl: `https://${domain}/proxy`,
+    uploadMedia: `https://${domain}/media`
   },
   openRegistrations: true,
   nodeInfoMetadata: {
@@ -63,19 +76,26 @@ module.exports = {
   createImmersActor,
   // createSystemActor,
   deliverWelcomeMessage,
+  refreshAndUpdateActorObject,
   onOutbox,
   onInbox,
   routes,
   outboxPost
 }
 
-async function createImmersActor (preferredUsername, name) {
-  const actor = await apex.createActor(preferredUsername, name, 'Immerser profile')
+async function createImmersActor (preferredUsername, name, summary = 'Immerser profile', icon, type) {
+  const actor = await apex.createActor(preferredUsername, name, summary, icon, type)
   const { blocked } = apex.utils.nameToActorStreams(preferredUsername)
   actor.streams = [{
     id: `${actor.id}#streams`,
     // personal avatar collection
     avatars: apex.utils.userCollectionIdToIRI(preferredUsername, 'avatars'),
+    // friends list and statuses
+    friends: `https://${domain}/u/${preferredUsername}/friends`,
+    // your recent destinations
+    destinations: `https://${domain}/u/${preferredUsername}/destinations`,
+    // friends recent destinations
+    friendsDestinations: `https://${domain}/u/${preferredUsername}/friends-destinations`,
     // blocklist (requires auth)
     blocked
   }]
@@ -118,6 +138,12 @@ async function onOutbox ({ actor, activity, object }) {
     })
     return apex.addToOutbox(actor, followback)
   }
+  // tag visited destinations for later query
+  const destCollection = actor.streams[0].destinations
+  if (activity.type === 'Arrive' && destCollection) {
+    return apex.store
+      .updateActivityMeta(activity, 'collection', destCollection)
+  }
 }
 
 async function onInbox ({ actor, activity, recipient, object }) {
@@ -159,6 +185,12 @@ async function onInbox ({ actor, activity, recipient, object }) {
     })
     await apex.addToOutbox(recipient, reject)
     return apex.publishUpdate(recipient, await apex.getFollowers(recipient))
+  }
+  // tag friends' visited destinations for later query
+  const friendsDestCollection = recipient.streams[0].friendsDestinations
+  if (activity.type === 'Arrive' && friendsDestCollection) {
+    return apex.store
+      .updateActivityMeta(activity, 'collection', friendsDestCollection)
   }
 }
 
@@ -210,4 +242,20 @@ function outboxScoping (req, res, next) {
     res.locals.apex.authorized = false
   }
   next()
+}
+
+/** frequently used in migrations to sync actor objects with latest capability updates */
+async function refreshAndUpdateActorObject (user) {
+  const actor = await apex.store
+    .getObject(apex.utils.usernameToIRI(user.username), false)
+  if (!actor) {
+    // avoid errors in case of database error where user has no actor object
+    return
+  }
+  const tempActor = await createImmersActor(actor.preferredUsername[0], actor.name[0])
+  const endpoints = [Object.assign(actor.endpoints?.[0] || {}, tempActor.endpoints[0])]
+  const streams = [Object.assign(actor.streams?.[0] || {}, tempActor.streams[0])]
+  const newActorUpdate = await apex.store.updateObject({ id: actor.id, endpoints, streams }, actor.id, false)
+  const newActorWithMeta = await apex.store.getObject(actor.id, true)
+  return apex.publishUpdate(newActorWithMeta, newActorUpdate)
 }

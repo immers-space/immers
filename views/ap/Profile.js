@@ -1,51 +1,51 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Router, Link, useMatch, useNavigate } from '@reach/router'
 import './Profile.css'
 import Layout from '../components/Layout'
 import Tab from '../components/Tab'
 import Feed from './Feed'
 import ImmersHandle from '../components/ImmersHandle'
-import ServerDataContext from './ServerDataContext'
 import Friends from './Friends'
-import EmojiLink from '../components/EmojiLink'
 import { AvatarPreview } from '../components/AvatarPreview'
+import { immersClient, useProfile } from './utils/immersClient'
+import { ImmersClient } from 'immers-client'
 
-export default function Profile ({ actor }) {
+export default function Profile ({ actor, taskbarButtons }) {
   const navigate = useNavigate()
-  const { loggedInUser, token } = useContext(ServerDataContext)
-  const [actorObj, setActorObj] = useState(null)
-  const tabs = ['Outbox']
-  const taskbarButtons = []
+  const myProfile = useProfile()
+  const [profile, setProfile] = useState()
+  const isMyProfile = myProfile?.username === actor
+  const tabs = [{ path: 'Outbox' }]
   let buttons
-  if (loggedInUser) {
-    taskbarButtons.push(<EmojiLink key='logout' emoji='end' href='/auth/logout' title='Logout' />)
-  } else {
-    // login button
-    taskbarButtons.push(<EmojiLink key='login' emoji='passport_control' href='/auth/login' title='Log in' />)
-  }
-  if (loggedInUser === actor) {
-    tabs.unshift('Friends', 'Inbox')
+
+  if (isMyProfile) {
+    tabs.unshift({ path: 'Friends' }, { path: 'Inbox' })
+    tabs.push(
+      { path: 'Avatars' },
+      { label: 'My Destinations', path: 'Destinations' },
+      { label: 'Friends Destinations', path: 'FriendsDestinations' }
+    )
     // TODO: edit profile
     // buttons = <EmojiButton emoji='pencil2' title='Edit profile' />
   }
   const { currentTab } = useMatch(':currentTab') || {}
+
+  useEffect(async () => {
+    if (isMyProfile) {
+      setProfile(myProfile)
+      return
+    }
+    const iri = new URL(window.location)
+    iri.pathname = `/u/${actor}`
+    const actorObj = await immersClient.activities.getObject(iri)
+    setProfile(ImmersClient.ProfileFromActor(actorObj))
+  }, [actor, myProfile])
   useEffect(() => {
-    const headers = {
-      Accept: 'application/activity+json'
+    if (!currentTab || !tabs.find(t => t.path === currentTab)) {
+      navigate(`/u/${actor}/${tabs[0].path}`, { replace: true })
     }
-    if (token) {
-      headers.Authorization = `Bearer ${token}`
-    }
-    window.fetch(`/u/${actor}`, { headers })
-      .then(res => res.json())
-      .then(setActorObj)
-  }, [actor])
-  useEffect(() => {
-    if (!currentTab) {
-      navigate(`/u/${actor}/${tabs[0]}`, { replace: true })
-    }
-  }, [currentTab])
-  if (!actorObj) {
+  }, [currentTab, tabs])
+  if (!profile) {
     return (
       <Layout contentTitle='Immers Profile'>
         <div className='aesthetic-windows-95-loader'>
@@ -59,33 +59,36 @@ export default function Profile ({ actor }) {
       <div className='profile'>
         <div className='userContainer'>
           <h2 className='displayName'>
-            {actorObj.name}
+            {profile.displayName}
           </h2>
           <h3>
-            <ImmersHandle className='userImmer' {...actorObj} />
+            <ImmersHandle id={profile.id} preferredUsername={profile.username} />
           </h3>
-          <AvatarPreview {...actorObj} />
+          <div className='aesthetic-windows-95-container-indent'>
+            <AvatarPreview icon={profile.avatarImage} avatar={profile.avatarObject} />
+          </div>
           <div className='aesthetic-windows-95-container-indent profileSummary'>
-            {actorObj.summary}
+            {profile.bio}
           </div>
         </div>
         <div className='aesthetic-windows-95-tabbed-container'>
           <div className='aesthetic-windows-95-tabbed-container-tabs'>
-            {tabs.map(tab => {
+            {tabs.map(({ path: tab, label }) => {
               return (
-                <div key={tab}>
-                  <Tab active={tab === currentTab}>
-                    <Link to={tab}>{tab}</Link>
-                  </Tab>
-                </div>
+                <Tab key={tab} active={tab === currentTab}>
+                  <Link to={tab}>{label ?? tab}</Link>
+                </Tab>
               )
             })}
           </div>
           <div className='aesthetic-windows-95-container'>
             <Router>
-              <Feed path='Outbox' iri={actorObj.outbox} />
-              <Feed path='Inbox' iri={actorObj.inbox} />
-              <Friends path='Friends' iri={`${actorObj.id}/friends`} />
+              <Feed path='Outbox' iri={profile.collections.outbox} />
+              <Feed path='Inbox' iri={profile.collections.inbox} />
+              <Feed path='Destinations' iri={profile.collections.destinations} expandLocationPosts />
+              <Feed path='FriendsDestinations' iri={profile.collections.friendsDestinations} expandLocationPosts />
+              <Friends path='Friends' />
+              <Feed path='Avatars' iri={profile.collections.avatars} showAvatarControls={isMyProfile} />
             </Router>
           </div>
         </div>

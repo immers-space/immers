@@ -8,6 +8,7 @@ import PasswordInput from '../components/PasswordInput'
 import Layout from '../components/Layout'
 import EmailInput from '../components/EmailInput'
 import EmailOptIn from '../components/EmailOptIn'
+import ProviderLogin from '../components/ProviderLogin'
 
 class Login extends React.Component {
   constructor (props) {
@@ -34,6 +35,7 @@ class Login extends React.Component {
       immer: data.immer || '',
       isPrefilled: data.username.length && data.immer.length,
       passwordError: qParams.has('passwordfail'),
+      loginProviders: [],
       ...this.initialState
     }
     if (this.state.tabs.includes(data.loginTab)) {
@@ -49,6 +51,11 @@ class Login extends React.Component {
     this.handleLogin = this.handleLogin.bind(this)
     this.handleRegister = this.handleRegister.bind(this)
     this.handleForgot = this.handleForgot.bind(this)
+    this.handleProviderLogin = this.handleProviderLogin.bind(this)
+    this.onEnter = this.onEnter.bind(this)
+    this.submitForm = this.submitForm.bind(this)
+
+    this.form = React.createRef()
   }
 
   setLoginState (status) {
@@ -216,6 +223,42 @@ class Login extends React.Component {
     return false
   }
 
+  async handleProviderLogin (e) {
+    const provider = e.target.dataset.provider
+    const search = new URLSearchParams({ username: ' ', immer: provider }).toString()
+    this.setState({ fetching: true })
+    let redirect
+    try {
+      const result = await window.fetch(`/auth/home?${search}`, {
+        headers: {
+          Accept: 'application/json'
+        }
+      }).then(res => res.json())
+      redirect = result.redirect
+    } catch (err) {
+      console.error(err)
+    } finally {
+      if (redirect) {
+        window.location = redirect
+      } else {
+        this.setState({ fetching: false })
+        this.setLoginState('error')
+      }
+    }
+  }
+
+  onEnter (cb) {
+    return e => {
+      if (e.key === 'Enter') {
+        cb()
+      }
+    }
+  }
+
+  submitForm () {
+    this.form.current.submit()
+  }
+
   render () {
     const topClass = c({
       'aesthetic-windows-95-tabbed-container': true,
@@ -235,12 +278,13 @@ class Login extends React.Component {
         <div className='aesthetic-windows-95-container'>
           {this.state.tab === 'Login' &&
             <div id='login-form' className='aesthetic-windows-95-container-indent'>
-              <form method='post' onSubmit={this.handleLogin}>
+              <form method='post' onSubmit={this.handleLogin} ref={this.form}>
                 <HandleInput
                   onChange={this.handleHandleInput}
                   username={this.state.username} immer={this.state.immer}
+                  onKeyPress={this.onEnter(this.handleLookup)}
                 />
-                <PasswordInput hide={!this.state.local} autoFocus />
+                <PasswordInput hide={!this.state.local} autoFocus onKeyPress={this.onEnter(this.submitForm)} />
                 <div className={c({ 'form-item': true, hidden: !this.state.isRemote })}>
                   You will be redirected to your home immer to login
                 </div>
@@ -270,6 +314,22 @@ class Login extends React.Component {
                   </span>
                 </div>
               </form>
+              {this.state.loginProviders.length > 0 && (
+                <div>
+                  <p>Or login with another provider:</p>
+                  <div className='provider-logins'>
+                    {this.state.loginProviders.map(({ domain, buttonIcon, buttonLabel }) => (
+                      <ProviderLogin
+                        key={domain}
+                        onClick={this.handleProviderLogin}
+                        providerDomain={domain}
+                        buttonIcon={buttonIcon}
+                        buttonLabel={buttonLabel}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>}
           {this.state.tab === 'Register' &&
             <div id='register-form' className='aesthetic-windows-95-container-indent'>
@@ -336,6 +396,14 @@ class Login extends React.Component {
   }
 
   componentDidMount () {
+    // fetch provider login buttons
+    window.fetch('/auth/oidc-providers', {
+      headers: { Accept: 'application/json' }
+    }).then(res => res.json())
+      .then(loginProviders => this.setState({ loginProviders }))
+      .catch(err => {
+        console.warn('Unable to fetch login providers', err)
+      })
     // if handle pre-filled, click lookup button
     if (this.state.username && this.state.immer) {
       this.handleLookup()

@@ -49,9 +49,10 @@ or in a `.env` file in the project root.
 
 Variable | Value | Example
 --- | --- | ---
+adminEmail | e-mail of user with administrative privileges | none
 name | Name of your immer | Immers Space
 domain | Domain name for your immers server | immers.space
-hub | Domain name for your Mozilla Hubs Cloud or other connected immersive experience. Can either be a single domain or comma separated list with additional CORS domains. Users will be redirected to the first domain listed. | hub.immers.space
+hub | Domain name for your Mozilla Hubs Cloud or other connected immersive experience. Can either be a single domain or comma separated list. Each domain listed will be enabled for CORS & trusted OAuth client requests. Users will be redirected to the first domain listed. | hub.immers.space
 dbString | Full MongoDB connection string, with credentials and database name, e.g. `mongodb://localhost:27017/immers`
 smtpHost | Mail service domain (for password resets) | smtp.sendgrid.net
 smtpPort | Mail service port | 587
@@ -59,6 +60,8 @@ smtpUser | Mail service username | apikey
 smtpPassword | Mail service password |
 sessionSecret | Secret key for session cookie encryption | *Automatically generated when [using setup script](https://github.com/immers-space/immers-app#step-1---setup)*
 easySecret | Secret key for email token encryption | *Automatically generated when [using setup script](https://github.com/immers-space/immers-app#step-1---setup)*
+userFiles | Path to storage location for user-uploaded files | `uploads/`
+
 
 ## Optional configuration
 
@@ -72,6 +75,7 @@ customCSS | Additional CSS file to load | None
 icon | Image file | vaporwave-icon.png
 imageAttributionText | Attribution for backgroundImage, if needed | Vectors by Vecteezy
 imageAttributionUrl | Attribution for backgroundImage, if needed | https://www.vecteezy.com/free-vector/vector
+maxUploadSize | Limit on media upload file size in Mb | 20
 monetizationPointer | [Payment pointer](https://webmonetization.org/docs/ilp-wallets/#payment-pointers) for Web Monetization on login & profile pages | Immers Space organization wallet
 port | Port number for immers sever | 8081
 smtpFrom | From address for emails | noreplay@mail.`domain`
@@ -85,6 +89,9 @@ keyPath, certPath, caPath | Local development only. Relative paths to certificat
 proxyMode | Enable use behind an SSL-terminating proxy or load balancer, serves over http instead of https and sets Express `trust proxy` setting to the value of `proxyMode` (e.g. `1`, [other options](https://expressjs.com/en/guide/behind-proxies.html)) | none (serves over https with AutoEncrypt)
 enablePublicRegistration | Allow new user self-registration | true
 enableClientRegistration | Allow new remote immers servers to register - if this is `false`, users will not be able to login with their accounts from other servers unless that server is already registered | true
+cookieName | Changes the key associated with session cookies, useful to differentiate sessions if you have multiple immers servers on the same apex domain | `connect.sid`
+loginRedirect | Replace the immers login experience with your custom page ([details](./doc/ControlledAccounts.md#custom-login-redirect)) | none
+additionalContext | Filename to a json document within `static-ext` folder defining JSON-LD context extensions for custom activity types and properties | None
 
 **Notes on use with a reverse proxy**: When setting `proxyMode`, you must ensure your reverse proxy sets the following headers: X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto (example for nginx below). If you are load balancing multiple immers server instances, you will also need to setup sticky sessions in order for streaming updates to work. 
 
@@ -132,6 +139,15 @@ Log out of session without having to navigate to immers profile page:
 fetch('https://your.immer/auth/logout', { method: 'POST', credentials: 'include' })
 ```
 
+## Controlled Accounts
+
+If you have an existing user account system, you may not want to bother users with having
+another account for immers features. In this case, you can setup a service account
+with total authority to create users, login as them, and act on their behalf.
+
+[Controlled accounts docs](./doc/ControlledAccounts.md)
+
+
 ## Manual Hubs Cloud Config
 
 These steps are not necessary if you're using our docker Hubs deployer.
@@ -159,26 +175,28 @@ npm ci
 ```
 mkdir certs
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/server.key -out certs/server.cert
+sudo chown $USER certs/*
 ```
 * Install [mongodb](https://docs.mongodb.com/manual/installation/)
-* Run immer with `npm run dev` 
+* Run immer with `npm run dev:server` 
 
 hubs
 
-* Clone and install our fork
+* Clone and install our fork - **Must use Node 14.x / NPM 6.x**
 ```
 git clone https://github.com/immers-space/hubs.git
 cd hubs
 git checkout immers-integration
 npm ci
-npm run build:client
 ```
 * Run hub with either `npm run dev` (use Hubs dev networking servers) or `npm run start` (to connect to your hubs cloud networking server).
 * Visit you immer at `https://localhost:8081`, approve the certificate exception, get automatically forwarded to your hub at `https://localhost:8080`, approve another certificate exception, create a room, and you will be redirected to login or register with your immer.
 
 Default immers server is `https://localhost:8081`, override with entry `IMMERS_SERVER` in hubs repo root folder `.env` file.
 
-If working on immers server web client, run both `npm run dev:client` and `npm run dev` at the same time.
+If running local hubs add a `.env` file with `HOST_IP=localhost`.
+
+If working on immers server web client, run both `npm run dev:client` and `npm run dev:server` at the same time.
 
 ### Creating a new release
 

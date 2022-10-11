@@ -1,0 +1,7 @@
+.modelActionButtons {
+  inset: 0 0 auto auto;
+  position: absolute;
+  display: flex;
+  gap: 10px;
+  z-index: 1;
+}
