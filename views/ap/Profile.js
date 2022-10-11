@@ -9,30 +9,13 @@ import Friends from './Friends'
 import { AvatarPreview } from '../components/AvatarPreview'
 import { immersClient, useProfile } from './utils/immersClient'
 import { ImmersClient } from 'immers-client'
-import EmojiButton from './EmojiButton'
 
 export default function Profile ({ actor, taskbarButtons }) {
   const navigate = useNavigate()
   const myProfile = useProfile()
   const [profile, setProfile] = useState()
-  const [isEditing, setIsEditing] = useState(false)
-  const [displayName, setDisplayName] = useState('')
-  const [bio, setBio] = useState('')
   const isMyProfile = myProfile?.username === actor
   const tabs = [{ path: 'Outbox' }]
-  const onDisplayNameChange = (event) => {
-    setDisplayName(event.target.value)
-  }
-  const onBioChange = (event) => {
-    setBio(event.target.value)
-  }
-  const onSave = () => {
-    immersClient.updateProfileInfo({
-      displayName,
-      bio
-    })
-    setIsEditing(false)
-  }
   let buttons
 
   if (isMyProfile) {
@@ -43,14 +26,7 @@ export default function Profile ({ actor, taskbarButtons }) {
       { label: 'Friends Destinations', path: 'FriendsDestinations' }
     )
     // TODO: edit profile
-    if (isEditing) {
-      buttons = [
-        <EmojiButton key='save' emoji='floppy_disk' title='Save' onClick={() => onSave()} />,
-        <EmojiButton key='cancel' emoji='x' title='Cancel' onClick={() => setIsEditing(false)} />
-      ]
-    } else {
-      buttons = <EmojiButton emoji='pencil2' title='Edit profile' onClick={() => setIsEditing(true)} />
-    }
+    // buttons = <EmojiButton emoji='pencil2' title='Edit profile' />
   }
   const { currentTab } = useMatch(':currentTab') || {}
 
@@ -69,12 +45,6 @@ export default function Profile ({ actor, taskbarButtons }) {
       navigate(`/u/${actor}/${tabs[0].path}`, { replace: true })
     }
   }, [currentTab, tabs])
-  useEffect(() => {
-    if (isEditing) {
-      setDisplayName(profile.displayName)
-      setBio(profile.bio)
-    }
-  }, [isEditing])
   if (!profile) {
     return (
       <Layout contentTitle='Immers Profile'>
@@ -85,21 +55,21 @@ export default function Profile ({ actor, taskbarButtons }) {
     )
   }
   return (
-    <Layout contentTitle='Immers Profile!' buttons={buttons} taskbar taskbarButtons={taskbarButtons}>
+    <Layout contentTitle='Immers Profile' buttons={buttons} taskbar taskbarButtons={taskbarButtons}>
       <div className='profile'>
         <div className='userContainer'>
-          {isEditing
-            ? <input className='aesthetic-windows-95-text-input' value={displayName} onChange={onDisplayNameChange} />
-            : <h2 className='displayName'>{profile.displayName}</h2>}
+          <h2 className='displayName'>
+            {profile.displayName}
+          </h2>
           <h3>
             <ImmersHandle id={profile.id} preferredUsername={profile.username} />
           </h3>
           <div className='aesthetic-windows-95-container-indent'>
             <AvatarPreview icon={profile.avatarImage} avatar={profile.avatarObject} />
           </div>
-          {isEditing
-            ? <textarea className='aesthetic-windows-95-text-input' value={bio} onChange={onBioChange} />
-            : <div className='aesthetic-windows-95-container-indent profileSummary'>{profile.bio}</div>}
+          <div className='aesthetic-windows-95-container-indent profileSummary'>
+            {profile.bio}
+          </div>
         </div>
         <div className='aesthetic-windows-95-tabbed-container'>
           <div className='aesthetic-windows-95-tabbed-container-tabs'>
