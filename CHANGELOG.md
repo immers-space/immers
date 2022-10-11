@@ -1,3 +1,20 @@
+## Unreleased
+
+### Changed
+
+* Improved OAuth flow: for an authorization request where the user's identity is already known and that user is from another server, skip the local login page and redirect straight to their home login page (still do provider discovery and dynamic client registration along the way).
+
+### Fixed
+
+* Remote logins now possible when using custom login page, as long as user's handle is included in the authorization request query parameters (`me=username[immer.com]`). Note this query param is set automatically when using the immers-client's `<immers-hud>` or when including handle in calls to `immersClient.login()`
+
+## v3.5.1 (2022-10-05)
+
+### Fixed
+
+* fixed broken images in posts displayed in profile if the image url was a Link object
+* fixed missing open graph image tag on image post pages
+
 ## v3.5.0 (2022-09-29)
 
 ### Added

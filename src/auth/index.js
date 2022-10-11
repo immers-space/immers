@@ -40,6 +40,7 @@ module.exports = {
   tokenExchange: authorizationServer.tokenExchange,
   // oauth2 client
   checkImmer: oauthClient.checkImmer,
+  checkImmerAndRedirect: oauthClient.checkImmerAndRedirect,
   handleOAuthReturn: [oauthClient.handleOAuthReturn, resourceServer.returnTo],
   oidcPreRegister: oauthClient.oidcPreRegister,
   oidcPostRegister: oauthClient.oidcPostRegister
