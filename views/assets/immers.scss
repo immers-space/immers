@@ -11,6 +11,10 @@ body, input {
   font-size: 24px;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 h1 {
   font-family: 'VT323', monospace;
   font-size: 80px;
@@ -67,10 +71,6 @@ h1 {
 }
 .main-content .aesthetic-windows-95-modal-content .aesthetic-windows-95-container-indent {
   max-width: 80ch;
-}
-
-.aesthetic-windows-95-modal-title-bar-controls {
-  display: flex;
 }
 
 .content form {
@@ -146,6 +146,10 @@ h1 {
 #registration-domain-cue {
   position: absolute;
   right: 5px;
+}
+
+.flex {
+  display: flex;
 }
 
 .hidden {

@@ -42,7 +42,7 @@ export default function Profile ({ actor, taskbarButtons }) {
       { label: 'My Destinations', path: 'Destinations' },
       { label: 'Friends Destinations', path: 'FriendsDestinations' }
     )
-    // TODO: edit profile
+
     if (isEditing) {
       buttons = [
         <EmojiButton key='save' emoji='floppy_disk' title='Save' onClick={() => onSave()} />,
@@ -85,7 +85,7 @@ export default function Profile ({ actor, taskbarButtons }) {
     )
   }
   return (
-    <Layout contentTitle='Immers Profile!' buttons={buttons} taskbar taskbarButtons={taskbarButtons}>
+    <Layout contentTitle='Immers Profile' buttons={buttons} taskbar taskbarButtons={taskbarButtons}>
       <div className='profile'>
         <div className='userContainer'>
           {isEditing
