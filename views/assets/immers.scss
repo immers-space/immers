@@ -66,6 +66,13 @@ h1 {
   flex-shrink: 0;
 }
 
+.actionButtons {
+  inset: 0 0 auto auto;
+  display: flex;
+  gap: 10px;
+  z-index: 1;
+}
+
 .main-content .aesthetic-windows-95-modal-content .aesthetic-windows-95-container-indent p {
   max-width: 100%;
 }
@@ -161,6 +168,24 @@ h1 {
 
 .hidden label, .hidden input {
   height: 0;
+}
+
+.editable {
+  display: flex;
+  align-items: center;
+
+  span[aria-hidden=true] {
+    margin-right: 10px;
+  
+    .emoji-mart-emoji span {
+      padding: 8px;
+    }
+  }
+  
+  input,
+  textarea {
+    outline: 1px solid red;
+  }
 }
 
 .none {

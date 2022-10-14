@@ -1,11 +1,13 @@
 import React, { useEffect, useRef } from 'react'
 import EmojiButton from '../ap/EmojiButton'
+import './DialogModal.css'
 
 const DialogModal = ({
   title,
   isOpened,
   onProceed,
   onClose,
+  description,
   children
 }) => {
   const ref = useRef(null)
@@ -32,18 +34,19 @@ const DialogModal = ({
       <div onClick={preventAutoClose}>
         <div className='aesthetic-windows-95-modal-title-bar'>
           <div className='aesthetic-windows-95-modal-title-bar-text'>{title}</div>
-          <div class='aesthetic-windows-95-modal-title-bar-controls'>
-            <div class='aesthetic-windows-95-button-title-bar'>
+          <div className='aesthetic-windows-95-modal-title-bar-controls'>
+            <div className='aesthetic-windows-95-button-title-bar'>
               <EmojiButton emoji='x' title='Cancel' onClick={() => onClose()} />
             </div>
           </div>
         </div>
-        <div class='aesthetic-windows-95-modal-content'>
+        <div className='aesthetic-windows-95-modal-content'>
+          <p>{description}</p>
           <div className='aesthetic-windows-95-container-indent'>
             {children}
           </div>
         </div>
-        <div className='flex'>
+        <div className='actionButtons'>
           <div className='aesthetic-windows-95-button'>
             <button onClick={proceedAndClose}>Remove</button>
           </div>

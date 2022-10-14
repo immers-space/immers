@@ -10,6 +10,7 @@ import { AvatarPreview } from '../components/AvatarPreview'
 import { immersClient, useProfile } from './utils/immersClient'
 import { ImmersClient } from 'immers-client'
 import EmojiButton from './EmojiButton'
+import { Emoji } from 'emoji-mart'
 
 export default function Profile ({ actor, taskbarButtons }) {
   const navigate = useNavigate()
@@ -89,7 +90,7 @@ export default function Profile ({ actor, taskbarButtons }) {
       <div className='profile'>
         <div className='userContainer'>
           {isEditing
-            ? <input className='aesthetic-windows-95-text-input' value={displayName} onChange={onDisplayNameChange} />
+            ? <label className='editable' aria-label='Edit your display name'><span className='visually-hidden'>Edit your display name</span><span aria-hidden='true'><Emoji emoji=':pencil2:' size={8} set='apple' /></span><input className='aesthetic-windows-95-text-input editable' value={displayName} onChange={onDisplayNameChange} /></label>
             : <h2 className='displayName'>{profile.displayName}</h2>}
           <h3>
             <ImmersHandle id={profile.id} preferredUsername={profile.username} />
@@ -98,7 +99,7 @@ export default function Profile ({ actor, taskbarButtons }) {
             <AvatarPreview icon={profile.avatarImage} avatar={profile.avatarObject} />
           </div>
           {isEditing
-            ? <textarea className='aesthetic-windows-95-text-input' value={bio} onChange={onBioChange} />
+            ? <label className='editable' aria-label='Edit your bio'><span aria-hidden='true'><Emoji emoji=':pencil2:' size={8} set='apple' /></span><textarea className='aesthetic-windows-95-text-input profileSummary editable' value={bio} onChange={onBioChange} /></label>
             : <div className='aesthetic-windows-95-container-indent profileSummary'>{profile.bio}</div>}
         </div>
         <div className='aesthetic-windows-95-tabbed-container'>
