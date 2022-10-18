@@ -1,3 +1,10 @@
+## v3.7.0 (2022-10-18)
+
+### Added
+
+* Profile editing: Users can now edit their Display name and Bio.
+* Remove avatar: Users can now remove Avatar models from their Avatar collection (Does not delete the Avatar).
+
 ## v3.6.0 (2022-10-11)
 
 ### Changed

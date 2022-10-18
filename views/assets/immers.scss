@@ -67,10 +67,8 @@ h1 {
 }
 
 .actionButtons {
-  inset: 0 0 auto auto;
   display: flex;
   gap: 10px;
-  z-index: 1;
 }
 
 .main-content .aesthetic-windows-95-modal-content .aesthetic-windows-95-container-indent p {
@@ -170,16 +168,26 @@ h1 {
   height: 0;
 }
 
+.visually-hidden {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: auto;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+  white-space: nowrap;
+}
+
 .editable {
   display: flex;
   align-items: center;
 
   span[aria-hidden=true] {
     margin-right: 10px;
-  
-    .emoji-mart-emoji span {
-      padding: 8px;
-    }
+    /* keep the input centered in the column by offsetting the emoji */
+    margin-left: -24px;
   }
   
   input,
