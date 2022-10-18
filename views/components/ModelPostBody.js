@@ -36,7 +36,7 @@ export default function ModelPostBody ({ model, showControls, activityID, ...pro
           isOpened={isOpened}
           onProceed={onProceed}
           onClose={onClose}
-          description='This will remove the avatar from your collection, but it will not be deleted and could be added back later'
+          description='Remove this avatar from your collection? The original will not be deleted.'
         >
           <AvatarPreview avatar={model} {...props} />
         </DialogModal>)}
