@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
-import { Router } from '@reach/router'
+import { Router, LocationProvider } from '@reach/router'
 import Profile from './Profile'
 import { IntlProvider } from 'react-intl'
 import ServerDataContext from './ServerDataContext'
@@ -71,16 +71,18 @@ function Root () {
   return (
     <IntlProvider locale='en' defaultLocale='en'>
       <ServerDataContext.Provider value={dataContext}>
-        {loading
-          ? <LayoutLoader />
-          : (
-            <Router>
-              <Profile path='/u/:actor/*' taskbarButtons={taskbarButtons} />
-              <Thread path='/s/:activityId' taskbarButtons={taskbarButtons} />
-              <ObjectView path='/o/:objectId' taskbarButtons={taskbarButtons} />
-              <Admin path='/admin' taskbarButtons={taskbarButtons} />
-            </Router>
-            )}
+        <LocationProvider>
+          {loading
+            ? <LayoutLoader />
+            : (
+              <Router>
+                <Profile path='/u/:actor/*' taskbarButtons={taskbarButtons} />
+                <Thread path='/s/:activityId' taskbarButtons={taskbarButtons} />
+                <ObjectView path='/o/:objectId' taskbarButtons={taskbarButtons} />
+                <Admin path='/admin' taskbarButtons={taskbarButtons} />
+              </Router>
+              )}
+        </LocationProvider>
       </ServerDataContext.Provider>
     </IntlProvider>
   )

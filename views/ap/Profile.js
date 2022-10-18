@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Router, Link, useMatch, useNavigate } from '@reach/router'
+import { Router, Link, useMatch, useNavigate, useParams } from '@reach/router'
 import './Profile.css'
 import Layout from '../components/Layout'
 import Tab from '../components/Tab'
@@ -11,6 +11,8 @@ import { immersClient, useProfile } from './utils/immersClient'
 import { ImmersClient } from 'immers-client'
 
 export default function Profile ({ actor, taskbarButtons }) {
+  // after migration:
+  // const { actor } = useParams()
   const navigate = useNavigate()
   const myProfile = useProfile()
   const [profile, setProfile] = useState()

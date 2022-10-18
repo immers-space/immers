@@ -3,8 +3,10 @@ import ServerDataContext from './ServerDataContext'
 import Layout from '../components/Layout'
 import Post from './Post'
 import { immersClient } from './utils/immersClient'
+import { useParams } from '@reach/router'
 
-export default function Thread ({ activityId, taskbarButtons }) {
+export default function Thread ({ taskbarButtons }) {
+  const { activityId } = useParams()
   const { isInIframe } = useContext(ServerDataContext)
   const [activity, setActivity] = useState()
   useEffect(async () => {

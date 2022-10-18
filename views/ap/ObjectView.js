@@ -3,10 +3,12 @@ import { immersClient } from './utils/immersClient'
 import ServerDataContext from './ServerDataContext'
 import Layout from '../components/Layout'
 import Post from './Post'
+import { useParams } from '@reach/router'
 
 // direct object view is for compatibility with services like Mastodon that
 // use objects instead of activity as first-class objects
-export default function ObjectView ({ objectId, taskbarButtons }) {
+export default function ObjectView ({ taskbarButtons }) {
+  const { objectId } = useParams()
   const { isInIframe } = useContext(ServerDataContext)
   const [activity, setActivity] = useState()
   useEffect(async () => {
