@@ -3,7 +3,7 @@ import { immersClient } from './utils/immersClient'
 import ServerDataContext from './ServerDataContext'
 import Layout from '../components/Layout'
 import Post from './Post'
-import { useParams } from '@reach/router'
+import { useParams } from 'react-router-dom'
 
 // direct object view is for compatibility with services like Mastodon that
 // use objects instead of activity as first-class objects

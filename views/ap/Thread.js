@@ -3,7 +3,7 @@ import ServerDataContext from './ServerDataContext'
 import Layout from '../components/Layout'
 import Post from './Post'
 import { immersClient } from './utils/immersClient'
-import { useParams } from '@reach/router'
+import { useParams } from 'react-router-dom'
 
 export default function Thread ({ taskbarButtons }) {
   const { activityId } = useParams()

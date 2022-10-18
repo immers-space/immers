@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Router, Link, useMatch, useNavigate, useParams } from '@reach/router'
+import { Routes, Route, Link, useMatch, useNavigate, useParams } from 'react-router-dom'
 import './Profile.css'
 import Layout from '../components/Layout'
 import Tab from '../components/Tab'
@@ -10,9 +10,8 @@ import { AvatarPreview } from '../components/AvatarPreview'
 import { immersClient, useProfile } from './utils/immersClient'
 import { ImmersClient } from 'immers-client'
 
-export default function Profile ({ actor, taskbarButtons }) {
-  // after migration:
-  // const { actor } = useParams()
+export default function Profile ({ taskbarButtons }) {
+  const { actor } = useParams()
   const navigate = useNavigate()
   const myProfile = useProfile()
   const [profile, setProfile] = useState()
@@ -30,7 +29,7 @@ export default function Profile ({ actor, taskbarButtons }) {
     // TODO: edit profile
     // buttons = <EmojiButton emoji='pencil2' title='Edit profile' />
   }
-  const { currentTab } = useMatch(':currentTab') || {}
+  const { params: { currentTab } } = useMatch('/u/:actor/:currentTab') || { params: {} }
 
   useEffect(async () => {
     if (isMyProfile) {
@@ -84,14 +83,14 @@ export default function Profile ({ actor, taskbarButtons }) {
             })}
           </div>
           <div className='aesthetic-windows-95-container'>
-            <Router>
-              <Feed path='Outbox' iri={profile.collections.outbox} />
-              <Feed path='Inbox' iri={profile.collections.inbox} />
-              <Feed path='Destinations' iri={profile.collections.destinations} expandLocationPosts />
-              <Feed path='FriendsDestinations' iri={profile.collections.friendsDestinations} expandLocationPosts />
-              <Friends path='Friends' />
-              <Feed path='Avatars' iri={profile.collections.avatars} showAvatarControls={isMyProfile} />
-            </Router>
+            <Routes>
+              <Route path='Outbox' element={<Feed key={profile.collections.outbox} iri={profile.collections.outbox} />} />
+              <Route path='Inbox' element={<Feed key={profile.collections.inbox} iri={profile.collections.inbox} />} />
+              <Route path='Destinations' element={<Feed key={profile.collections.destinations} iri={profile.collections.destinations} expandLocationPosts />} />
+              <Route path='FriendsDestinations' element={<Feed key={profile.collections.friendsDestinations} iri={profile.collections.friendsDestinations} expandLocationPosts />} />
+              <Route path='Friends' element={<Friends key={profile.id} />} />
+              <Route path='Avatars' element={<Feed key={profile.collections.avatars} iri={profile.collections.avatars} showAvatarControls={isMyProfile} />} />
+            </Routes>
           </div>
         </div>
       </div>
