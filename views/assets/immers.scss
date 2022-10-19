@@ -11,6 +11,10 @@ body, input {
   font-size: 24px;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 h1 {
   font-family: 'VT323', monospace;
   font-size: 80px;
@@ -60,6 +64,11 @@ h1 {
   min-width: 670px;
   width: min(calc(100% - 2px), calc(80ch + 40px));
   flex-shrink: 0;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 10px;
 }
 
 .main-content .aesthetic-windows-95-modal-content .aesthetic-windows-95-container-indent p {
@@ -144,6 +153,10 @@ h1 {
   right: 5px;
 }
 
+.flex {
+  display: flex;
+}
+
 .hidden {
   visibility: hidden;
   height: 0;
@@ -153,6 +166,34 @@ h1 {
 
 .hidden label, .hidden input {
   height: 0;
+}
+
+.visually-hidden {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: auto;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+  white-space: nowrap;
+}
+
+.editable {
+  display: flex;
+  align-items: center;
+
+  span[aria-hidden=true] {
+    margin-right: 10px;
+    /* keep the input centered in the column by offsetting the emoji */
+    margin-left: -24px;
+  }
+  
+  input,
+  textarea {
+    outline: 1px solid red;
+  }
 }
 
 .none {

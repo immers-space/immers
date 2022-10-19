@@ -21,7 +21,7 @@ export default function Post ({ id, type, actor, summary, object = {}, target, p
   if (locationTypes.includes(type)) {
     body = getPostBody(target, settings)
   } else {
-    body = getPostBody(object, settings)
+    body = getPostBody(object, settings, id)
   }
 
   const includeSummaryWithBody = summaryWithBodyTypes.includes(type)
@@ -63,7 +63,7 @@ export default function Post ({ id, type, actor, summary, object = {}, target, p
   return null
 }
 
-function getPostBody (object, { showAvatarControls, expandLocationPosts }) {
+function getPostBody (object, { showAvatarControls, expandLocationPosts }, id) {
   const { type, content, url } = object
   switch (type) {
     case 'Note':
@@ -73,7 +73,7 @@ function getPostBody (object, { showAvatarControls, expandLocationPosts }) {
     case 'Video':
       return <video className='postMedia' src={ImmersClient.URLFromProperty(url)} controls />
     case 'Model':
-      return <ModelPostBody model={object} icon={object.icon} size='medium' showControls={showAvatarControls} />
+      return <ModelPostBody model={object} icon={object.icon} size='medium' showControls={showAvatarControls} activityID={id} />
     case 'Place':
       if (expandLocationPosts) {
         return <PlacePostBody place={object} />
