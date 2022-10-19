@@ -90,7 +90,14 @@ export default function Profile ({ actor, taskbarButtons }) {
       <div className='profile'>
         <div className='userContainer'>
           {isEditing
-            ? <label className='editable'><span aria-hidden='true'><Emoji emoji=':pencil2:' size={16} set='apple' /></span><input className='aesthetic-windows-95-text-input' value={displayName} aria-label='Edit your display name' onChange={onDisplayNameChange} /></label>
+            ? (
+              <label className='editable'>
+                <span aria-hidden='true'>
+                  <Emoji emoji=':pencil2:' size={16} set='apple' />
+                </span>
+                <input className='aesthetic-windows-95-text-input' value={displayName} aria-label='Edit your display name' onChange={onDisplayNameChange} />
+              </label>
+              )
             : <h2 className='displayName'>{profile.displayName}</h2>}
           <h3>
             <ImmersHandle id={profile.id} preferredUsername={profile.username} />
@@ -99,7 +106,14 @@ export default function Profile ({ actor, taskbarButtons }) {
             <AvatarPreview icon={profile.avatarImage} avatar={profile.avatarObject} />
           </div>
           {isEditing
-            ? <label className='editable'><span aria-hidden='true'><Emoji emoji=':pencil2:' size={16} set='apple' /></span><textarea className='aesthetic-windows-95-text-input profileSummary' value={bio} aria-label='Edit your bio' onChange={onBioChange} /></label>
+            ? (
+              <label className='editable'>
+                <span aria-hidden='true'>
+                  <Emoji emoji=':pencil2:' size={16} set='apple' />
+                </span>
+                <textarea className='aesthetic-windows-95-text-input profileSummary' value={bio} aria-label='Edit your bio' onChange={onBioChange} />
+              </label>
+              )
             : <div className='aesthetic-windows-95-container-indent profileSummary'>{profile.bio}</div>}
         </div>
         <div className='aesthetic-windows-95-tabbed-container'>
