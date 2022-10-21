@@ -4,10 +4,11 @@ import './DialogModal.css'
 
 const DialogModal = ({
   title,
+  description,
+  actionVerb,
   isOpened,
   onProceed,
   onClose,
-  description,
   children
 }) => {
   const ref = useRef(null)
@@ -48,7 +49,7 @@ const DialogModal = ({
         </div>
         <div className='actionButtons'>
           <div className='aesthetic-windows-95-button'>
-            <button onClick={proceedAndClose}>Remove</button>
+            <button onClick={proceedAndClose}>{actionVerb}</button>
           </div>
           <div className='flex aesthetic-windows-95-button'>
             <button onClick={onClose}>Cancel</button>
