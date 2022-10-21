@@ -2,6 +2,11 @@
 
 ### Added
 
+* Profile pages - Delete posts: Users can delete messages from their Outbox
+* Profile pages - Dialog Modal: The modal dialog can now be called with an action verb 
+
+### Added
+
 * Profile pages - Profile editing: Users can now edit their Display name and Bio from the web interface.
 * Profile pages - Remove avatar: Users can now remove Avatar models from their Avatar collection from the web interface (Does not delete the Avatar).
 
