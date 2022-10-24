@@ -72,17 +72,17 @@ export default function Profile ({ taskbarButtons }) {
             {profile.bio}
           </div>
         </div>
-        <div className='aesthetic-windows-95-tabbed-container'>
-          <div className='aesthetic-windows-95-tabbed-container-tabs'>
+        <div>
+          <nav className='tabs'>
             {tabs.map(({ path: tab, label }) => {
               return (
-                <Tab key={tab} active={tab === currentTab}>
-                  <Link to={tab}>{label ?? tab}</Link>
+                <Tab key={tab} active={tab === currentTab} onClick={() => navigate(tab)}>
+                  {label ?? tab}
                 </Tab>
               )
             })}
-          </div>
-          <div className='aesthetic-windows-95-container'>
+          </nav>
+          <section>
             <Routes>
               <Route path='Outbox' element={<Feed key={profile.collections.outbox} iri={profile.collections.outbox} />} />
               <Route path='Inbox' element={<Feed key={profile.collections.inbox} iri={profile.collections.inbox} />} />
@@ -91,7 +91,7 @@ export default function Profile ({ taskbarButtons }) {
               <Route path='Friends' element={<Friends key={profile.id} />} />
               <Route path='Avatars' element={<Feed key={profile.collections.avatars} iri={profile.collections.avatars} showAvatarControls={isMyProfile} />} />
             </Routes>
-          </div>
+          </section>
         </div>
       </div>
     </Layout>

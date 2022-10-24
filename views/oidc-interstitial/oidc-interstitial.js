@@ -63,7 +63,7 @@ function OidcInterstitial () {
   return (
     <IntlProvider locale='en' defaultLocale='en'>
       <Layout contentTitle='Complete Registration'>
-        <div className={c('aesthetic-windows-95-container-indent', { fetching })}>
+        <div id='auth-oidc-interstitial' className={c({ fetching })}>
           <p>
             You have successfully logged in!
             Please choose a username to complete your registration.
@@ -83,7 +83,7 @@ function OidcInterstitial () {
               Account created. Redirecting to destination.
             </div>
             <div className='form-item'>
-              <span className='aesthetic-windows-95-button'>
+              <span>
                 <button type='submit' name='submit' disabled={disableSubmit}>Submit</button>
               </span>
             </div>

@@ -48,15 +48,18 @@
     <meta name="monetization" content="{{ monetizationPointer }}">
     {% endif %}
     <style>
+      :root {
+      {% if backgroundImage %}
+        --backdrop-image-url: url('/static/{{ backgroundImage }}');
+      {% endif %}
+      {% if backgroundColor %}
+        --backdrop-color: {{ backgroundColor }};
+      {% endif %}
+      }
       {% if googleFont %}
       #body h1 { font-family: '{{ googleFont }}', monospace; }
       {% endif %}
-      {% if backgroundImage %}
-      #body .bg { background-image: url('/static/{{ backgroundImage }}'); }
-      {% endif %}
-      {% if backgroundColor %}
-      #body .bg { background-color: {{ backgroundColor }}; }
-      {% endif %}
+
     </style>
   {% if googleFont %}
     <link href="https://fonts.googleapis.com/css2?family={{ googleFont }}&family=VT323&display=swap" rel="stylesheet">

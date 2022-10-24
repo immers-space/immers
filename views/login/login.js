@@ -260,24 +260,21 @@ class Login extends React.Component {
   }
 
   render () {
-    const topClass = c({
-      'aesthetic-windows-95-tabbed-container': true,
-      fetching: this.state.fetching
-    })
+    const topClass = c({ fetching: this.state.fetching })
     return (
-      <div className={topClass}>
-        <div className='aesthetic-windows-95-tabbed-container-tabs'>
+      <div id='auth-login' className={topClass}>
+        <nav className='tabs'>
           {this.state.tabs.map(tab => {
             return (
-              <div key={tab} onClick={() => this.handleTab(tab)}>
-                <Tab active={this.state.tab === tab}>{tab}</Tab>
-              </div>
+              <Tab key={tab} onClick={() => this.handleTab(tab)} active={this.state.tab === tab}>
+                {tab}
+              </Tab>
             )
           })}
-        </div>
-        <div className='aesthetic-windows-95-container'>
+        </nav>
+        <section>
           {this.state.tab === 'Login' &&
-            <div id='login-form' className='aesthetic-windows-95-container-indent'>
+            <div id='login-form'>
               <form method='post' onSubmit={this.handleLogin} ref={this.form}>
                 <HandleInput
                   onChange={this.handleHandleInput}
@@ -295,7 +292,7 @@ class Login extends React.Component {
                   Username and/or password incorrect
                 </GlitchError>
                 <div className='form-item'>
-                  <span className={c({ 'aesthetic-windows-95-button': true, none: this.state.local })}>
+                  <span className={c({ none: this.state.local })}>
                     <button
                       type='button' disabled={!this.state.canSubmitHandle}
                       onClick={this.handleLookup}
@@ -303,12 +300,12 @@ class Login extends React.Component {
                       Check
                     </button>
                   </span>
-                  <span className={c({ 'aesthetic-windows-95-button': true, none: !this.state.local })}>
+                  <span className={c({ none: !this.state.local })}>
                     <button type='submit'>Login</button>
                   </span>
                   <span
                     id='redirect' onClick={this.handleRedirect}
-                    className={c({ 'aesthetic-windows-95-button': true, none: !this.state.isRemote })}
+                    className={c({ none: !this.state.isRemote })}
                   >
                     <button type='button'>Proceed</button>
                   </span>
@@ -332,7 +329,7 @@ class Login extends React.Component {
               )}
             </div>}
           {this.state.tab === 'Register' &&
-            <div id='register-form' className='aesthetic-windows-95-container-indent'>
+            <div id='register-form'>
               <form action='/auth/user' method='post' onSubmit={this.handleRegister}>
                 <HandleInput
                   onChange={this.handleHandleInput}
@@ -343,7 +340,7 @@ class Login extends React.Component {
                 <div className='form-item none'>
                   <label>Display name:</label>
                   <input
-                    id='handle' className='aesthetic-windows-95-text-input'
+                    id='handle'
                     type='text' name='name'
                     pattern='^[A-Za-z0-9_~ -]{3,32}$'
                     title='Letters, numbers, spaces, &amp; dashes only, between 3 and 32 characters'
@@ -360,18 +357,14 @@ class Login extends React.Component {
                 <div className={c({ 'form-item': true, hidden: !this.state.registrationSuccess })}>
                   Account created. Redirecting to destination.
                 </div>
-                <div className='form-item'>
-                  <span className='aesthetic-windows-95-button'>
-                    <button type='submit' disabled={!this.state.canSubmitRegistration}>
-                      Sign up
-                    </button>
-                  </span>
-                </div>
+                <button type='submit' disabled={!this.state.canSubmitRegistration}>
+                  Sign up
+                </button>
               </form>
               <EmailOptIn />
             </div>}
           {this.state.tab === 'Reset password' &&
-            <div className='aesthetic-windows-95-container-indent'>
+            <div>
               <p>Enter your email to request a password reset link.</p>
               <form action='/auth/forgot' method='post' onSubmit={this.handleForgot}>
                 <EmailInput />
@@ -382,15 +375,13 @@ class Login extends React.Component {
                   Email sent. You may close this tab.
                 </div>
                 <div className='form-item'>
-                  <span className='aesthetic-windows-95-button'>
-                    <button type='submit' disabled={!this.state.canSubmitForgot}>
-                      Request
-                    </button>
-                  </span>
+                  <button type='submit' disabled={!this.state.canSubmitForgot}>
+                    Request
+                  </button>
                 </div>
               </form>
             </div>}
-        </div>
+        </section>
       </div>
     )
   }

@@ -18,12 +18,12 @@ export default class HandleInput extends React.Component {
 
   render () {
     return (
-      <div className='form-item'>
+      <div className='handle-input'>
         <label htmlFor='username'>Immers handle:</label>
-        <div>
+        <div className='flex'>
           <input
             onChange={this.handleInput}
-            id='username' className='aesthetic-windows-95-text-input handle'
+            id='username'
             type='text' inputMode='email' name='username'
             placeholder='username'
             required pattern='^[A-Za-z0-9-]{3,32}$'
@@ -36,7 +36,7 @@ export default class HandleInput extends React.Component {
           <span className='handle-bracket'>[</span>
           <input
             onChange={this.handleInput}
-            id='immer' className='aesthetic-windows-95-text-input handle'
+            id='immer'
             type='text' inputMode='url' name='immer'
             placeholder='your.immer'
             required pattern='localhost(:\d+)?|.+\..+'
