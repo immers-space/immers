@@ -3,6 +3,9 @@
 ### Added
 
 * Profile pages - Delete posts: Users can delete messages from their Outbox
+
+### Changed
+
 * Profile pages - Dialog Modal: The modal dialog can now be called with an action verb 
 
 ### Added
