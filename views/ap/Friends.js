@@ -3,7 +3,7 @@ import ImmersHandle from '../components/ImmersHandle'
 import ProfileIcon from '../components/ProfileIcon'
 import { ImmerLink } from '../components/ImmerLink'
 import './Friends.css'
-import EmojiButton from './EmojiButton'
+import EmojiButton from '../components/EmojiButton'
 import { immersClient } from './utils/immersClient'
 
 export default function Friends () {

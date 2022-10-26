@@ -1,5 +1,6 @@
 .emojiButtonContainer {
     display: flex;
+    overflow: visible;
 }
 
 .emojiButtonContainer div {

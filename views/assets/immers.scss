@@ -110,30 +110,24 @@ body {
 //   flex-shrink: 0;
 // }
 
-// .form-item input.with-feedback {
-//   padding-right: 30px;
-// }
+.form-item input.with-feedback {
+  padding-right: 30px;
+}
 
-// .form-item-feedback {
-//   position: absolute;
-//   right: 15px;
-//   top: 5px;
-//   opacity: 0.5;
-//   cursor: pointer;
-// }
-
-// .form-item input.handle {
-//   width: 195px;
-//   margin-right: 0;
-//   margin-left: 0;
-// }
+.form-item-feedback {
+  position: absolute;
+  right: 15px;
+  top: 14px;
+  opacity: 0.5;
+  cursor: pointer;
+}
 
 
-
-// .form-item.emoji {
-//   height: 430px;
-//   justify-content: center;
-// }
+.form-item.emoji > div {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--spacing);
+}
 
 .form-item.emoji.hidden {
   height: 0;
@@ -159,38 +153,32 @@ body {
   display: none;
 }
 
-// .relative {
-//   position: relative;
-//   z-index: 0;
-// }
+.relative {
+  position: relative;
+  z-index: 0;
+}
 
-// .fetching {
-//   cursor: progress !important;
-// }
+.fetching {
+  cursor: progress !important;
+}
 
-// button[disabled] {
-//   color: #888;
-//   pointer-events: none;
-//   .emoji-mart-emoji {
-//     filter: grayscale(0.75)
-//   }
-// }
+.password-wrapper {
+  scroll-margin: 30px;
+}
 
-// .password-wrapper {
-//   scroll-margin: 30px;
-// }
+.reveal-pass {
+  position: absolute;
+  top: 0px;
+  width: calc(100% - 45px);
+  background-color: #FFFE;
+  margin: var(--form-element-spacing-vertical) var(--form-element-spacing-horizontal);
+  overflow: hidden;
+  white-space: nowrap;
+}
 
-// .reveal-pass {
-//   position: absolute;
-//   top: 0;
-//   width: 365px;
-//   background-color: #FFFE;
-//   margin: 3px 6px;
-// }
-
-// .reveal-pass .emoji-mart-emoji {
-//   vertical-align: middle;
-// }
+.reveal-pass .emoji-mart-emoji {
+  vertical-align: middle;
+}
 
 // /* to make alignment easier */
 // .handle-bracket {
@@ -312,6 +300,9 @@ body {
   /** new variables **/
   --tab-outer-border-radius: var(--border-radius);
   --tab-inner-border-radius: 0;
+  --emoji-button-background-color: transparent;
+  --emoji-button-color: var(--secondary);
+  --emoji-button-border-color: var(--secondary);
 }
 
 #app > nav {

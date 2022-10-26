@@ -4,7 +4,7 @@ import AddEditOauthClient from './AddEditOauthClient'
 import OauthClients from './OauthClients'
 import ServerDataContext from '../ap/ServerDataContext'
 import './Admin.css'
-import EmojiButton from '../ap/EmojiButton'
+import EmojiButton from '../components/EmojiButton'
 import { useCheckAdmin } from '../ap/utils/useCheckAdmin'
 
 export default function Admin ({ taskbarButtons }) {

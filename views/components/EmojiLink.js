@@ -1,4 +1,4 @@
-import { Emoji } from 'emoji-mart'
+import { Emoji } from './Emojis'
 import React from 'react'
 
 export default function EmojiLink ({ emoji, href, title }) {

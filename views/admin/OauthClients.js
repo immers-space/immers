@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import ServerDataContext from '../ap/ServerDataContext'
-import EmojiButton from '../ap/EmojiButton'
+import EmojiButton from '../components/EmojiButton'
 import './Admin.css'
 import './OauthClients.css'
 

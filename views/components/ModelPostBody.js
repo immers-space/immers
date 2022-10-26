@@ -1,6 +1,6 @@
 import React from 'react'
 import { AvatarPreview } from './AvatarPreview'
-import EmojiButton from '../ap/EmojiButton'
+import EmojiButton from './EmojiButton'
 import './ModelPostBody.css'
 import { immersClient, useProfile } from '../ap/utils/immersClient'
 
@@ -15,7 +15,7 @@ export default function ModelPostBody ({ model, showControls, ...props }) {
     <div className='relative'>
       {showControls && (
         <div className='modelActionButtons'>
-          <EmojiButton emoji='superhero' title={avatarTooltip} disabled={isCurrentAvatar} onClick={handleUseAvatar} />
+          <EmojiButton emoji='superhero' title={avatarTooltip} tipSide='left' disabled={isCurrentAvatar} onClick={handleUseAvatar} />
         </div>
       )}
       <AvatarPreview avatar={model} {...props} />

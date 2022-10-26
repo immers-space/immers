@@ -1,16 +1,8 @@
 import React from 'react'
 import c from 'classnames'
-import 'emoji-mart/css/emoji-mart.css'
-import { Picker, store, getEmojiDataFromNative, Emoji } from 'emoji-mart'
-import data from 'emoji-mart/data/all.json'
+import { Picker, Emoji, emojiI18n } from './Emojis'
 import GraphemeSplitter from 'grapheme-splitter'
 const splitter = new GraphemeSplitter()
-
-// disable emoji-mart history storage
-store.setHandlers({
-  getter: () => undefined,
-  setter: () => undefined
-})
 
 export default class PasswordInput extends React.Component {
   constructor (props) {
@@ -20,7 +12,8 @@ export default class PasswordInput extends React.Component {
     this.state = {
       showPicker: false,
       reveal: false,
-      password: ''
+      password: '',
+      narrowPicker: window.innerWidth < 470
     }
     this.handleEmojiSelect = this.handleEmojiSelect.bind(this)
     this.handleClickOutside = this.handleClickOutside.bind(this)
@@ -46,21 +39,14 @@ export default class PasswordInput extends React.Component {
 
   renderPassword (pass) {
     const chars = splitter.splitGraphemes(pass)
-    return chars.map((char, i) => {
-      const emoji = getEmojiDataFromNative(char, 'apple', data)
-      if (emoji) {
-        return (
-          <Emoji
-            key={`${i}`}
-            emoji={emoji}
-            set='apple'
-            skin={emoji.skin || 1}
-            size={24}
-          />
-        )
-      }
-      return <span key={`${i}`}>{char}</span>
-    })
+    return chars.map((char, i) => (
+      <Emoji
+        key={`${i}`}
+        native={char}
+        set='apple'
+        size={24}
+      />
+    ))
   }
 
   render () {
@@ -74,7 +60,7 @@ export default class PasswordInput extends React.Component {
           <label>Password:</label>
           <div className='relative'>
             <input
-              id='password' className='aesthetic-windows-95-text-input with-feedback'
+              id='password' className='with-feedback'
               ref={this.inputRef}
               type='password' name='password'
               required pattern='.{3,32}'
@@ -100,9 +86,11 @@ export default class PasswordInput extends React.Component {
           className={c({ 'form-item': true, emoji: true, hidden: !this.state.showPicker })}
         >
           <Picker
-            onSelect={this.handleEmojiSelect}
-            exclude={['recent']} emojiSize={36} perLine={11}
-            title='Emoji Password' emoji='closed_lock_with_key'
+            onEmojiSelect={this.handleEmojiSelect}
+            categories={['people', 'nature', 'foods', 'activity', 'places', 'objects', 'symbols', 'flags']}
+            maxFrequentRows={0}
+            emojiSize={36} perLine={this.state.narrowPicker ? 8 : 11} set='apple' i18n={emojiI18n}
+            title='Emoji Password' previewEmoji='closed_lock_with_key'
           />
         </div>
       </div>
