@@ -35,6 +35,7 @@ export default class HandleInput extends React.Component {
           <label htmlFor='immer' className='home-label'>Home immer:</label>
           <span className='handle-bracket'>[</span>
           <input
+            aria-label='Home immer'
             onChange={this.handleInput}
             id='immer'
             type='text' inputMode='url' name='immer'

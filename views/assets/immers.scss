@@ -1,11 +1,5 @@
 $semantic-root-element: '#app';
 @import "@picocss/pico/scss/pico";
-// @import 'aesthetic-css/src/index.scss';
-
-body {
-  width: 100%;
-  padding: 2px;
-}
 
 // body, input {
 //   font-family: 'VT323', monospace;
@@ -336,24 +330,16 @@ main > article > header > h2 {
 /*** app design ***/
 $mobile-cutoff: 768px;
 
-.flex {
-  display: flex;
+body {
+  width: 100%;
+  @media screen and (max-width: $mobile-cutoff) {
+    margin: 0;
+  }
 }
 
-form .inputGrid {
-  grid-template-columns: 300px 1fr;
-  @media screen and (max-width: $mobile-cutoff) {
-    grid-template-columns: 1fr;
-  }
 
-  .span-row {
-    grid-column: 1 2;
-  }
-
-  label {
-    align-self: center;
-    margin-bottom: var(--spacing);
-  }
+.flex {
+  display: flex;
 }
 
 /* immers handle input */
