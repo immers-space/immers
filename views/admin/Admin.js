@@ -6,7 +6,7 @@ import ServerDataContext from '../ap/ServerDataContext'
 import './Admin.css'
 import EmojiButton from '../components/EmojiButton'
 import { useCheckAdmin } from '../ap/utils/useCheckAdmin'
-import Loader from "../components/Loader"
+import Loader from '../components/Loader'
 
 export default function Admin ({ taskbarButtons }) {
   const modes = {

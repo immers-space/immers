@@ -2,8 +2,8 @@
   --color: var(--emoji-button-color);
   --border-color: var(--emoji-button-border-color);
   --background-color: var(--emoji-button-background-color);
-  --form-element-spacing-vertical: var(--spacing);
-  --form-element-spacing-horizontal: var(--spacing);
+  --form-element-spacing-vertical: var(--emoji-button-spacing);
+  --form-element-spacing-horizontal: var(--emoji-button-spacing);
   margin-bottom: 0;
   line-height: 14px;
 }
@@ -11,4 +11,9 @@
 .emoji-button[data-tooltip] {
   /* override the info-underline from pico */
   border-bottom: none;
+}
+
+.emoji-button em-emoji {
+  position: relative;
+  top: -0.1em;
 }

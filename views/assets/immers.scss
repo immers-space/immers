@@ -287,6 +287,7 @@ $semantic-root-element: '#app';
   --spacing: 0.5rem;
   /** new variables **/
   --tab-border-radius: var(--border-radius);
+  --emoji-button-spacing: var(--spacing);
   --emoji-button-background-color: transparent;
   --emoji-button-color: var(--secondary);
   --emoji-button-border-color: var(--secondary);
@@ -314,9 +315,12 @@ header>h1 {
   text-align: center;
 }
 // main ui card header doesn't need so much emphasis
-main > article > header > h2 {
-  --typography-spacing-vertical: 0;
-  --font-size: 1rem;
+main > article > header {
+  --nav-element-spacing-vertical: 0;
+  h2 {
+    --typography-spacing-vertical: 0;
+    --font-size: 1rem;
+  }
 }
 
 

@@ -1,7 +1,6 @@
 import React from 'react'
 import c from 'classnames'
 import '../assets/immers.scss'
-// import '@picocss/pico'
 import immersIcon from '../assets/immers_logo.png'
 
 export default function Layout (props) {
@@ -18,12 +17,18 @@ export default function Layout (props) {
       <main className='container'>
         <article>
           <header>
-            <h2>
-              {props.contentTitle}
-            </h2>
-            <div className='aesthetic-windows-95-modal-title-bar-controls'>
-              {props.buttons}
-            </div>
+            <nav>
+              <ul>
+                <li>
+                  <h2>
+                    {props.contentTitle}
+                  </h2>
+                </li>
+              </ul>
+              <ul>
+                {Array.isArray(props.buttons) ? props.buttons.map((btn, i) => (<li key={i}>{btn}</li>)) : <li>{props.buttons}</li>}
+              </ul>
+            </nav>
           </header>
           <div>
             {props.children}
