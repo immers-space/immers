@@ -4,6 +4,7 @@ import ServerDataContext from './ServerDataContext'
 import Layout from '../components/Layout'
 import Post from './Post'
 import { useParams } from 'react-router-dom'
+import LayoutLoader from '../components/LayoutLoader'
 
 // direct object view is for compatibility with services like Mastodon that
 // use objects instead of activity as first-class objects
@@ -26,11 +27,7 @@ export default function ObjectView ({ taskbarButtons }) {
   }, [objectId])
   if (!activity) {
     return (
-      <Layout contentTitle='Loading'>
-        <div className='aesthetic-windows-95-loader'>
-          <div /><div /><div />
-        </div>
-      </Layout>
+      <LayoutLoader />
     )
   }
   return (

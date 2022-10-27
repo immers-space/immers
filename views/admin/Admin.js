@@ -6,6 +6,7 @@ import ServerDataContext from '../ap/ServerDataContext'
 import './Admin.css'
 import EmojiButton from '../components/EmojiButton'
 import { useCheckAdmin } from '../ap/utils/useCheckAdmin'
+import Loader from "../components/Loader"
 
 export default function Admin ({ taskbarButtons }) {
   const modes = {
@@ -43,9 +44,7 @@ export default function Admin ({ taskbarButtons }) {
   return (
     <Layout contentTitle='Immers Admin' taskbar buttons={buttons} taskbarButtons={taskbarButtons}>
       {loading &&
-        <div className='aesthetic-windows-95-loader'>
-          <div /><div /><div />
-        </div>}
+        <Loader />}
       {!loading && mode === modes.LIST_OAUTH_CLIENTS && <OauthClients onEdit={handleEdit} onAdd={handleNewOauth} />}
       {!loading && mode === modes.NEW_OAUTH_CLIENT && <AddEditOauthClient showClientList={handleListOauth} editId={editId} />}
     </Layout>

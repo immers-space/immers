@@ -9,6 +9,7 @@ import Friends from './Friends'
 import { AvatarPreview } from '../components/AvatarPreview'
 import { immersClient, useProfile } from './utils/immersClient'
 import { ImmersClient } from 'immers-client'
+import LayoutLoader from "../components/LayoutLoader"
 
 export default function Profile ({ taskbarButtons }) {
   const { actor } = useParams()
@@ -48,11 +49,7 @@ export default function Profile ({ taskbarButtons }) {
   }, [currentTab, tabs])
   if (!profile) {
     return (
-      <Layout contentTitle='Immers Profile'>
-        <div className='aesthetic-windows-95-loader'>
-          <div /><div /><div />
-        </div>
-      </Layout>
+      <LayoutLoader contentTitle='Immers Profile' />
     )
   }
   return (

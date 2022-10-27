@@ -4,6 +4,7 @@ import Layout from '../components/Layout'
 import Post from './Post'
 import { immersClient } from './utils/immersClient'
 import { useParams } from 'react-router-dom'
+import LayoutLoader from "../components/LayoutLoader"
 
 export default function Thread ({ taskbarButtons }) {
   const { activityId } = useParams()
@@ -18,11 +19,7 @@ export default function Thread ({ taskbarButtons }) {
   }, [activityId])
   if (!activity) {
     return (
-      <Layout contentTitle='Loading'>
-        <div className='aesthetic-windows-95-loader'>
-          <div /><div /><div />
-        </div>
-      </Layout>
+      <LayoutLoader contentTitle='Loading' />
     )
   }
   return (
