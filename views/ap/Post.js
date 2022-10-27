@@ -27,21 +27,21 @@ export default function Post ({ id, type, actor, summary, object = {}, target, p
   const includeSummaryWithBody = summaryWithBodyTypes.includes(type)
   if (body) {
     return (
-      <div>
-        <div className='postHeader'>
+      <article>
+        <header className='postHeader'>
           <a className='handle profileLink' href={actorId}>
             <ProfileIcon size='tiny' icon={icon} />
             <ImmersHandle {...actor} showName />
           </a>
           <ImmerLink place={context} />
           <Timestamp id={id} published={published} />
-        </div>
+        </header>
 
-        <div className='postBody aesthetic-windows-95-container-indent'>
+        <div className='postBody'>
           {includeSummaryWithBody && <SanitizedHTML className='bodySummary' html={summary} />}
           {body}
         </div>
-      </div>
+      </article>
     )
   }
   if (summary) {

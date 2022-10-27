@@ -10,21 +10,6 @@
   margin: 0;
 }
 
-.aesthetic-windows-95-tabbed-container-tabs-button a {
-  text-decoration: none;
-  color: black;
-  padding: 2px;
-}
-
-.profile .aesthetic-windows-95-tabbed-container .aesthetic-windows-95-tabbed-container-tabs .aesthetic-windows-95-tabbed-container-tabs-button button {
-  padding: 0;
-}
-
-.profile .aesthetic-windows-95-tabbed-container .aesthetic-windows-95-tabbed-container-tabs {
-  flex-wrap: wrap;
-  height: auto;
-}
-
 .profileSummary {
   width: 400px;
   margin-top: 10px;

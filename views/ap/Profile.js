@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Routes, Route, Link, useMatch, useNavigate, useParams } from 'react-router-dom'
+import { Routes, Route, useMatch, useNavigate, useParams } from 'react-router-dom'
 import './Profile.css'
 import Layout from '../components/Layout'
 import Tab from '../components/Tab'
@@ -9,7 +9,7 @@ import Friends from './Friends'
 import { AvatarPreview } from '../components/AvatarPreview'
 import { immersClient, useProfile } from './utils/immersClient'
 import { ImmersClient } from 'immers-client'
-import LayoutLoader from "../components/LayoutLoader"
+import LayoutLoader from '../components/LayoutLoader'
 
 export default function Profile ({ taskbarButtons }) {
   const { actor } = useParams()
