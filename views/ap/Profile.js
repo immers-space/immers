@@ -56,18 +56,16 @@ export default function Profile ({ taskbarButtons }) {
     <Layout contentTitle='Immers Profile' buttons={buttons} taskbar taskbarButtons={taskbarButtons}>
       <div className='profile'>
         <div className='userContainer'>
-          <h2 className='displayName'>
-            {profile.displayName}
-          </h2>
-          <h3>
-            <ImmersHandle id={profile.id} preferredUsername={profile.username} />
-          </h3>
-          <div className='aesthetic-windows-95-container-indent'>
+          <hgroup>
+            <h2 className='displayName'>{profile.displayName}</h2>
+            <h3>
+              <ImmersHandle id={profile.id} preferredUsername={profile.username} />
+            </h3>
+          </hgroup>
+          <section data-label='Avatar'>
             <AvatarPreview icon={profile.avatarImage} avatar={profile.avatarObject} />
-          </div>
-          <div className='aesthetic-windows-95-container-indent profileSummary'>
-            {profile.bio}
-          </div>
+          </section>
+          <section  className='profileSummary'>{profile.bio}</section>
         </div>
         <div>
           <nav className='tabs'>

@@ -334,6 +334,21 @@ body {
   }
 }
 
+section[data-label] {
+  position: relative;
+  border: var(--border-width) solid var(--secondary);
+  border-radius: var(--border-radius);
+  color: var(--secondary);
+  padding: var(--block-spacing-vertical) var(--block-spacing-horizontal);
+  &::before {
+    content: attr(data-label);
+    position: absolute;
+    top: -0.75rem;
+    left: 0.5rem;
+    background-color: var(--background-color);
+    padding: 0 var(--spacing);
+  }
+}
 
 .flex {
   display: flex;

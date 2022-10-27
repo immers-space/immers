@@ -6,18 +6,6 @@
   justify-content: flex-start;
 }
 
-.userContainer h2, .userContainer h3 {
-  margin: 0;
-}
-
-.profileSummary {
-  width: 400px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-
-@media screen and (max-width: 679px) {
-  .profileSummary {
-    width: calc(100vw - 20px);
-  }
+.userContainer hgroup {
+  text-align: center;
 }
