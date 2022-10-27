@@ -292,8 +292,7 @@ $semantic-root-element: '#app';
   --nav-backdrop-filter: saturate(180%) blur(10px);
   --spacing: 0.5rem;
   /** new variables **/
-  --tab-outer-border-radius: var(--border-radius);
-  --tab-inner-border-radius: 0;
+  --tab-border-radius: var(--border-radius);
   --emoji-button-background-color: transparent;
   --emoji-button-color: var(--secondary);
   --emoji-button-border-color: var(--secondary);
@@ -369,9 +368,12 @@ body {
 
 nav.tabs {
   --nav-element-spacing-vertical: var(--nav-element-spacing-horizontal);
+  flex-wrap: wrap;
+  justify-content: flex-start;
   .tab {
+    width: auto;
     flex-grow: 1;
-    border-radius: var(--tab-inner-border-radius);
+    border-radius: var(--tab-border-radius) var(--tab-border-radius) 0 0;
     padding: var(--nav-element-spacing-vertical) var(--nav-element-spacing-horizontal);
     font-size: 0.75rem;
     border-bottom: none;
@@ -379,17 +381,8 @@ nav.tabs {
     &.is-active {
       --box-shadow: none;
     }
-    &:not(:last-child) {
-      border-right: var(--border-width) solid var(--muted-border-color);
-    }
-    &:not(:first-child) {
-      border-left: none;
-    }
-    &:first-child {
-      border-top-left-radius: var(--tab-outer-border-radius);
-    }
-    &:last-child {
-      border-top-right-radius: var(--tab-outer-border-radius);
+    &:not(.is-active) + .tab:not(.is-active) {
+      border-left: var(--border-width) solid var(--muted-border-color);
     }
   }
   & + section {
