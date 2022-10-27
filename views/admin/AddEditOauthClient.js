@@ -2,7 +2,6 @@ import React, { useContext, useState, useEffect } from 'react'
 import ServerDataContext from '../ap/ServerDataContext'
 import GlitchError from '../components/GlitchError'
 import ProviderLogin from '../components/ProviderLogin'
-import './Admin.css'
 
 export default function AddEditOauthClient ({ showClientList, editId }) {
   const [name, setName] = useState('')
@@ -124,106 +123,94 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
   }
 
   return (
-    <div className='adminContainer'>
+    <div>
       <h3>
         {editId ? 'Edit' : 'Add'} OpenID Connect Client
       </h3>
-      <div className='aesthetic-windows-95-container'>
-        <div className='aesthetic-windows-95-container-indent'>
+      <div>
+        <div>
           <form onSubmit={handleSubmit}>
-            <div className='form-item'>
-              <label htmlFor='name'>Name:</label>
-              <div>
-                <input
-                  onChange={handleInput}
-                  id='name' className='aesthetic-windows-95-text-input'
-                  type='text' inputMode='text' name='name'
-                  placeholder='Name'
-                  required pattern='^[A-Za-z0-9-]{3,32}$'
-                  autoCapitalize='off' autoCorrect='off' spellCheck='false'
-                  title='Letters, numbers, &amp; dashes only, between 3 and 32 characters'
-                  value={name}
-                />
-              </div>
-            </div>
-            <div className='form-item'>
-              <label htmlFor='domain'>Provider domain:</label>
-              <div>
-                <input
-                  disabled={!!editId}
-                  onChange={handleInput}
-                  id='domain' className='aesthetic-windows-95-text-input'
-                  type='text' inputMode='text' name='domain'
-                  placeholder='accounts.domain.com'
-                  autoCapitalize='off' autoCorrect='off' spellCheck='false'
-                  value={domain}
-                />
-              </div>
-            </div>
-            <div className='form-item'>
-              <label htmlFor='clientId'>Client ID:</label>
-              <div>
-                <input
-                  onChange={handleInput}
-                  id='clientId' className='aesthetic-windows-95-text-input'
-                  type='text' inputMode='text' name='clientId'
-                  placeholder='Provided Client Id'
-                  autoCapitalize='off' autoCorrect='off' spellCheck='false'
-                  value={clientId}
-                />
-              </div>
-            </div>
-            <div className='form-item'>
-              <label htmlFor='clientSecret'>Client Secret:</label>
-              <div>
-                <input
-                  onChange={handleInput}
-                  id='clientSecret' className='aesthetic-windows-95-text-input'
-                  type='text' inputMode='text' name='clientSecret'
-                  placeholder={editId ? '(not shown)' : 'Provided Client Secret'}
-                  autoCapitalize='off' autoCorrect='off' spellCheck='false'
-                  value={clientSecret}
-                />
-              </div>
-            </div>
-            <fieldset className='marginBottom'>
+            <label>
+              Name:
+              <input
+                onChange={handleInput}
+                id='name'
+                type='text' inputMode='text' name='name'
+                placeholder='Name'
+                required pattern='^[A-Za-z0-9-]{3,32}$'
+                autoCapitalize='off' autoCorrect='off' spellCheck='false'
+                title='Letters, numbers, &amp; dashes only, between 3 and 32 characters'
+                value={name}
+              />
+            </label>
+            <label>
+              Provider domain:
+              <input
+                disabled={!!editId}
+                onChange={handleInput}
+                id='domain'
+                type='text' inputMode='text' name='domain'
+                placeholder='accounts.domain.com'
+                autoCapitalize='off' autoCorrect='off' spellCheck='false'
+                value={domain}
+              />
+            </label>
+            <label>
+              Client ID:
+              <input
+                onChange={handleInput}
+                id='clientId'
+                type='text' inputMode='text' name='clientId'
+                placeholder='Provided Client Id'
+                autoCapitalize='off' autoCorrect='off' spellCheck='false'
+                value={clientId}
+              />
+            </label>
+            <label>
+              Client Secret:
+              <input
+                onChange={handleInput}
+                id='clientSecret'
+                type='text' inputMode='text' name='clientSecret'
+                placeholder={editId ? '(not shown)' : 'Provided Client Secret'}
+                autoCapitalize='off' autoCorrect='off' spellCheck='false'
+                value={clientSecret}
+              />
+            </label>
+            <fieldset class='outline'>
               <legend>Optional Login Button</legend>
-              <label className='aesthetic-windows-95-checkbox'>
-                Show
+              <label>
                 <input
+                  role='switch'
                   onChange={handleInput}
                   id='showButton'
                   type='checkbox' name='showButton'
                   checked={showButton}
                 />
-                <span className='aesthetic-windows-95-checkmark' />
+                Show
               </label>
-              <div className='form-item'>
-                <label htmlFor='buttonIcon'>Button Icon:</label>
-                <div>
-                  <input
-                    onChange={handleInput}
-                    id='buttonIcon' className='aesthetic-windows-95-text-input'
-                    type='text' inputMode='text' name='buttonIcon'
-                    placeholder='Image URL'
-                    autoCapitalize='off' autoCorrect='off' spellCheck='false'
-                    value={buttonIcon}
-                  />
-                </div>
-              </div>
-              <div className='form-item'>
-                <label htmlFor='buttonLabel'>Button Label:</label>
-                <div>
-                  <input
-                    onChange={handleInput}
-                    id='buttonLabel' className='aesthetic-windows-95-text-input'
-                    type='text' inputMode='text' name='buttonLabel'
-                    placeholder='Button Label'
-                    autoCapitalize='off' autoCorrect='off' spellCheck='false'
-                    value={buttonLabel}
-                  />
-                </div>
-              </div>
+              <label>
+                Button Icon:
+                <input
+                  onChange={handleInput}
+                  id='buttonIcon'
+                  type='text' inputMode='text' name='buttonIcon'
+                  placeholder='Image URL'
+                  autoCapitalize='off' autoCorrect='off' spellCheck='false'
+                  value={buttonIcon}
+                />
+              </label>
+              <label>
+                Button Label:
+                <input
+                  onChange={handleInput}
+                  id='buttonLabel'
+                  type='text' inputMode='text' name='buttonLabel'
+                  placeholder='Button Label'
+                  autoCapitalize='off' autoCorrect='off' spellCheck='false'
+                  value={buttonLabel}
+                />
+              </label>
               {showButton &&
                 <div className='form-item'>
                   Preview: <ProviderLogin onClick={login} providerDomain={domain} buttonIcon={buttonIcon} buttonLabel={buttonLabel} />
@@ -237,8 +224,10 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
 
             )}
             <GlitchError show={error === true}>Something when wrong. Please Try again</GlitchError>
-            <button className='adminButton' onClick={handleSubmit}>{editId ? 'Update' : 'Save'} OpenID Connect Client</button>
-            <button className='adminButton marginLeft' onClick={showClientList}>Cancel</button>
+            <div className='grid'>
+              <button onClick={handleSubmit}>{editId ? 'Update' : 'Save'} OpenID Connect Client</button>
+              <button className='secondary' onClick={showClientList}>Cancel</button>
+            </div>
           </form>
         </div>
       </div>

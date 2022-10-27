@@ -65,7 +65,7 @@ export default function Profile ({ taskbarButtons }) {
           <section data-label='Avatar'>
             <AvatarPreview icon={profile.avatarImage} avatar={profile.avatarObject} />
           </section>
-          <section  className='profileSummary'>{profile.bio}</section>
+          <section className='profileSummary'>{profile.bio}</section>
         </div>
         <div>
           <nav className='tabs'>

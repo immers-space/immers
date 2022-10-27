@@ -14,7 +14,7 @@ export default function Layout (props) {
       <header className='container'>
         <h1>{title}</h1>
       </header>
-      <main className='container'>
+      <main className={c('container', { 'with-taskbar': props.taskbar })}>
         <article>
           <header>
             <nav>
@@ -47,7 +47,7 @@ export default function Layout (props) {
           <ul>
             <li>
               <a role='button' href={`//${data.hub}`}>
-                <img src={data.icon ?? immersIcon} className='immers-icon' /> Enter {data.name}
+                <img src={data.icon ?? immersIcon} className='immers-icon' />Enter {data.name}
               </a>
             </li>
           </ul>
