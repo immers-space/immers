@@ -38,7 +38,7 @@ export default function Layout (props) {
 
       <div className={c('attribution', { 'with-taskbar': props.taskbar })}>
         {attribution &&
-          <a className='aesthetic-green-color' href={attributionUrl}>
+          <a target='_blank' rel='nofollow noreferrer' href={attributionUrl}>
             Background: {attribution}
           </a>}
       </div>
@@ -52,7 +52,7 @@ export default function Layout (props) {
             </li>
           </ul>
           {props.taskbarButtons?.length && (
-            <ul>
+            <ul className='navbar-actions'>
               {props.taskbarButtons.map((btn, i) => <li key={i}>{btn}</li>)}
             </ul>
           )}

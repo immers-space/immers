@@ -11,6 +11,8 @@ body {
   h1 {
     font-size: 3rem;
     line-height: 1;
+    margin-bottom: 0;
+    text-align: center;
   }
 }
 
@@ -40,12 +42,10 @@ body {
   z-index: -1;
 }
 
-// .error {
-//   color: #FF6AD5;
-// }
-
-
 .attribution {
+  a {
+    color: var(--attribution-link-color);
+  }
   position: fixed;
   right: 0;
   bottom: 0;
@@ -53,7 +53,7 @@ body {
   z-index: -1;
 }
 .attribution.with-taskbar {
-  bottom: 45px;
+  bottom: var(--offset-for-navbar-height);
 }
 
 // .content {
@@ -294,33 +294,39 @@ body {
 //   }
 // }
 
-/*** pico CSS tweaks ***/
 :root {
-  // --nav-background-color: white;
-  --nav-border-color: var(--backdrop-color);
-  --nav-box-shadow: 0 -1px 0 var(--nav-border-color);
-  --nav-backdrop-filter: saturate(180%) blur(10px);
+  /** pico CSS tweaks **/
   --spacing: 0.5rem;
   /** new variables **/
+  --nav-background-color: var(--background-color);
+  --nav-box-shadow: var(--card-box-shadow);
   --tab-border-radius: var(--border-radius);
   --emoji-button-spacing: var(--spacing);
   --emoji-button-background-color: transparent;
   --emoji-button-color: var(--secondary);
   --emoji-button-border-color: var(--secondary);
+  --attribution-link-color: var(--secondary);
+  --offset-for-navbar-height: 3.5rem;
 }
 
 #app > nav {
-  -webkit-backdrop-filter: var(--nav-backdrop-filter);
   z-index: 99;
   position: fixed;
   inset: auto 0 0 0;
-  backdrop-filter: var(--nav-backdrop-filter);
   background-color: var(--nav-background-color);
   box-shadow: var(--nav-box-shadow);
 }
 
+nav ul.navbar-actions {
+  /* split the nav spacing between inside/ouside of border */
+  --nav-element-spacing-vertical: 0.5rem;
+  margin: var(--nav-element-spacing-vertical) 0;
+  border: var(--border-width) solid var(--secondary);
+  border-radius: var(--border-radius);
+}
+
 main.with-taskbar {
-  margin-bottom: 70px;
+  margin-bottom: calc(var(--offset-for-navbar-height) + 0.5rem);
 }
 
 /* avoid doubling spacing */
@@ -330,10 +336,7 @@ article:first-child {
 article:last-child {
   margin-bottom: 0;
 }
-header>h1 {
-  margin-bottom: 0;
-  text-align: center;
-}
+
 // main ui card header doesn't need so much emphasis
 main > article > header {
   --nav-element-spacing-vertical: 0;
