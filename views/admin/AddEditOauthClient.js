@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react'
 import ServerDataContext from '../ap/ServerDataContext'
-import GlitchError from '../components/GlitchError'
+import FormError from '../components/FormError'
 import ProviderLogin from '../components/ProviderLogin'
 
 export default function AddEditOauthClient ({ showClientList, editId }) {
@@ -153,6 +153,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
                 placeholder='accounts.domain.com'
                 autoCapitalize='off' autoCorrect='off' spellCheck='false'
                 value={domain}
+                aria-invalid={error === 'discovery' ? 'true' : ''}
               />
             </label>
             <label>
@@ -218,12 +219,12 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
             </fieldset>
             {error === 'discovery' && (
               <>
-                <GlitchError show>We couldn't process that OpenId Connect Provider</GlitchError>
+                <FormError show>We couldn't process that OpenId Connect Provider</FormError>
                 <p>Double check the domain or try putting the full discovery document url instead of the domain.</p>
               </>
 
             )}
-            <GlitchError show={error === true}>Something when wrong. Please Try again</GlitchError>
+            <FormError show={error === true}>Something when wrong. Please Try again</FormError>
             <div className='grid'>
               <button onClick={handleSubmit}>{editId ? 'Update' : 'Save'} OpenID Connect Client</button>
               <button className='secondary' onClick={showClientList}>Cancel</button>

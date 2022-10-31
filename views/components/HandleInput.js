@@ -31,6 +31,7 @@ export default class HandleInput extends React.Component {
             title='Letters, numbers, &amp; dashes only, between 3 and 32 characters'
             value={this.state.username}
             onKeyPress={this.props.onKeyPress}
+            aria-invalid={this.props.invalid ? 'true' : ''}
           />
           <label htmlFor='immer' className='home-label'>Home immer:</label>
           <span className='handle-bracket'>[</span>
@@ -45,6 +46,7 @@ export default class HandleInput extends React.Component {
             title='Valid domain name, including .'
             value={this.state.immer} disabled={this.props.lockImmer}
             onKeyPress={this.props.onKeyPress}
+            aria-invalid={this.props.invalid && !this.props.lockImmer ? 'true' : ''}
           />
           <span className='handle-bracket'>]</span>
         </div>

@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import Tab from '../components/Tab'
 import c from 'classnames'
-import GlitchError from '../components/GlitchError'
+import FormError from '../components/FormError'
 import HandleInput from '../components/HandleInput'
 import PasswordInput from '../components/PasswordInput'
 import Layout from '../components/Layout'
@@ -260,6 +260,8 @@ class Login extends React.Component {
   }
 
   render () {
+    const handleTaken = this.state.takenMessage?.includes('Username')
+    const emailTaken = this.state.takenMessage?.includes('Email')
     const topClass = c({ fetching: this.state.fetching })
     return (
       <div id='auth-login' className={topClass}>
@@ -280,17 +282,18 @@ class Login extends React.Component {
                   onChange={this.handleHandleInput}
                   username={this.state.username} immer={this.state.immer}
                   onKeyPress={this.onEnter(this.handleLookup)}
+                  invalid={this.state.usernameError}
                 />
                 <PasswordInput hide={!this.state.local} autoFocus onKeyPress={this.onEnter(this.submitForm)} />
                 <div className={c({ 'form-item': true, hidden: !this.state.isRemote })}>
                   You will be redirected to your home immer to login
                 </div>
-                <GlitchError show={this.state.usernameError}>
+                <FormError show={this.state.usernameError}>
                   Please check your handle and try again
-                </GlitchError>
-                <GlitchError show={this.state.passwordError}>
+                </FormError>
+                <FormError show={this.state.passwordError}>
                   Username and/or password incorrect
-                </GlitchError>
+                </FormError>
                 <div className='form-item'>
                   <span className={c({ none: this.state.local })}>
                     <button
@@ -334,7 +337,9 @@ class Login extends React.Component {
                 <HandleInput
                   onChange={this.handleHandleInput}
                   username={this.state.username}
-                  immer={this.state.data.domain} lockImmer
+                  immer={this.state.data.domain}
+                  invalid={handleTaken}
+                  lockImmer
                 />
                 {/* hidden & defaults to username, use custom css to reveal if wanted */}
                 <div className='form-item none'>
@@ -346,14 +351,14 @@ class Login extends React.Component {
                     title='Letters, numbers, spaces, &amp; dashes only, between 3 and 32 characters'
                   />
                 </div>
-                <EmailInput />
+                <EmailInput invalid={emailTaken} />
                 <PasswordInput />
-                <GlitchError show={this.state.takenError}>
+                <FormError show={this.state.takenError}>
                   {this.state.takenMessage}
-                </GlitchError>
-                <GlitchError show={this.state.registrationError}>
+                </FormError>
+                <FormError show={this.state.registrationError}>
                   An error occured. Please try again.
-                </GlitchError>
+                </FormError>
                 <div className={c({ 'form-item': true, hidden: !this.state.registrationSuccess })}>
                   Account created. Redirecting to destination.
                 </div>
@@ -368,9 +373,9 @@ class Login extends React.Component {
               <p>Enter your email to request a password reset link.</p>
               <form action='/auth/forgot' method='post' onSubmit={this.handleForgot}>
                 <EmailInput />
-                <GlitchError show={this.state.forgotError}>
+                <FormError show={this.state.forgotError}>
                   Something went wrong. Please try again.
-                </GlitchError>
+                </FormError>
                 <div className={c({ 'form-item': true, hidden: !this.state.emailed })}>
                   Email sent. You may close this tab.
                 </div>

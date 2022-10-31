@@ -4,7 +4,7 @@ import { IntlProvider } from 'react-intl'
 import c from 'classnames'
 import HandleInput from '../components/HandleInput'
 import Layout from '../components/Layout'
-import GlitchError from '../components/GlitchError'
+import FormError from '../components/FormError'
 
 const mountNode = document.getElementById('app')
 ReactDOM.render(<OidcInterstitial />, mountNode)
@@ -69,13 +69,13 @@ function OidcInterstitial () {
             Please choose a username to complete your registration.
           </p>
           <form action='/auth/oidc-interstitial' method='post' onSubmit={handleSubmit}>
-            <HandleInput onChange={handleUsername} username={username} immer={domain} lockImmer />
-            <GlitchError show={takenMessage}>
+            <HandleInput onChange={handleUsername} username={username} immer={domain} invalid={takenMessage} lockImmer />
+            <FormError show={takenMessage}>
               {takenMessage}
-            </GlitchError>
-            <GlitchError show={registrationError}>
+            </FormError>
+            <FormError show={registrationError}>
               An error occured. Please try again.
-            </GlitchError>
+            </FormError>
             <p className={c({ hidden: !sessionInavlid })}>
               We cannot process your request, please <a href='/auth/login'>login again</a>.
             </p>

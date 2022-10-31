@@ -110,6 +110,10 @@ $semantic-root-element: '#app';
   cursor: pointer;
 }
 
+.form-feedback.error {
+  color: var(--form-element-invalid-border-color);
+}
+
 
 .form-item.emoji > div {
   display: flex;
