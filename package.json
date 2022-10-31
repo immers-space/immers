@@ -46,7 +46,6 @@
     "email-validator": "^2.0.4",
     "express": "^4.17.3",
     "express-session": "^1.17.2",
-    "grapheme-splitter": "^1.0.4",
     "jsonwebtoken": "^8.5.1",
     "migrate-mongo": "^8.2.3",
     "mongodb": "^4.4.1",

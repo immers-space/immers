@@ -1,8 +1,6 @@
 import React from 'react'
 import c from 'classnames'
-import { Picker, Emoji, emojiI18n } from './Emojis'
-import GraphemeSplitter from 'grapheme-splitter'
-const splitter = new GraphemeSplitter()
+import { Picker, emojiI18n } from './Emojis'
 
 export default class PasswordInput extends React.Component {
   constructor (props) {
@@ -13,7 +11,8 @@ export default class PasswordInput extends React.Component {
       showPicker: false,
       reveal: false,
       password: '',
-      narrowPicker: window.innerWidth < 470
+      narrowPicker: window.innerWidth < 470,
+      hideTimeout: null
     }
     this.handleEmojiSelect = this.handleEmojiSelect.bind(this)
     this.handleClickOutside = this.handleClickOutside.bind(this)
@@ -27,26 +26,19 @@ export default class PasswordInput extends React.Component {
 
   handleClickOutside (event) {
     if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
-      this.setState({ showPicker: false })
+      // on a delay so that it doesn't move the login button out from under your click
+      const hideTimeout = window.setTimeout(() => this.setState({ showPicker: false }), 250)
+      this.setState({ hideTimeout })
     }
   }
 
   handleFocus () {
     if (!this.state.showPicker) {
-      this.setState({ showPicker: true })
+      if (this.state.hideTimeout) {
+        window.clearTimeout(this.state.hideTimeout)
+      }
+      this.setState({ showPicker: true, hideTimeout: null })
     }
-  }
-
-  renderPassword (pass) {
-    const chars = splitter.splitGraphemes(pass)
-    return chars.map((char, i) => (
-      <Emoji
-        key={`${i}`}
-        native={char}
-        set='apple'
-        size={24}
-      />
-    ))
   }
 
   render () {
@@ -62,7 +54,7 @@ export default class PasswordInput extends React.Component {
             <input
               id='password' className='with-feedback'
               ref={this.inputRef}
-              type='password' name='password'
+              type={this.state.reveal ? 'text' : 'password'} name='password'
               required pattern='.{3,32}'
               title='Between 3 and 32 characters'
               value={this.state.password}
@@ -77,9 +69,6 @@ export default class PasswordInput extends React.Component {
             >
               {this.state.reveal ? '🔒' : '👁️'}
             </span>
-            <div className='reveal-pass' onMouseDown={e => e.preventDefault()}>
-              {this.state.reveal && this.renderPassword(this.state.password)}
-            </div>
           </div>
         </div>
         <div
