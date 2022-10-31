@@ -10,14 +10,32 @@ import { AvatarPreview } from '../components/AvatarPreview'
 import { immersClient, useProfile } from './utils/immersClient'
 import { ImmersClient } from 'immers-client'
 import LayoutLoader from '../components/LayoutLoader'
+import EmojiButton from '../components/EmojiButton'
+import { Emoji } from '../components/Emojis'
 
 export default function Profile ({ taskbarButtons }) {
   const { actor } = useParams()
   const navigate = useNavigate()
   const myProfile = useProfile()
   const [profile, setProfile] = useState()
+  const [isEditing, setIsEditing] = useState(false)
+  const [displayName, setDisplayName] = useState('')
+  const [bio, setBio] = useState('')
   const isMyProfile = myProfile?.username === actor
   const tabs = [{ path: 'Outbox' }]
+  const onDisplayNameChange = (event) => {
+    setDisplayName(event.target.value)
+  }
+  const onBioChange = (event) => {
+    setBio(event.target.value)
+  }
+  const onSave = () => {
+    immersClient.updateProfileInfo({
+      displayName,
+      bio
+    })
+    setIsEditing(false)
+  }
   let buttons
 
   if (isMyProfile) {
@@ -27,8 +45,15 @@ export default function Profile ({ taskbarButtons }) {
       { label: 'My Destinations', path: 'Destinations' },
       { label: 'Friends Destinations', path: 'FriendsDestinations' }
     )
-    // TODO: edit profile
-    // buttons = <EmojiButton emoji='pencil2' title='Edit profile' />
+
+    if (isEditing) {
+      buttons = [
+        <EmojiButton key='save' emoji='floppy_disk' title='Save' onClick={() => onSave()} />,
+        <EmojiButton key='cancel' emoji='x' title='Cancel' onClick={() => setIsEditing(false)} />
+      ]
+    } else {
+      buttons = <EmojiButton emoji='pencil2' title='Edit profile' onClick={() => setIsEditing(true)} />
+    }
   }
   const { params: { currentTab } } = useMatch('/u/:actor/:currentTab') || { params: {} }
 
@@ -47,6 +72,12 @@ export default function Profile ({ taskbarButtons }) {
       navigate(`/u/${actor}/${tabs[0].path}`, { replace: true })
     }
   }, [currentTab, tabs])
+  useEffect(() => {
+    if (isEditing) {
+      setDisplayName(profile.displayName)
+      setBio(profile.bio)
+    }
+  }, [isEditing])
   if (!profile) {
     return (
       <LayoutLoader contentTitle='Immers Profile' />
@@ -57,7 +88,16 @@ export default function Profile ({ taskbarButtons }) {
       <div className='profile'>
         <div className='userContainer'>
           <hgroup>
-            <h2 className='displayName'>{profile.displayName}</h2>
+            {isEditing
+              ? (
+                <label className='editable'>
+                  <span aria-hidden='true'>
+                    <Emoji emoji='pencil2' size={16} set='apple' />
+                  </span>
+                  <input value={displayName} aria-label='Edit your display name' onChange={onDisplayNameChange} />
+                </label>
+                )
+              : <h2 className='displayName'>{profile.displayName}</h2>}
             <h3>
               <ImmersHandle id={profile.id} preferredUsername={profile.username} />
             </h3>
@@ -65,7 +105,16 @@ export default function Profile ({ taskbarButtons }) {
           <section data-label='Avatar'>
             <AvatarPreview icon={profile.avatarImage} avatar={profile.avatarObject} />
           </section>
-          <section className='profileSummary'>{profile.bio}</section>
+          {isEditing
+            ? (
+              <label className='editable'>
+                <span aria-hidden='true'>
+                  <Emoji emoji='pencil2' size={16} set='apple' />
+                </span>
+                <textarea className='profileSummary' value={bio} aria-label='Edit your bio' onChange={onBioChange} />
+              </label>
+              )
+            : <section className='profileSummary'>{profile.bio}</section>}
         </div>
         <div>
           <nav className='tabs'>

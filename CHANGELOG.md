@@ -1,3 +1,10 @@
+## Unreleased
+
+### Added
+
+* Profile pages - Profile editing: Users can now edit their Display name and Bio from the web interface.
+* Profile pages - Remove avatar: Users can now remove Avatar models from their Avatar collection from the web interface (Does not delete the Avatar).
+
 ## v3.6.0 (2022-10-11)
 
 ### Changed

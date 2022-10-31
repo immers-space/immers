@@ -5,6 +5,10 @@ body {
   margin: 0;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 /* trim a little of spacing around the site title */
 #app>header {
   padding-bottom: 0;
@@ -70,7 +74,6 @@ body {
 //   width: min(calc(100% - 2px), calc(80ch + 40px));
 //   flex-shrink: 0;
 // }
-
 
 // .content form {
 //   margin: 20px;
@@ -143,6 +146,10 @@ body {
 //   right: 5px;
 // }
 
+.flex {
+  display: flex;
+}
+
 .hidden {
   visibility: hidden;
   height: 0;
@@ -152,6 +159,34 @@ body {
 
 .hidden label, .hidden input {
   height: 0;
+}
+
+.visually-hidden {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: auto;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+  white-space: nowrap;
+}
+
+.editable {
+  display: flex;
+  align-items: center;
+
+  span[aria-hidden=true] {
+    margin-right: 10px;
+    /* keep the input centered in the column by offsetting the emoji */
+    margin-left: -24px;
+  }
+
+  input,
+  textarea {
+    outline: 1px solid red;
+  }
 }
 
 .none {

@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "standard",
-    "dev:server": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 node index.js",
+    "dev:server": "webpack build --mode development && cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 node index.js",
     "dev:client": "webpack watch --mode development",
     "build:client": "webpack build --mode production --devtool source-map",
     "start": "cross-env NODE_ENV=production node index.js",
@@ -89,7 +89,7 @@
     "emoji-mart": "^5.2.2",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.5.0",
-    "immers-client": "^2.8.0",
+    "immers-client": "^2.10.0",
     "mini-css-extract-plugin": "^2.6.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
