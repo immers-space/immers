@@ -1,6 +1,19 @@
 $semantic-root-element: '#app';
 @import "@picocss/pico/scss/pico";
 
+body {
+  margin: 0;
+}
+
+/* trim a little of spacing around the site title */
+#app>header {
+  padding-bottom: 0;
+  h1 {
+    font-size: 3rem;
+    line-height: 1;
+  }
+}
+
 // body, input {
 //   font-family: 'VT323', monospace;
 //   font-size: 24px;
