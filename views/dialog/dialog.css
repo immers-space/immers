@@ -1,6 +1,7 @@
 #roleOptions {
   display: flex;
   justify-content: space-around;
+  margin-bottom: var(--block-spacing-vertical);
 }
 
 .roleOption {
@@ -9,14 +10,8 @@
 
 .roleOption input {
   display: block;
-  width: 100%;
+  margin: 0 auto;
   height: 24px;
-}
-
-.permissionsInfo {
-  display: inline-block;
-  width: 50%;
-  vertical-align: top;
 }
 
 .permissionsHeader {
@@ -24,11 +19,13 @@
 }
 
 .permissionsContainer {
-  margin-top: 15px;
+  /* keep the li markers off the edge */
+  margin-left: var(--spacing);
 }
 
-.permissionsInfo li {
-  font-size: 20px;
-  line-height: 80%;
-  padding-bottom: 3px;
+/* lower the min width for horizontal grid for this view */
+@media (min-width: 768px) {
+  #authorization-dialog .grid {
+      grid-template-columns: repeat(auto-fit, minmax(0%, 1fr));
+  }
 }
