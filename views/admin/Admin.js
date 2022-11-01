@@ -32,9 +32,9 @@ export default function Admin ({ taskbarButtons }) {
 
   function buttonHandler () {
     if (!loading && mode !== modes.NEW_OAUTH_CLIENT) {
-      setButtons(<EmojiButton emoji='heavy_plus_sign' title='Add OpenID connect Client' onClick={handleNewOauth} />)
+      setButtons(<EmojiButton emoji='heavy_plus_sign' title='Add OpenID connect Client' tipSide='left' onClick={handleNewOauth} />)
     } else if (!loading && mode !== modes.LIST_OAUTH_CLIENTS) {
-      setButtons(<EmojiButton emoji='back' title='List OpenID Connect Clients' onClick={handleListOauth} />)
+      setButtons(<EmojiButton emoji='back' title='List OpenID Connect Clients' tipSide='left' onClick={handleListOauth} />)
     } else {
       setButtons(null)
     }

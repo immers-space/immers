@@ -24,6 +24,7 @@
 .postBody {
   overflow-wrap: break-word;
   overflow: hidden;
+  margin-bottom: 0;
 }
 
 .postBody .centered {

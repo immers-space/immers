@@ -18,6 +18,8 @@ $mobile-cutoff: 768px;
   --enter-button-backround-color: var(--primary);
   --enter-button-border-color: var(--primary);
   --enter-button-color: var(--primary-inverse);
+  --main-title-color: var(--h1-color);
+  --backdrop-filter: none;
 }
 
 body {
@@ -40,6 +42,7 @@ body.modal-open {
 #app>header {
   padding-bottom: 0;
   h1 {
+    --h1-color: var(--main-title-color);
     font-size: 3rem;
     line-height: 1;
     margin-bottom: 0;
@@ -57,8 +60,9 @@ body.modal-open {
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: cover;
-  background-color: var(----backdrop-color);
+  background-color: var(--backdrop-color);
   background-image: var(--backdrop-image-url);
+  filter: var(--backdrop-filter);
   z-index: -1;
 }
 
@@ -247,7 +251,7 @@ section[data-label] {
     position: absolute;
     top: -0.75rem;
     left: 0.5rem;
-    background-color: var(--background-color);
+    background-color: var(--card-background-color);
     padding: 0 var(--spacing);
   }
 }

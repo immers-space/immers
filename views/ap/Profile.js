@@ -48,11 +48,11 @@ export default function Profile ({ taskbarButtons }) {
 
     if (isEditing) {
       buttons = [
-        <EmojiButton key='save' emoji='floppy_disk' title='Save' onClick={() => onSave()} />,
-        <EmojiButton key='cancel' emoji='x' title='Cancel' onClick={() => setIsEditing(false)} />
+        <EmojiButton key='save' emoji='floppy_disk' title='Save' tipSide='left' onClick={() => onSave()} />,
+        <EmojiButton key='cancel' emoji='x' title='Cancel' tipSide='left' onClick={() => setIsEditing(false)} />
       ]
     } else {
-      buttons = <EmojiButton emoji='pencil2' title='Edit profile' onClick={() => setIsEditing(true)} />
+      buttons = <EmojiButton emoji='pencil2' title='Edit profile' tipSide='left' onClick={() => setIsEditing(true)} />
     }
   }
   const { params: { currentTab } } = useMatch('/u/:actor/:currentTab') || { params: {} }

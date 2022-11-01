@@ -1,5 +1,9 @@
 <!DOCTYPE html>
+{% if baseTheme %}
+<html data-theme="{{ baseTheme }}" style="background-color: {{ backgroundColor }};">
+{% else %}
 <html style="background-color: {{ backgroundColor }};">
+{% endif %}
   <head>
     <script>
       window._serverData = {
