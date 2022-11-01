@@ -1,5 +1,24 @@
 $semantic-root-element: '#app';
+$mobile-cutoff: 768px;
 @import "@picocss/pico/scss/pico";
+
+:root {
+  /** pico CSS tweaks **/
+  --spacing: 0.5rem;
+  /** new variables **/
+  --nav-background-color: var(--background-color);
+  --nav-box-shadow: var(--card-box-shadow);
+  --tab-border-radius: var(--border-radius);
+  --emoji-button-spacing: var(--spacing);
+  --emoji-button-background-color: transparent;
+  --emoji-button-color: var(--secondary);
+  --emoji-button-border-color: var(--secondary);
+  --attribution-link-color: var(--secondary);
+  --offset-for-navbar-height: 3.5rem;
+  --enter-button-backround-color: var(--primary);
+  --enter-button-border-color: var(--primary);
+  --enter-button-color: var(--primary-inverse);
+}
 
 body {
   margin: 0;
@@ -7,6 +26,14 @@ body {
 
 body.modal-open {
   overflow: hidden;
+}
+
+#app {
+  /* this rule is necessary to keep the navbar from scrolling off the bottom in mobile */
+  overflow: auto;
+  @media screen and (max-width: $mobile-cutoff) {
+    overflow-x: hidden;
+  }
 }
 
 /* trim a little of spacing around the site title */
@@ -19,17 +46,6 @@ body.modal-open {
     text-align: center;
   }
 }
-
-// body, input {
-//   font-family: 'VT323', monospace;
-//   font-size: 24px;
-// }
-
-// h1 {
-//   font-family: 'VT323', monospace;
-//   font-size: 80px;
-//   margin: 0;
-// }
 
 .background-image {
   position: fixed;
@@ -60,60 +76,6 @@ body.modal-open {
   bottom: var(--offset-for-navbar-height);
 }
 
-// .content {
-//  height: 100%;
-//  display: flex;
-//  flex-direction: column;
-//  align-items: center;
-//  justify-content: space-around;
-// }
-
-// .main-content {
-//   z-index: 5;
-//   min-width: 670px;
-//   width: min(calc(100% - 2px), calc(80ch + 40px));
-//   flex-shrink: 0;
-// }
-
-// .content form {
-//   margin: 20px;
-//   /* transition: all 1s; */
-// }
-
-// .form-item {
-//   height: 60px;
-//   padding: 0;
-//   display: flex;
-//   justify-content: space-between;
-//   align-items: center;
-// }
-
-// .form-footer {
-//   margin: 0 20px;
-//   max-width: 590px;
-// }
-// .form-item, .form-item label, .form-item input {
-//   transition: all 0.5s ease-in-out;
-//   overflow: hidden;
-//   box-sizing: border-box;
-// }
-
-// .form-item input, .form-item label {
-//   height: 35px;
-//   margin: 1px;
-// }
-
-// .form-item label {
-//   padding-right: 5px;
-// }
-
-// .form-item input {
-//   width: 400px;
-//   padding-left: 5px;
-//   margin-right: 10px;
-//   flex-shrink: 0;
-// }
-
 .form-item input.with-feedback {
   padding-right: 30px;
 }
@@ -140,11 +102,6 @@ body.modal-open {
 .form-item.emoji.hidden {
   height: 0;
 }
-
-// #registration-domain-cue {
-//   position: absolute;
-//   right: 5px;
-// }
 
 .flex {
   display: flex;
@@ -220,47 +177,6 @@ body.modal-open {
   vertical-align: middle;
 }
 
-// /* to make alignment easier */
-// .handle-bracket {
-//   display: inline-block;
-//   width: 10px;
-// }
-
-// /* okay we're all sick of the flicker */
-// .aesthetic-effect-crt::after {
-//   animation: none !important;
-// }
-
-// .aesthetic-windows-95-taskbar {
-//   position: fixed;
-//   bottom: 0;
-//   right: 0;
-//   left: 0;
-//   z-index: 10;
-//   height: 35px;
-//   width: auto;
-// }
-
-// .aesthetic-windows-95-taskbar .aesthetic-windows-95-taskbar-start {
-//   padding: 0;
-//   width: auto;
-// }
-
-// .aesthetic-windows-95-taskbar .aesthetic-windows-95-taskbar-start button,
-// .aesthetic-windows-95-taskbar .aesthetic-windows-95-taskbar-start a,
-// .aesthetic-windows-95-taskbar .aesthetic-windows-95-taskbar-start a:visited {
-//   padding: 4px;
-//   text-decoration: none;
-//   color: #000;
-// }
-
-// .aesthetic-windows-95-taskbar-services > * {
-//   margin-right: 4px;
-// }
-// .aesthetic-windows-95-taskbar-services > *:last-child {
-//   margin-right: 0;
-// }
-
 .immers-icon {
   width: 28px;
   height: 28px;
@@ -273,81 +189,14 @@ body.modal-open {
   flex-direction: column;
 }
 
-// @media (prefers-reduced-motion: reduce) {
-//   .aesthetic-effect-crt::after,
-//   .aesthetic-effect-text-glitch::before,
-//   .aesthetic-effect-text-glitch::after {
-//     animation: none !important;
-//   }
-// }
-
-// @media screen and (max-width: 679px) {
-//   body, html, .content {
-//     height: unset;
-//   }
-//   h1 {
-//     font-size: 40px;
-//   }
-//   .main-content {
-//     min-width: unset;
-//     width: calc(100% - 2px);
-//     margin-left: 0;
-//     margin-right: 0;
-//     padding-left: 0;
-//     padding-right: 0;
-//   }
-//   .form-item {
-//     height: auto;
-//     flex-wrap: wrap;
-//   }
-//   .form-item input, .form-item input.handle, .home-label {
-//     width: calc(100vw - 40px);
-//   }
-//   .reveal-pass {
-//     width: calc(100vw - 75px);
-//   }
-//   .handle-bracket {
-//     display: none;
-//   }
-//   /* #immer {
-//     width: calc(100vw - 60px);
-//   } */
-  .form-item.hidden {
-    height: 0;
-  }
-//   .form-footer, .content form {
-//     margin: 0;
-//   }
-//   .form-item .home-label {
-//     display: block;
-//   }
-//   .aesthetic-windows-95-button {
-//     margin-top: 5px;
-//   }
-//   .main-content {
-//     margin-bottom: 45px;
-//   }
-// }
-
-:root {
-  /** pico CSS tweaks **/
-  --spacing: 0.5rem;
-  /** new variables **/
-  --nav-background-color: var(--background-color);
-  --nav-box-shadow: var(--card-box-shadow);
-  --tab-border-radius: var(--border-radius);
-  --emoji-button-spacing: var(--spacing);
-  --emoji-button-background-color: transparent;
-  --emoji-button-color: var(--secondary);
-  --emoji-button-border-color: var(--secondary);
-  --attribution-link-color: var(--secondary);
-  --offset-for-navbar-height: 3.5rem;
+.form-item.hidden {
+  height: 0;
 }
 
 #app > nav {
   z-index: 99;
   position: fixed;
-  inset: auto 0 0 0;
+  inset: auto 0 -1px 0;
   background-color: var(--nav-background-color);
   box-shadow: var(--nav-box-shadow);
 }
@@ -358,6 +207,12 @@ nav ul.navbar-actions {
   margin: var(--nav-element-spacing-vertical) 0;
   border: var(--border-width) solid var(--secondary);
   border-radius: var(--border-radius);
+}
+
+nav .enter-button {
+  --background-color: var(--enter-button-backround-color);
+  --border-color: var(--enter-button-border-color);
+  --color: var(--enter-button-color);
 }
 
 main.with-taskbar {
@@ -378,17 +233,6 @@ main > article > header {
   h2 {
     --typography-spacing-vertical: 0;
     --font-size: 1rem;
-  }
-}
-
-
-/*** app design ***/
-$mobile-cutoff: 768px;
-
-body {
-  width: 100%;
-  @media screen and (max-width: $mobile-cutoff) {
-    margin: 0;
   }
 }
 

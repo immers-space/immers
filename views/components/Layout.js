@@ -46,7 +46,7 @@ export default function Layout (props) {
         <nav className='container-fluid'>
           <ul>
             <li>
-              <a role='button' href={`//${data.hub}`}>
+              <a className='enter-button' role='button' href={`//${data.hub}`}>
                 <img src={data.icon ?? immersIcon} className='immers-icon' />Enter {data.name}
               </a>
             </li>
