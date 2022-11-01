@@ -1,6 +1,4 @@
 import React, { useEffect, useRef } from 'react'
-import EmojiButton from '../components/EmojiButton'
-import './DialogModal.css'
 
 const DialogModal = ({
   title,
@@ -31,30 +29,20 @@ const DialogModal = ({
 
   return (
     <dialog ref={ref} onCancel={onClose} onClick={onClose} className='aesthetic-windows-95-modal'>
-      <div onClick={preventAutoClose}>
-        <div className='aesthetic-windows-95-modal-title-bar'>
-          <div className='aesthetic-windows-95-modal-title-bar-text'>{title}</div>
-          <div className='aesthetic-windows-95-modal-title-bar-controls'>
-            <div className='aesthetic-windows-95-button-title-bar'>
-              <EmojiButton emoji='x' title='Cancel' onClick={() => onClose()} />
-            </div>
-          </div>
-        </div>
-        <div className='aesthetic-windows-95-modal-content'>
-          <p>{description}</p>
-          <div className='aesthetic-windows-95-container-indent'>
-            {children}
-          </div>
-        </div>
-        <div className='actionButtons'>
-          <div className='aesthetic-windows-95-button'>
-            <button onClick={proceedAndClose}>Remove</button>
-          </div>
-          <div className='flex aesthetic-windows-95-button'>
-            <button onClick={onClose}>Cancel</button>
-          </div>
-        </div>
-      </div>
+      <article onClick={preventAutoClose}>
+        <header>
+          <a className='close' href='#close_modal' aria-label='Cancel' onClick={() => onClose()} />
+          <h3>{title}</h3>
+        </header>
+        <p>{description}</p>
+        <section>
+          {children}
+        </section>
+        <footer>
+          <a role='button' href='#cancel' class='secondary' onClick={onClose}>Cancel</a>
+          <a role='button' href='#remove' onClick={proceedAndClose}>Remove</a>
+        </footer>
+      </article>
     </dialog>
   )
 }
