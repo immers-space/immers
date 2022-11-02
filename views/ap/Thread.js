@@ -4,7 +4,7 @@ import Layout from '../components/Layout'
 import Post from './Post'
 import { immersClient } from './utils/immersClient'
 import { useParams } from 'react-router-dom'
-import LayoutLoader from "../components/LayoutLoader"
+import LayoutLoader from '../components/LayoutLoader'
 
 export default function Thread ({ taskbarButtons }) {
   const { activityId } = useParams()
