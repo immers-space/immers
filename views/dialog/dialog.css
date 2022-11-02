@@ -22,6 +22,11 @@
   margin-left: var(--spacing);
 }
 
+.permissionsContainer li {
+  font-size: smaller;
+  margin-bottom: 0;
+}
+
 /* lower the min width for horizontal grid for this view */
 @media (min-width: 768px) {
   #authorization-dialog .grid {

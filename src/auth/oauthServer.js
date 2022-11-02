@@ -21,6 +21,8 @@ const {
   googleFont,
   backgroundColor,
   backgroundImage,
+  baseTheme,
+  customCSS,
   icon,
   imageAttributionText,
   imageAttributionUrl
@@ -127,6 +129,8 @@ function renderAuthorizationDialog (request, response) {
     googleFont,
     backgroundColor,
     backgroundImage,
+    baseTheme,
+    customCSS,
     icon,
     imageAttributionText,
     imageAttributionUrl
