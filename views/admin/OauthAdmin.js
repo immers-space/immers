@@ -14,9 +14,9 @@ export default function OAuthAdmin ({ taskbarButtons }) {
   const [buttons, setButtons] = useState(null)
   useEffect(() => {
     if (mode !== modes.NEW_OAUTH_CLIENT) {
-      setButtons(<EmojiButton emoji='back' title='Admin Home' to='..' />)
+      setButtons(<EmojiButton emoji='back' title='Admin Home' tipSide='left' to='..' />)
     } else if (mode !== modes.LIST_OAUTH_CLIENTS) {
-      setButtons(<EmojiButton emoji='back' title='List OpenID Connect Clients' onClick={handleListOauth} />)
+      setButtons(<EmojiButton emoji='back' title='List OpenID Connect Clients' tipSide='left' onClick={handleListOauth} />)
     } else {
       setButtons(null)
     }

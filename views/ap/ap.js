@@ -33,13 +33,13 @@ function Root () {
 
   const taskbarButtons = []
   if (isAdmin) {
-    taskbarButtons.push(<EmojiLink key='admin' emoji='princess' to='/admin' title='Administrator Settings' />)
+    taskbarButtons.push(<EmojiLink key='admin' emoji='princess' to='/admin' title='Administrator Settings' tipSide='left' />)
   }
   if (dataContext.loggedInUser) {
-    taskbarButtons.push(<EmojiLink key='logout' emoji='end' href='/auth/logout' title='Logout' />)
+    taskbarButtons.push(<EmojiLink key='logout' emoji='end' href='/auth/logout' title='Logout' tipSide='left' />)
   } else {
     // login button
-    taskbarButtons.push(<EmojiLink key='login' emoji='passport_control' href='/auth/login' title='Log in' />)
+    taskbarButtons.push(<EmojiLink key='login' emoji='passport_control' href='/auth/login' title='Log in' tipSide='left' />)
   }
 
   useEffect(() => {

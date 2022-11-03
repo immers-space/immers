@@ -6,7 +6,7 @@ import Layout from '../components/Layout'
 
 export default function AdminNavigation ({ taskbarButtons }) {
   const { loggedInUser } = useContext(ServerDataContext)
-  const buttons = <EmojiButton emoji='back' title='Back to Profile' to={`/u/${loggedInUser}`} />
+  const buttons = <EmojiButton emoji='back' title='Back to Profile' tipSide='left' to={`/u/${loggedInUser}`} />
   return (
     <Layout contentTitle='Immers Admin' buttons={buttons} taskbar taskbarButtons={taskbarButtons}>
       <aside>
