@@ -178,7 +178,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
                 value={clientSecret}
               />
             </label>
-            <fieldset class='outline'>
+            <fieldset className='outline'>
               <legend>Optional Login Button</legend>
               <label>
                 <input

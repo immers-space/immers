@@ -37,10 +37,10 @@ export default function Post ({ id, type, actor, summary, object = {}, target, p
           <Timestamp id={id} published={published} />
         </header>
 
-        <p className='postBody'>
+        <div className='postBody'>
           {includeSummaryWithBody && <SanitizedHTML className='bodySummary' html={summary} />}
           {body}
-        </p>
+        </div>
       </article>
     )
   }
@@ -54,9 +54,9 @@ export default function Post ({ id, type, actor, summary, object = {}, target, p
           </a>
           <Timestamp id={id} published={published} />
         </div>
-        <p className='lesserPost'>
+        <div className='lesserPost'>
           <SanitizedHTML className='muted' html={summary} onClick={handleImmerLink} />
-        </p>
+        </div>
       </div>
     )
   }
