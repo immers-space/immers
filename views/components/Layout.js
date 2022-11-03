@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import c from 'classnames'
 import '../assets/immers.scss'
 import immersIcon from '../assets/immers_logo.png'
@@ -8,6 +8,11 @@ export default function Layout (props) {
   const title = props.title || data.name
   const attributionUrl = props.attributionUrl || data.imageAttributionUrl
   const attribution = props.attribution || data.imageAttributionText
+  useEffect(() => {
+    if (props.contentTitle) {
+      document.title = props.contentTitle
+    }
+  }, [props.contentTitle])
   return (
     <div>
       <div className='aesthetic-effect-crt bg' />

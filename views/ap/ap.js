@@ -33,7 +33,7 @@ function Root () {
 
   const taskbarButtons = []
   if (isAdmin) {
-    taskbarButtons.push(<EmojiLink key='admin' emoji='princess' href='/admin' title='Administrator Settings' />)
+    taskbarButtons.push(<EmojiLink key='admin' emoji='princess' to='/admin' title='Administrator Settings' />)
   }
   if (dataContext.loggedInUser) {
     taskbarButtons.push(<EmojiLink key='logout' emoji='end' href='/auth/logout' title='Logout' />)
@@ -79,7 +79,7 @@ function Root () {
                 <Route path='/u/:actor/*' element={<Profile taskbarButtons={taskbarButtons} />} />
                 <Route path='/s/:activityId' element={<Thread taskbarButtons={taskbarButtons} />} />
                 <Route path='/o/:objectId' element={<ObjectView taskbarButtons={taskbarButtons} />} />
-                <Route path='/admin' element={<Admin taskbarButtons={taskbarButtons} />} />
+                <Route path='/admin/*' element={<Admin taskbarButtons={taskbarButtons} />} />
               </Routes>
               )}
         </BrowserRouter>
