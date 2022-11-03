@@ -6,7 +6,7 @@ export default function ProviderLogin ({ providerDomain, buttonIcon, buttonLabel
       data-provider={providerDomain}
       {...rest}
     >
-      {buttonIcon && <img class='immers-icon' src={buttonIcon} />}
+      {buttonIcon && <img className='immers-icon' src={buttonIcon} />}
       {buttonLabel}
     </button>
   )

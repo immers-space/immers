@@ -39,7 +39,7 @@ const DialogModal = ({
           {children}
         </section>
         <footer>
-          <a role='button' href='#cancel' class='secondary' onClick={onClose}>Cancel</a>
+          <a role='button' href='#cancel' className='secondary' onClick={onClose}>Cancel</a>
           <a role='button' href='#remove' onClick={proceedAndClose}>Remove</a>
         </footer>
       </article>
