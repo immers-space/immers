@@ -33,14 +33,6 @@ body.modal-open {
   overflow: hidden;
 }
 
-#app {
-  /* this rule is necessary to keep the navbar from scrolling off the bottom in mobile */
-  overflow: auto;
-  @media screen and (max-width: $mobile-cutoff) {
-    overflow-x: hidden;
-  }
-}
-
 /* trim a little of spacing around the site title */
 #app>header {
   padding-bottom: 0;
