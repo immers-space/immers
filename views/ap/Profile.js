@@ -13,6 +13,8 @@ import LayoutLoader from '../components/LayoutLoader'
 import EmojiButton from '../components/EmojiButton'
 import { Emoji } from '../components/Emojis'
 
+const checkNameValid = displayName => /^[A-Za-z0-9-]{3,32}$/.test(displayName)
+
 export default function Profile ({ taskbarButtons }) {
   const { actor } = useParams()
   const navigate = useNavigate()
@@ -48,7 +50,7 @@ export default function Profile ({ taskbarButtons }) {
 
     if (isEditing) {
       buttons = [
-        <EmojiButton key='save' emoji='floppy_disk' title='Save' tipSide='left' onClick={() => onSave()} />,
+        <EmojiButton key='save' emoji='floppy_disk' title='Save' tipSide='left' onClick={() => onSave()} disabled={!checkNameValid(displayName)} />,
         <EmojiButton key='cancel' emoji='x' title='Cancel' tipSide='left' onClick={() => setIsEditing(false)} />
       ]
     } else {
@@ -94,7 +96,14 @@ export default function Profile ({ taskbarButtons }) {
                   <span aria-hidden='true'>
                     <Emoji emoji='pencil2' size={16} set='apple' />
                   </span>
-                  <input value={displayName} aria-label='Edit your display name' onChange={onDisplayNameChange} />
+                  <input
+                    value={displayName}
+                    required
+                    pattern='^[A-Za-z0-9-]{3,32}$'
+                    aria-label='Edit your display name'
+                    aria-invalid={!checkNameValid(displayName)}
+                    onChange={onDisplayNameChange}
+                  />
                 </label>
                 )
               : <h3 className='displayName'>{profile.displayName}</h3>}
@@ -111,7 +120,13 @@ export default function Profile ({ taskbarButtons }) {
                 <span aria-hidden='true'>
                   <Emoji emoji='pencil2' size={16} set='apple' />
                 </span>
-                <textarea className='profileSummary' value={bio} aria-label='Edit your bio' onChange={onBioChange} />
+                <textarea
+                  className='profileSummary'
+                  value={bio}
+                  aria-label='Edit your bio'
+                  aria-invalid='false'
+                  onChange={onBioChange}
+                />
               </label>
               )
             : <section className='profileSummary'>{profile.bio}</section>}

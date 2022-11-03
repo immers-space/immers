@@ -131,7 +131,9 @@ body.modal-open {
 
 .editable {
   display: flex;
-  align-items: center;
+  align-items: baseline;
+  justify-content: center;
+  width: 100%;
 
   span[aria-hidden=true] {
     margin-right: 10px;
@@ -141,8 +143,16 @@ body.modal-open {
 
   input,
   textarea {
-    outline: 1px solid red;
+    text-align: center;
   }
+
+  textarea.profileSummary {
+    width: calc(100% - 50px);
+  }
+}
+
+section.profileSummary {
+  white-space: pre-line;
 }
 
 .none {
