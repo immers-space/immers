@@ -1,5 +1,5 @@
 .modelActionButtons {
-  inset: 0 0 auto auto;
+  inset: 2px 2px auto auto;
   position: absolute;
   display: flex;
   gap: 10px;

@@ -64,8 +64,7 @@ a.timestamp:hover {
 }
 
 .muted {
-  color: var(--secondary);
-
+  color: var(--muted-color);
 }
 
 @media screen and (max-width: 679px) {

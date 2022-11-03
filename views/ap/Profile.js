@@ -97,10 +97,10 @@ export default function Profile ({ taskbarButtons }) {
                   <input value={displayName} aria-label='Edit your display name' onChange={onDisplayNameChange} />
                 </label>
                 )
-              : <h2 className='displayName'>{profile.displayName}</h2>}
-            <h3>
+              : <h3 className='displayName'>{profile.displayName}</h3>}
+            <h4>
               <ImmersHandle id={profile.id} preferredUsername={profile.username} />
-            </h3>
+            </h4>
           </hgroup>
           <section data-label='Avatar'>
             <AvatarPreview icon={profile.avatarImage} avatar={profile.avatarObject} />

@@ -9,17 +9,20 @@ $mobile-cutoff: 768px;
   --nav-background-color: var(--background-color);
   --nav-box-shadow: var(--card-box-shadow);
   --tab-border-radius: var(--border-radius);
+  --tab-box-shadow: none;
   --emoji-button-spacing: var(--spacing);
   --emoji-button-background-color: transparent;
   --emoji-button-color: var(--secondary);
   --emoji-button-border-color: var(--secondary);
   --attribution-link-color: var(--secondary);
-  --offset-for-navbar-height: 3.5rem;
+  --offset-for-navbar-height: calc(2rem + var(--nav-element-spacing-vertical) + 5px);
   --enter-button-backround-color: var(--primary);
   --enter-button-border-color: var(--primary);
   --enter-button-color: var(--primary-inverse);
   --main-title-color: var(--h1-color);
   --backdrop-filter: none;
+  --navbar-actions-border: var(--border-width) solid var(--secondary);
+  --article-sectioning-footer-color: var(--article-sectionning-color);
 }
 
 body {
@@ -206,11 +209,16 @@ body.modal-open {
 }
 
 nav ul.navbar-actions {
-  /* split the nav spacing between inside/ouside of border */
-  --nav-element-spacing-vertical: 0.5rem;
-  margin: var(--nav-element-spacing-vertical) 0;
-  border: var(--border-width) solid var(--secondary);
+  /* split the margin inside/outside of border */
+  --bordered-nav-element-spacing-vertical: calc(var(--nav-element-spacing-vertical) * 0.5);
+  margin: var(--bordered-nav-element-spacing-vertical) 0;
+  border: var(--navbar-actions-border);
   border-radius: var(--border-radius);
+  li {
+    line-height: 1;
+    padding-top: var(--bordered-nav-element-spacing-vertical);
+    padding-bottom: var(--bordered-nav-element-spacing-vertical);
+  }
 }
 
 nav .enter-button {
@@ -220,7 +228,7 @@ nav .enter-button {
 }
 
 main.with-taskbar {
-  margin-bottom: calc(var(--offset-for-navbar-height) + 0.5rem);
+  margin-bottom: calc(var(--offset-for-navbar-height) + 1rem);
 }
 
 /* avoid doubling spacing */
@@ -229,6 +237,10 @@ article:first-child {
 }
 article:last-child {
   margin-bottom: 0;
+}
+
+article > footer {
+  background-color: var(--article-sectioning-footer-color);
 }
 
 // main ui card header doesn't need so much emphasis
@@ -302,6 +314,7 @@ nav.tabs {
     width: auto;
     flex-grow: 1;
     border-radius: var(--tab-border-radius) var(--tab-border-radius) 0 0;
+    box-shadow: var(--tab-box-shadow);
     padding: var(--nav-element-spacing-vertical) var(--nav-element-spacing-horizontal);
     font-size: 0.75rem;
     border-bottom: none;
