@@ -10,23 +10,34 @@ export default function EditTheme ({ taskbarButtons }) {
   const [baseTheme, setBaseTheme] = useState(ctx.baseTheme || 'auto')
   const [customTheme, setCustomTheme] = useState(ctx.customTheme || '')
   const [saving, setSaving] = useState(false)
-  const baseThemeOpts = ['Auto', 'Light', 'Dark', 'Web95']
+  const baseThemeOpts = [
+    { label: 'Auto light/dark per user preference', value: 'auto' },
+    { label: 'Light', value: 'light' },
+    { label: 'Dark', value: 'dark' },
+    { label: 'Web95', value: 'web95' }
+  ]
   const buttons = <EmojiButton emoji='back' title='Admin Home' tipSide='left' to='..' />
   /* apply settings to page for insant preview */
   useEffect(() => {
-    if (baseTheme === 'auto') {
-      document.documentElement.removeAttribute('data-theme')
-    } else {
-      document.documentElement.setAttribute('data-theme', baseTheme)
+    const setTheme = (theme) => {
+      if (theme === 'auto') {
+        document.documentElement.removeAttribute('data-theme')
+      } else {
+        document.documentElement.setAttribute('data-theme', theme)
+      }
     }
-  }, [baseTheme])
+    setTheme(baseTheme)
+    // restore style on cancel/back
+    return () => setTheme(ctx.baseTheme)
+  }, [baseTheme, ctx])
   useEffect(() => {
-    document.querySelector('style#custom-theme')
-      .innerHTML = `:is(:root, #root) {\n${customTheme}\n}`
-  }, [customTheme])
+    const themeEl = document.querySelector('style#custom-theme')
+    themeEl.innerHTML = `:is(:root, #root) {\n${customTheme}\n}`
+    // restore style on cancel/back
+    return () => (themeEl.innerHTML = `:is(:root, #root) {\n${ctx.customTheme}\n}`)
+  }, [customTheme, ctx])
   const handleCancel = () => {
-    // force reload to restore settings
-    window.location = '/admin'
+    navigate('..')
   }
   const handleSave = async () => {
     setSaving(true)
@@ -53,16 +64,16 @@ export default function EditTheme ({ taskbarButtons }) {
       <h3>Theme Editor</h3>
       <fieldset>
         <legend>Base theme</legend>
-        {baseThemeOpts.map(themeName => (
-          <label key={themeName}>
+        {baseThemeOpts.map(({ label, value }) => (
+          <label key={value}>
             <input
               type='radio'
               name='baseTheme'
-              value={themeName.toLowerCase()}
-              checked={baseTheme === themeName.toLowerCase()}
+              value={value}
+              checked={baseTheme === value}
               onChange={handleBaseChange}
             />
-            {themeName}
+            {label}
           </label>
         ))}
       </fieldset>
