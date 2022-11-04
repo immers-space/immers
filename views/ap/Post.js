@@ -86,14 +86,14 @@ function getPostBody (object, { showAvatarControls, expandLocationPosts }, id, h
 function Timestamp ({ published, id }) {
   let timestamp
   try {
-    timestamp = new Date(published)
+    const date = new Date(published)
+    timestamp = <FormattedRelativeTime updateIntervalInSeconds={10} value={(date - Date.now()) / 1000} />
   } catch (ignore) {}
+  const url = new URL(id)
   if (published && timestamp) {
-    return (
-      <Link className='muted timestamp' to={new URL(id).pathname}>
-        <FormattedRelativeTime updateIntervalInSeconds={10} value={(timestamp - Date.now()) / 1000} />
-      </Link>
-    )
+    return url.origin === window.location.origin
+      ? <Link className='muted timestamp' to={new URL(id).pathname}>{timestamp}</Link>
+      : <a className='muted timestamp' href={id}>{timestamp}</a>
   }
   return null
 }
