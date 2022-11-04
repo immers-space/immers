@@ -5,7 +5,7 @@ import './ModelPostBody.css'
 import DialogModal from './DialogModal'
 import { immersClient, useProfile } from '../ap/utils/immersClient'
 
-export default function ModelPostBody ({ model, showControls, activityID, ...props }) {
+export default function ModelPostBody ({ model, showControls, activityID, handleRemove, ...props }) {
   const profile = useProfile()
   const [isOpened, setIsOpened] = useState(false)
   const isCurrentAvatar = profile?.avatarObject?.id === model.id
@@ -13,7 +13,11 @@ export default function ModelPostBody ({ model, showControls, activityID, ...pro
     ? 'This is your current avatar'
     : 'Make this your current avatar'
   const handleUseAvatar = () => { immersClient.useAvatar(model) }
-  const handleRemoveAvatar = () => { immersClient.removeAvatar(activityID) }
+  const handleRemoveAvatar = () => {
+    immersClient.removeAvatar(activityID)
+      // delete from display (temporary until feeds are reactive)
+      .then(() => handleRemove(activityID))
+  }
   const onProceed = () => {
     handleRemoveAvatar()
   }

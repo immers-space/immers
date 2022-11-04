@@ -6,7 +6,7 @@
 * ✏️ Profile editing: Users can now edit their Display name and Bio from the web interface.
 * 🚮 Remove avatar: Users can now remove Avatar models from their Avatar collection from the web interface (Does not delete the Avatar).
 
-## Changed
+### Changed
 
 * Total refactor of the Web client views to use Pico.css instead of aesthetic.css
   * **Breaking**: Many class and hierarchy changes, any existing customCSS will likely need refactoring (or replace via new theme editor)
@@ -15,6 +15,10 @@
   * Migrated SPA routing to `react-router` to resolve the last peer-dependency conflict
   * Dockerfile updated to build from Node 16
 * Admin routing changed: `/admin` now lists admin views, OIDC client list moved to `/admin/oidc`
+
+### Fixed
+
+* Fixed the timestamp post link not working for posts from other servers
 
 ## v3.6.0 (2022-10-11)
 
