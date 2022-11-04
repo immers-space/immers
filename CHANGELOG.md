@@ -13,6 +13,7 @@
   * **Breaking**: Default theme is now simple and modern with automatic light and dark modes. If you liked the old theme, check out our new "Web95" theme in the theme editor
 * **Breaking**: Package-lock updated to v2, recommend npm >=7/node 16 for reliable installs.
   * Migrated SPA routing to `react-router` to resolve the last peer-dependency conflict
+  * Dockerfile updated to build from Node 16
 * Admin routing changed: `/admin` now lists admin views, OIDC client list moved to `/admin/oidc`
 
 ## v3.6.0 (2022-10-11)
