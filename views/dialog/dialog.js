@@ -29,14 +29,13 @@ class Dialog extends React.Component {
     const roleLevel = this.state.roleOptions
       .find(({ name }) => name === this.state.selectedRole)
       .level
-    // const roleLevel = roles[this.state.selectedRole]
     const cans = Object.values(scopes)
       .filter(({ level }) => level <= roleLevel)
     const cannots = Object.values(scopes)
       .filter(({ level }) => level > roleLevel)
     const approvedScopes = cans.map(({ name }) => name).join(' ')
     return (
-      <div className='aesthetic-windows-95-container-indent'>
+      <div id='authorization-dialog'>
         <p>
           Hi {this.state.username}! <br />
           You're headed to {
@@ -65,7 +64,7 @@ class Dialog extends React.Component {
               </div>
             )}
           </div>
-          <div className='permissionsContainer'>
+          <div className='grid permissionsContainer'>
             <div className='permissionsInfo'>
               <div className='permissionsHeader'>CAN</div>
               <ul>
@@ -79,13 +78,9 @@ class Dialog extends React.Component {
               </ul>
             </div>
           </div>
-          <div className='form-item'>
-            <span className='aesthetic-windows-95-button'>
-              <button type='submit' name='allow' id='allow'>Allow</button>
-            </span>
-            <span className='aesthetic-windows-95-button'>
-              <button type='submit' name='cancel' value='Deny' id='deny'>Deny</button>
-            </span>
+          <div className='grid'>
+            <button type='submit' name='allow' id='allow'>Allow</button>
+            <button className='secondary' type='submit' name='cancel' value='Deny' id='deny'>Deny</button>
           </div>
         </form>
       </div>

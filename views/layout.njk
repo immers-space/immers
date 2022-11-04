@@ -1,5 +1,9 @@
 <!DOCTYPE html>
+{% if baseTheme %}
+<html data-theme="{{ baseTheme }}" style="background-color: {{ backgroundColor }};">
+{% else %}
 <html style="background-color: {{ backgroundColor }};">
+{% endif %}
   <head>
     <script>
       window._serverData = {
@@ -18,7 +22,9 @@
         preferredScope: '{{ preferredScope }}'.split(' '),
         emailOptInURL: '{{ emailOptInURL }}',
         loginTab: '{{ loginTab }}',
-        enablePublicRegistration: '{{ enablePublicRegistration }}'
+        enablePublicRegistration: '{{ enablePublicRegistration }}',
+        baseTheme: '{{ baseTheme }}',
+        customTheme: '{{ customTheme }}'
       }
       {% if icon %}window._serverData.icon = '/static/{{ icon }}'{% endif %}
     </script>
@@ -48,15 +54,18 @@
     <meta name="monetization" content="{{ monetizationPointer }}">
     {% endif %}
     <style>
-      {% if googleFont %}
-      #body h1 { font-family: '{{ googleFont }}', monospace; }
-      {% endif %}
+      :root {
       {% if backgroundImage %}
-      #body .bg { background-image: url('/static/{{ backgroundImage }}'); }
+        --backdrop-image-url: url('/static/{{ backgroundImage }}');
       {% endif %}
       {% if backgroundColor %}
-      #body .bg { background-color: {{ backgroundColor }}; }
+        --backdrop-color: {{ backgroundColor }};
       {% endif %}
+      }
+      {% if googleFont %}
+      #body h1 { --font-family: '{{ googleFont }}', monospace; }
+      {% endif %}
+
     </style>
   {% if googleFont %}
     <link href="https://fonts.googleapis.com/css2?family={{ googleFont }}&family=VT323&display=swap" rel="stylesheet">
@@ -64,6 +73,11 @@
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   {% endif %}
     {% block head %}{% endblock %}
+    <style id='custom-theme'>
+      :is(:root, #root) {
+        {{ customTheme }}
+      }
+    </style>
   </head>
   <body id="body">
     {% block content %}{% endblock %}

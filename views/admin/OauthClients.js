@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import ServerDataContext from '../ap/ServerDataContext'
-import EmojiButton from '../ap/EmojiButton'
-import './Admin.css'
+import EmojiButton from '../components/EmojiButton'
 import './OauthClients.css'
 
 export default function OauthClients ({ onEdit, onAdd }) {
@@ -28,11 +27,11 @@ export default function OauthClients ({ onEdit, onAdd }) {
 
   function Client ({ _id, name, domain }) {
     return (
-      <div>
-        <div className='postHeader'>
-          <div><strong>{name}</strong> - <em>({domain})</em></div> <div className='emojiButtonContainer'><EmojiButton emoji='bomb' title='Delete' onClick={() => deleteClient(_id, name)} /> <EmojiButton emoji='pencil2' title='Edit' onClick={() => editClient(_id)} /></div>
-        </div>
-      </div>
+      <>
+        <div><strong>{name}</strong> - <em>({domain})</em></div>
+        <EmojiButton emoji='bomb' title='Delete' onClick={() => deleteClient(_id, name)} />
+        <EmojiButton emoji='pencil2' title='Edit' onClick={() => editClient(_id)} />
+      </>
     )
   }
 
@@ -60,12 +59,14 @@ export default function OauthClients ({ onEdit, onAdd }) {
   }
 
   return (
-    <div className='adminContainer'>
+    <div>
       <h3>OpenID Connect Clients</h3>
-      <div className='aesthetic-windows-95-container'>
-        {items.map(item => <Client key={item._id} {...item} />)}
-      </div>
-      <button className='adminButton marginTop' onClick={onAdd}>Add OpenID Connect Client</button>
+      <section>
+        <div className='grid clients-grid'>
+          {items.map(item => <Client key={item._id} {...item} />)}
+        </div>
+      </section>
+      <button onClick={onAdd}>Add OpenID Connect Client</button>
     </div>
   )
 }

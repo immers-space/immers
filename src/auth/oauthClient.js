@@ -5,6 +5,7 @@
  * requesting access tokens from their immers' authorization server
  * in order to accesss their account and post activities on their behalf
  */
+const { appSettings } = require('../settings')
 const request = require('request-promise-native')
 const { Issuer, generators } = require('openid-client')
 const authdb = require('./authdb')
@@ -14,10 +15,9 @@ const { parseHandle } = require('../utils')
 const {
   domain,
   name,
-  hub,
+  hubs,
   icon
-} = process.env
-const hubs = hub.split(',')
+} = appSettings
 
 /// exports ///
 module.exports = {

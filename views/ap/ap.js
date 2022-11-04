@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
-import { Router } from '@reach/router'
+import { Routes, Route, BrowserRouter } from 'react-router-dom'
 import Profile from './Profile'
 import { IntlProvider } from 'react-intl'
 import ServerDataContext from './ServerDataContext'
@@ -33,13 +33,13 @@ function Root () {
 
   const taskbarButtons = []
   if (isAdmin) {
-    taskbarButtons.push(<EmojiLink key='admin' emoji='princess' href='/admin' title='Administrator Settings' />)
+    taskbarButtons.push(<EmojiLink key='admin' emoji='princess' to='/admin' title='Administrator Settings' tipSide='left' />)
   }
   if (dataContext.loggedInUser) {
-    taskbarButtons.push(<EmojiLink key='logout' emoji='end' href='/auth/logout' title='Logout' />)
+    taskbarButtons.push(<EmojiLink key='logout' emoji='end' href='/auth/logout' title='Logout' tipSide='left' />)
   } else {
     // login button
-    taskbarButtons.push(<EmojiLink key='login' emoji='passport_control' href='/auth/login' title='Log in' />)
+    taskbarButtons.push(<EmojiLink key='login' emoji='passport_control' href='/auth/login' title='Log in' tipSide='left' />)
   }
 
   useEffect(() => {
@@ -71,16 +71,18 @@ function Root () {
   return (
     <IntlProvider locale='en' defaultLocale='en'>
       <ServerDataContext.Provider value={dataContext}>
-        {loading
-          ? <LayoutLoader />
-          : (
-            <Router>
-              <Profile path='/u/:actor/*' taskbarButtons={taskbarButtons} />
-              <Thread path='/s/:activityId' taskbarButtons={taskbarButtons} />
-              <ObjectView path='/o/:objectId' taskbarButtons={taskbarButtons} />
-              <Admin path='/admin' taskbarButtons={taskbarButtons} />
-            </Router>
-            )}
+        <BrowserRouter>
+          {loading
+            ? <LayoutLoader />
+            : (
+              <Routes>
+                <Route path='/u/:actor/*' element={<Profile taskbarButtons={taskbarButtons} />} />
+                <Route path='/s/:activityId' element={<Thread taskbarButtons={taskbarButtons} />} />
+                <Route path='/o/:objectId' element={<ObjectView taskbarButtons={taskbarButtons} />} />
+                <Route path='/admin/*' element={<Admin taskbarButtons={taskbarButtons} />} />
+              </Routes>
+              )}
+        </BrowserRouter>
       </ServerDataContext.Provider>
     </IntlProvider>
   )

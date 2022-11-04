@@ -24,10 +24,10 @@ export default function Feed ({ iri, ...postProps }) {
     ? <Loader />
     : (
       <div>
-        <div>
+        <section>
           {items.map(item => <Post key={item.id} settings={postProps} {...item} />)}
-        </div>
-        {nextPage && <button onClick={handleNext}>Load more</button>}
+        </section>
+        {nextPage && <button className='secondary' onClick={handleNext}>Load more</button>}
       </div>
       )
 }

@@ -1,4 +1,5 @@
-// const { router } = require()
+'use strict'
+const { appSettings } = require('../settings')
 const { Provider } = require('oidc-provider')
 const { ObjectId } = require('mongodb')
 const uid = require('uid-safe')
@@ -6,7 +7,7 @@ const { MongoAdapter } = require('./openIdServerDb')
 const authdb = require('./authdb')
 const { apex } = require('../apex')
 const { OICD_ISSUER_REL } = require('./consts')
-const { domain, proxyMode, sessionSecret, enableClientRegistration } = process.env
+const { domain, proxyMode, sessionSecret, enableClientRegistration } = appSettings
 const configuration = {
   routes: {
     authorization: '/authorize',

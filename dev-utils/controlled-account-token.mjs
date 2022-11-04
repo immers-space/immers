@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 'use strict'
 import { getPrivateKey, getJwt, getHttpClient, logErrors, getYargs } from './common.mjs'
-import 'dotenv/config'
+import { appSettings } from '../src/settings.js'
 
-const { domain, hub } = process.env
+const { domain, hubs } = appSettings
 const yargs = getYargs(process.argv)
 const argv = await yargs
   .default('ssl-check', true)
@@ -17,7 +17,7 @@ if (!immersAdminPrivateKey) {
   console.error('Error reading key file.')
   process.exit(1)
 }
-const payload = { scope: '*', origin: hub }
+const payload = { scope: '*', origin: hubs[0] }
 const options = { audience: `https://${domain}/o/immer`, subject: argv.i }
 const oAuthJwt = getJwt(domain, immersAdminPrivateKey, payload, options)
 

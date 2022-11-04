@@ -1,8 +1,4 @@
-.emojiButtonContainer {
-    display: flex;
-}
-
-.emojiButtonContainer div {
-    margin-left: 5px;
-    margin-right: 10px;
+.clients-grid {
+    grid-template-columns: 1fr repeat(2, 35px);
+    row-gap: var(--spacing);
 }

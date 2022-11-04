@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { AvatarPreview } from './AvatarPreview'
-import EmojiButton from '../ap/EmojiButton'
+import EmojiButton from './EmojiButton'
 import './ModelPostBody.css'
 import DialogModal from './DialogModal'
 import { immersClient, useProfile } from '../ap/utils/immersClient'
@@ -26,8 +26,8 @@ export default function ModelPostBody ({ model, showControls, activityID, ...pro
     <div className='relative'>
       {showControls && (
         <div className='modelActionButtons'>
-          <EmojiButton emoji='superhero' title={avatarTooltip} disabled={isCurrentAvatar} onClick={handleUseAvatar} />
-          <EmojiButton emoji='x' title='Remove this Avatar fom your collection' disabled={isCurrentAvatar} onClick={() => setIsOpened(true)} />
+          <EmojiButton emoji='superhero' title={avatarTooltip} tipSide='left' disabled={isCurrentAvatar} onClick={handleUseAvatar} />
+          <EmojiButton emoji='x' title='Remove this Avatar fom your collection' tipSide='left' disabled={isCurrentAvatar} onClick={() => setIsOpened(true)} />
         </div>
       )}
       {isOpened && (

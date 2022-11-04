@@ -1,0 +1,70 @@
+/* add html to outspecify the default light theme's :root:not([attr]) */
+html:root[data-theme="web95"] {
+  --window-grey: #bfbfbf;
+  --window-light-grey: #d4d4d4;
+  --window-medium-grey: #929292;
+  --window-dark-grey: #3d3d3d;
+  /* aesthetic colors from https://github.com/torch2424/aesthetic-css */
+  --aesthetic-white: #FAFAFA;
+  --aesthetic-black: #030303;
+  --aesthetic-25-transparent: rgba(0, 0, 0, 0.25);
+  --aesthetic-50-transparent: rgba(0, 0, 0, 0.50);
+  --aesthetic-75-transparent: rgba(0, 0, 0, 0.75);
+  --aesthetic-notification-transparent: rgba(0, 0, 0, 0.65);
+  --aesthetic-purple: #C774E8;
+  --aesthetic-light-purple: #AD8CFF;
+  --aesthetic-pink: #FF6AD5;
+  --aesthetic-blue: #8795E8;
+  --aesthetic-light-blue: #94D0FF;
+  --aesthetic-green: #10D7AE;
+  --aesthetic-arizona-pink: #FA7785;
+  --aesthetic-arizona-black: #24211A;
+  --aesthetic-arizona-lime: #D5D87D;
+  --aesthetic-arizona-green: #B1D4B6;
+  --aesthetic-arizona-blue: #53CBBF;
+  --aesthetic-green: #10d7ae;
+
+  --immers-blue: #5786d5;
+  --immers-purple-dark: #7b4788;
+  --immers-purple: #9a5fa9;
+  /* --immers-purple: #b585c1; */
+
+  --spacing: 0.25rem;
+  --color: var(--aesthetic-black);
+  --primary: var(--immers-purple-dark);
+  --primary-hover: var(--immers-purple);
+  --background-color: var(--window-grey);
+  --muted-color: var(--window-dark-grey);
+  --font-family: "VT323",monospace;
+  --font-size: 24px;
+  --line-height: 1;
+  --card-sectionning-background-color: var(--immers-blue);
+  --border-radius: 0;
+  --border-width: 2px;
+  --card-border-color: var(--window-grey);
+  --card-box-shadow: 0 0 0 1px var(--aesthetic-black), 6px 4px 1px var(--aesthetic-green);
+  --button-box-shadow: 2px 2px 1px var(--window-dark-grey), -1px -1px 1px var(--window-light-grey);
+  --button-hover-box-shadow: var(--button-box-shadow);
+  --nav-element-spacing-vertical: 0.5rem;
+  --nav-link-spacing-vertical: 0.25rem;
+  --form-element-background-color: var(--aesthetic-white);
+  --form-element-active-background-color: var(--aesthetic-white);
+  --form-element-spacing-vertical: 0.5rem;
+  --form-element-spacing-horizontal: 0.75rem;
+
+  --tab-border-radius: 4px;
+  --backdrop-filter: brightness(0.8) blur(2px);
+  --navbar-actions-border: var(--border-width) inset var(--secondary);
+  --nav-box-shadow:
+    0.0145rem 0.029rem 0.174rem rgba(27, 40, 50, 0.01698),
+    0.0335rem 0.067rem 0.402rem rgba(27, 40, 50, 0.024),
+    0.0625rem 0.125rem 0.75rem rgba(27, 40, 50, 0.03),
+    0.1125rem 0.225rem 1.35rem rgba(27, 40, 50, 0.036),
+    0.2085rem 0.417rem 2.502rem rgba(27, 40, 50, 0.04302),
+    0.5rem 1rem 6rem rgba(27, 40, 50, 0.06),
+    0 0 0 0.0625rem rgba(27, 40, 50, 0.015),
+    0 -2px 1px var(--window-light-grey);
+  --card-sectioning-footer-color: var(--window-medium-grey);
+  --icon-close: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgb(2, 2, 2)' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E");
+}
+

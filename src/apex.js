@@ -1,10 +1,10 @@
+const { domain, additionalContext } = require('./settings').appSettings
 const ActivitypubExpress = require('activitypub-express')
 const overlaps = require('overlaps')
 const immersContext = require('../static/immers-context.json')
 const { scopes } = require('../common/scopes')
 const { version } = require('../package.json')
 const { readStaticFileSync } = require('./utils')
-const { domain, additionalContext } = process.env
 
 let parsedAddlContext = []
 if (additionalContext) {

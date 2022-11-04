@@ -1,27 +1,52 @@
-@import 'aesthetic-css/src/index.scss';
+$semantic-root-element: '#app';
+$mobile-cutoff: 768px;
+@import "@picocss/pico/scss/pico";
+@import "./web95.css";
 
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
+:root {
+  /** pico CSS tweaks **/
+  --spacing: 0.5rem;
+  /** new variables **/
+  --nav-background-color: var(--background-color);
+  --nav-box-shadow: var(--card-box-shadow);
+  --tab-border-radius: var(--border-radius);
+  --tab-box-shadow: none;
+  --emoji-button-spacing: var(--spacing);
+  --emoji-button-background-color: transparent;
+  --emoji-button-color: var(--secondary);
+  --emoji-button-border-color: var(--secondary);
+  --attribution-link-color: var(--secondary);
+  --offset-for-navbar-height: calc(2rem + var(--nav-element-spacing-vertical) + 5px);
+  --enter-button-backround-color: var(--primary);
+  --enter-button-border-color: var(--primary);
+  --enter-button-color: var(--primary-inverse);
+  --main-title-color: var(--h1-color);
+  --backdrop-filter: none;
+  --navbar-actions-border: var(--border-width) solid var(--secondary);
+  --card-sectioning-footer-color: var(--card-sectionning-background-color);
 }
 
-body, input {
-  font-family: 'VT323', monospace;
-  font-size: 24px;
+body {
+  margin: 0;
 }
 
 body.modal-open {
   overflow: hidden;
 }
 
-h1 {
-  font-family: 'VT323', monospace;
-  font-size: 80px;
-  margin: 0;
+/* trim a little of spacing around the site title */
+#app>header {
+  padding-bottom: 0;
+  h1 {
+    --h1-color: var(--main-title-color);
+    font-size: 3rem;
+    line-height: 1;
+    margin-bottom: 0;
+    text-align: center;
+  }
 }
 
-.bg {
+.background-image {
   position: fixed;
   top: 0;
   left: 0;
@@ -31,90 +56,24 @@ h1 {
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: cover;
-  background-color: #a6549d;
+  background-color: var(--backdrop-color);
+  background-image: var(--backdrop-image-url);
+  filter: var(--backdrop-filter);
   z-index: -1;
 }
 
-.error {
-  color: #FF6AD5;
-}
-
-
 .attribution {
+  a {
+    color: var(--attribution-link-color);
+  }
   position: fixed;
   right: 0;
   bottom: 0;
   padding: 5px;
-  z-index: 0;
+  z-index: -1;
 }
 .attribution.with-taskbar {
-  bottom: 45px;
-}
-
-.content {
- height: 100%;
- display: flex;
- flex-direction: column;
- align-items: center;
- justify-content: space-around;
-}
-
-.main-content {
-  z-index: 5;
-  min-width: 670px;
-  width: min(calc(100% - 2px), calc(80ch + 40px));
-  flex-shrink: 0;
-}
-
-.actionButtons {
-  display: flex;
-  gap: 10px;
-}
-
-.main-content .aesthetic-windows-95-modal-content .aesthetic-windows-95-container-indent p {
-  max-width: 100%;
-}
-.main-content .aesthetic-windows-95-modal-content .aesthetic-windows-95-container-indent {
-  max-width: 80ch;
-}
-
-.content form {
-  margin: 20px;
-  /* transition: all 1s; */
-}
-
-.form-item {
-  height: 60px;
-  padding: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.form-footer {
-  margin: 0 20px;
-  max-width: 590px;
-}
-.form-item, .form-item label, .form-item input {
-  transition: all 0.5s ease-in-out;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.form-item input, .form-item label {
-  height: 35px;
-  margin: 1px;
-}
-
-.form-item label {
-  padding-right: 5px;
-}
-
-.form-item input {
-  width: 400px;
-  padding-left: 5px;
-  margin-right: 10px;
-  flex-shrink: 0;
+  bottom: var(--offset-for-navbar-height);
 }
 
 .form-item input.with-feedback {
@@ -124,33 +83,24 @@ h1 {
 .form-item-feedback {
   position: absolute;
   right: 15px;
-  top: 5px;
+  top: 14px;
   opacity: 0.5;
   cursor: pointer;
 }
 
-.form-item input.handle {
-  width: 195px;
-  margin-right: 0;
-  margin-left: 0;
+.form-feedback.error {
+  color: var(--form-element-invalid-border-color);
 }
 
-.form-item .home-label {
-  display: none;
-}
 
-.form-item.emoji {
-  height: 430px;
+.form-item.emoji > div {
+  display: flex;
   justify-content: center;
+  margin-bottom: var(--spacing);
 }
 
 .form-item.emoji.hidden {
   height: 0;
-}
-
-#registration-domain-cue {
-  position: absolute;
-  right: 5px;
 }
 
 .flex {
@@ -182,18 +132,28 @@ h1 {
 
 .editable {
   display: flex;
-  align-items: center;
+  align-items: baseline;
+  justify-content: center;
+  width: 100%;
 
   span[aria-hidden=true] {
     margin-right: 10px;
     /* keep the input centered in the column by offsetting the emoji */
     margin-left: -24px;
   }
-  
+
   input,
   textarea {
-    outline: 1px solid red;
+    text-align: center;
   }
+
+  textarea.profileSummary {
+    width: calc(100% - 50px);
+  }
+}
+
+section.profileSummary {
+  white-space: pre-line;
 }
 
 .none {
@@ -209,136 +169,169 @@ h1 {
   cursor: progress !important;
 }
 
-button[disabled] {
-  color: #888;
-  pointer-events: none;
-  .emoji-mart-emoji {
-    filter: grayscale(0.75)
-  }
-}
-
 .password-wrapper {
   scroll-margin: 30px;
 }
 
 .reveal-pass {
   position: absolute;
-  top: 0;
-  width: 365px;
+  top: 0px;
+  width: calc(100% - 45px);
   background-color: #FFFE;
-  margin: 3px 6px;
+  margin: var(--form-element-spacing-vertical) var(--form-element-spacing-horizontal);
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .reveal-pass .emoji-mart-emoji {
   vertical-align: middle;
 }
 
-/* to make alignment easier */
-.handle-bracket {
-  display: inline-block;
-  width: 10px;
-}
-
-/* okay we're all sick of the flicker */
-.aesthetic-effect-crt::after {
-  animation: none !important;
-}
-
-.aesthetic-windows-95-taskbar {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  z-index: 10;
-  height: 35px;
-  width: auto;
-}
-
-.aesthetic-windows-95-taskbar .aesthetic-windows-95-taskbar-start {
-  padding: 0;
-  width: auto;
-}
-
-.aesthetic-windows-95-taskbar .aesthetic-windows-95-taskbar-start button,
-.aesthetic-windows-95-taskbar .aesthetic-windows-95-taskbar-start a,
-.aesthetic-windows-95-taskbar .aesthetic-windows-95-taskbar-start a:visited {
-  padding: 4px;
-  text-decoration: none;
-  color: #000;
-}
-
-.aesthetic-windows-95-taskbar-services > * {
-  margin-right: 4px;
-}
-.aesthetic-windows-95-taskbar-services > *:last-child {
-  margin-right: 0;
-}
-
 .immers-icon {
   width: 28px;
   height: 28px;
   vertical-align: bottom;
+  margin-right: 10px;
 }
 
 .provider-logins {
   display: flex;
-  flex-flow: row wrap;
-  justify-content: space-around;
-  max-width: 642px;
+  flex-direction: column;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .aesthetic-effect-crt::after,
-  .aesthetic-effect-text-glitch::before,
-  .aesthetic-effect-text-glitch::after {
-    animation: none !important;
+.form-item.hidden {
+  height: 0;
+}
+
+#app > nav {
+  z-index: 99;
+  position: fixed;
+  inset: auto 0 -1px 0;
+  background-color: var(--nav-background-color);
+  box-shadow: var(--nav-box-shadow);
+}
+
+nav ul.navbar-actions {
+  /* split the margin inside/outside of border */
+  --bordered-nav-element-spacing-vertical: calc(var(--nav-element-spacing-vertical) * 0.5);
+  margin: var(--bordered-nav-element-spacing-vertical) 0;
+  border: var(--navbar-actions-border);
+  border-radius: var(--border-radius);
+  li {
+    line-height: 1;
+    padding-top: var(--bordered-nav-element-spacing-vertical);
+    padding-bottom: var(--bordered-nav-element-spacing-vertical);
   }
 }
 
-@media screen and (max-width: 679px) {
-  body, html, .content {
-    height: unset;
+nav .enter-button {
+  --background-color: var(--enter-button-backround-color);
+  --border-color: var(--enter-button-border-color);
+  --color: var(--enter-button-color);
+}
+
+main.with-taskbar {
+  margin-bottom: calc(var(--offset-for-navbar-height) + 1rem);
+}
+
+/* avoid doubling spacing */
+article:first-child {
+  margin-top: 0;
+}
+article:last-child {
+  margin-bottom: 0;
+}
+
+article > footer {
+  background-color: var(--card-sectioning-footer-color);
+}
+
+// main ui card header doesn't need so much emphasis
+main > article > header {
+  --nav-element-spacing-vertical: 0;
+  h2 {
+    --typography-spacing-vertical: 0;
+    --font-size: 1rem;
   }
-  h1 {
-    font-size: 40px;
+}
+
+section[data-label] {
+  position: relative;
+  border: var(--border-width) solid var(--secondary);
+  border-radius: var(--border-radius);
+  color: var(--secondary);
+  padding: var(--block-spacing-vertical) var(--block-spacing-horizontal);
+  &::before {
+    content: attr(data-label);
+    position: absolute;
+    top: -0.75rem;
+    left: 0.5rem;
+    background-color: var(--card-background-color);
+    padding: 0 var(--spacing);
   }
-  .main-content {
-    min-width: unset;
-    width: calc(100% - 2px);
-    margin-left: 0;
-    margin-right: 0;
-    padding-left: 0;
-    padding-right: 0;
+}
+
+fieldset.outline {
+  border: var(--border-width) solid var(--secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing) var(--block-spacing-horizontal);
+  legend {
+    padding: 0 var(--spacing);
   }
-  .form-item {
-    height: auto;
-    flex-wrap: wrap;
-  }
-  .form-item input, .form-item input.handle, .home-label {
-    width: calc(100vw - 40px);
-  }
-  .reveal-pass {
-    width: calc(100vw - 75px);
-  }
+}
+
+.flex {
+  display: flex;
+}
+
+/* immers handle input */
+.handle-input {
   .handle-bracket {
+    align-self: center;
+    padding: 0 var(--outline-width);
+    margin-bottom: var(--spacing);
+    @media screen and (max-width: $mobile-cutoff) {
+      display: none;
+    }
+  }
+
+  .home-label {
     display: none;
+    @media screen and (max-width: $mobile-cutoff) {
+      display: block;
+    }
   }
-  /* #immer {
-    width: calc(100vw - 60px);
-  } */
-  .form-item.hidden {
-    height: 0;
+
+  .flex {
+    @media screen and (max-width: $mobile-cutoff) {
+      flex-direction: column;
+    }
   }
-  .form-footer, .content form {
-    margin: 0;
+}
+
+nav.tabs {
+  --nav-element-spacing-vertical: var(--nav-element-spacing-horizontal);
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  .tab {
+    width: auto;
+    flex-grow: 1;
+    border-radius: var(--tab-border-radius) var(--tab-border-radius) 0 0;
+    box-shadow: var(--tab-box-shadow);
+    padding: var(--nav-element-spacing-vertical) var(--nav-element-spacing-horizontal);
+    font-size: 0.75rem;
+    border-bottom: none;
+    margin-bottom: 0;
+    &.is-active {
+      --box-shadow: none;
+    }
+    &:not(.is-active) + .tab:not(.is-active) {
+      border-left: var(--border-width) solid var(--muted-border-color);
+    }
   }
-  .form-item .home-label {
-    display: block;
-  }
-  .aesthetic-windows-95-button {
-    margin-top: 5px;
-  }
-  .main-content {
-    margin-bottom: 45px;
+  & + section {
+    border: var(--border-width) solid var(--contrast);
+    border-top: none;
+    padding: var(--block-spacing-vertical) var(--block-spacing-horizontal);
   }
 }

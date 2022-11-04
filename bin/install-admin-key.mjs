@@ -5,19 +5,11 @@
  * a service account keypair to enable Controlled Accounts feature.
  * See ../doc/ControlledAccounts.md
  */
-import 'dotenv/config'
+import { appSettings } from '../src/settings'
 import crypto from 'crypto'
 import { MongoClient } from 'mongodb'
-const {
-  domain,
-  hub,
-  name,
-  dbHost,
-  dbPort,
-  dbName,
-  dbString
-} = process.env
-const mongoURI = dbString || `mongodb://${dbHost}:${dbPort}/${dbName}`
+const { mongoURI, name, domain, hubs } = appSettings
+
 const client = new MongoClient(mongoURI)
 let exitCode = 0
 try {
@@ -44,7 +36,7 @@ try {
     $set: {
       name,
       clientId: `https://${domain}/o/immer`,
-      redirectUri: `https://${hub}`,
+      redirectUri: `https://${hubs[0]}`,
       isTrusted: true,
       canControlUserAccounts: true,
       jwtPublicKeyPem: publicKey

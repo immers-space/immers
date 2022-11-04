@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 'use strict'
 import { getPrivateKey, getJwt, getHttpClient, logErrors, getYargs } from './common.mjs'
-import 'dotenv/config'
+import { appSettings } from '../src/settings.js'
 
-const { domain } = process.env
+const { domain } = appSettings
 const yargs = getYargs(process.argv)
 const argv = await yargs
   .default('ssl-check', true)
