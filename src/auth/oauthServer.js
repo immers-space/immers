@@ -4,6 +4,7 @@
  * Processes requests to act on behalf of users from this immer,
  * granting access tokens if authorized
  */
+const { appSettings, renderConfig } = require('../settings')
 const oauth2orize = require('oauth2orize')
 const passport = require('passport')
 const login = require('connect-ensure-login')
@@ -14,17 +15,7 @@ const jwtBearer = require('oauth2orize-jwt-bearer').Exchange
 
 const authdb = require('./authdb')
 const { clnt } = require('./resourceServer')
-const {
-  domain,
-  name,
-  monetizationPointer,
-  googleFont,
-  backgroundColor,
-  backgroundImage,
-  icon,
-  imageAttributionText,
-  imageAttributionUrl
-} = process.env
+const { domain } = appSettings
 
 const oauthJwtExchangeType = 'urn:ietf:params:oauth:grant-type:jwt-bearer'
 const server = oauth2orize.createServer()
@@ -116,21 +107,13 @@ function checkIfAuthorizationDialogNeeded (client, user, scope, type, req, done)
 }
 
 function renderAuthorizationDialog (request, response) {
-  const data = {
+  const data = Object.assign({
     transactionId: request.oauth2.transactionID,
     username: request.user.username,
     clientName: request.oauth2.client.name,
     redirectUri: request.oauth2.redirectURI,
-    preferredScope: request.oauth2.req.scope.join(' '),
-    name,
-    monetizationPointer,
-    googleFont,
-    backgroundColor,
-    backgroundImage,
-    icon,
-    imageAttributionText,
-    imageAttributionUrl
-  }
+    preferredScope: request.oauth2.req.scope.join(' ')
+  }, renderConfig)
   response.render('dist/dialog/dialog.html', data)
 }
 

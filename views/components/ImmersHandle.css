@@ -7,5 +7,5 @@
 }
 
 .immer {
-  color: rgb(59, 59, 59);
+  color: var(--muted-color);
 }

@@ -1,6 +1,7 @@
 .friendManager {
   display: flex;
   align-items: center;
+  overflow: visible;
 }
 
 .friendManager>div {

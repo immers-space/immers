@@ -6,33 +6,6 @@
   justify-content: flex-start;
 }
 
-.userContainer h2, .userContainer h3 {
-  margin: 0;
-}
-
-.aesthetic-windows-95-tabbed-container-tabs-button a {
-  text-decoration: none;
-  color: black;
-  padding: 2px;
-}
-
-.profile .aesthetic-windows-95-tabbed-container .aesthetic-windows-95-tabbed-container-tabs .aesthetic-windows-95-tabbed-container-tabs-button button {
-  padding: 0;
-}
-
-.profile .aesthetic-windows-95-tabbed-container .aesthetic-windows-95-tabbed-container-tabs {
-  flex-wrap: wrap;
-  height: auto;
-}
-
-.profileSummary {
-  width: 400px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-
-@media screen and (max-width: 679px) {
-  .profileSummary {
-    width: calc(100vw - 20px);
-  }
+.userContainer hgroup {
+  text-align: center;
 }

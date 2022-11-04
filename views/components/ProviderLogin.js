@@ -1,13 +1,13 @@
 import React from 'react'
-import './ProviderLogin.css'
 export default function ProviderLogin ({ providerDomain, buttonIcon, buttonLabel, ...rest }) {
   return (
     <button
-      className='marginLeft loginButton'
+      className='secondary'
       data-provider={providerDomain}
       {...rest}
     >
-      <img src={buttonIcon} />{buttonLabel}
+      {buttonIcon && <img className='immers-icon' src={buttonIcon} />}
+      {buttonLabel}
     </button>
   )
 }

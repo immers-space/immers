@@ -18,12 +18,12 @@ export default class HandleInput extends React.Component {
 
   render () {
     return (
-      <div className='form-item'>
+      <div className='handle-input'>
         <label htmlFor='username'>Immers handle:</label>
-        <div>
+        <div className='flex'>
           <input
             onChange={this.handleInput}
-            id='username' className='aesthetic-windows-95-text-input handle'
+            id='username'
             type='text' inputMode='email' name='username'
             placeholder='username'
             required pattern='^[A-Za-z0-9-]{3,32}$'
@@ -31,12 +31,14 @@ export default class HandleInput extends React.Component {
             title='Letters, numbers, &amp; dashes only, between 3 and 32 characters'
             value={this.state.username}
             onKeyPress={this.props.onKeyPress}
+            aria-invalid={this.props.invalid ? 'true' : ''}
           />
           <label htmlFor='immer' className='home-label'>Home immer:</label>
           <span className='handle-bracket'>[</span>
           <input
+            aria-label='Home immer'
             onChange={this.handleInput}
-            id='immer' className='aesthetic-windows-95-text-input handle'
+            id='immer'
             type='text' inputMode='url' name='immer'
             placeholder='your.immer'
             required pattern='localhost(:\d+)?|.+\..+'
@@ -44,6 +46,7 @@ export default class HandleInput extends React.Component {
             title='Valid domain name, including .'
             value={this.state.immer} disabled={this.props.lockImmer}
             onKeyPress={this.props.onKeyPress}
+            aria-invalid={this.props.invalid && !this.props.lockImmer ? 'true' : ''}
           />
           <span className='handle-bracket'>]</span>
         </div>

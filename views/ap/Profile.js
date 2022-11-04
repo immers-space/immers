@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Router, Link, useMatch, useNavigate } from '@reach/router'
+import { Routes, Route, useMatch, useNavigate, useParams } from 'react-router-dom'
 import './Profile.css'
 import Layout from '../components/Layout'
 import Tab from '../components/Tab'
@@ -9,10 +9,14 @@ import Friends from './Friends'
 import { AvatarPreview } from '../components/AvatarPreview'
 import { immersClient, useProfile } from './utils/immersClient'
 import { ImmersClient } from 'immers-client'
-import EmojiButton from './EmojiButton'
-import { Emoji } from 'emoji-mart'
+import LayoutLoader from '../components/LayoutLoader'
+import EmojiButton from '../components/EmojiButton'
+import { Emoji } from '../components/Emojis'
 
-export default function Profile ({ actor, taskbarButtons }) {
+const checkNameValid = displayName => /^[A-Za-z0-9-]{3,32}$/.test(displayName)
+
+export default function Profile ({ taskbarButtons }) {
+  const { actor } = useParams()
   const navigate = useNavigate()
   const myProfile = useProfile()
   const [profile, setProfile] = useState()
@@ -46,14 +50,14 @@ export default function Profile ({ actor, taskbarButtons }) {
 
     if (isEditing) {
       buttons = [
-        <EmojiButton key='save' emoji='floppy_disk' title='Save' onClick={() => onSave()} />,
-        <EmojiButton key='cancel' emoji='x' title='Cancel' onClick={() => setIsEditing(false)} />
+        <EmojiButton key='save' emoji='floppy_disk' title='Save' tipSide='left' onClick={() => onSave()} disabled={!checkNameValid(displayName)} />,
+        <EmojiButton key='cancel' emoji='x' title='Cancel' tipSide='left' onClick={() => setIsEditing(false)} />
       ]
     } else {
-      buttons = <EmojiButton emoji='pencil2' title='Edit profile' onClick={() => setIsEditing(true)} />
+      buttons = <EmojiButton emoji='pencil2' title='Edit profile' tipSide='left' onClick={() => setIsEditing(true)} />
     }
   }
-  const { currentTab } = useMatch(':currentTab') || {}
+  const { params: { currentTab } } = useMatch('/u/:actor/:currentTab') || { params: {} }
 
   useEffect(async () => {
     if (isMyProfile) {
@@ -78,64 +82,75 @@ export default function Profile ({ actor, taskbarButtons }) {
   }, [isEditing])
   if (!profile) {
     return (
-      <Layout contentTitle='Immers Profile'>
-        <div className='aesthetic-windows-95-loader'>
-          <div /><div /><div />
-        </div>
-      </Layout>
+      <LayoutLoader contentTitle='Immers Profile' />
     )
   }
   return (
     <Layout contentTitle='Immers Profile' buttons={buttons} taskbar taskbarButtons={taskbarButtons}>
       <div className='profile'>
         <div className='userContainer'>
-          {isEditing
-            ? (
-              <label className='editable'>
-                <span aria-hidden='true'>
-                  <Emoji emoji=':pencil2:' size={16} set='apple' />
-                </span>
-                <input className='aesthetic-windows-95-text-input' value={displayName} aria-label='Edit your display name' onChange={onDisplayNameChange} />
-              </label>
-              )
-            : <h2 className='displayName'>{profile.displayName}</h2>}
-          <h3>
-            <ImmersHandle id={profile.id} preferredUsername={profile.username} />
-          </h3>
-          <div className='aesthetic-windows-95-container-indent'>
+          <hgroup>
+            {isEditing
+              ? (
+                <label className='editable'>
+                  <span aria-hidden='true'>
+                    <Emoji emoji='pencil2' size={16} set='apple' />
+                  </span>
+                  <input
+                    value={displayName}
+                    required
+                    pattern='^[A-Za-z0-9-]{3,32}$'
+                    aria-label='Edit your display name'
+                    aria-invalid={!checkNameValid(displayName)}
+                    onChange={onDisplayNameChange}
+                  />
+                </label>
+                )
+              : <h3 className='displayName'>{profile.displayName}</h3>}
+            <h4>
+              <ImmersHandle id={profile.id} preferredUsername={profile.username} />
+            </h4>
+          </hgroup>
+          <section data-label='Avatar'>
             <AvatarPreview icon={profile.avatarImage} avatar={profile.avatarObject} />
-          </div>
+          </section>
           {isEditing
             ? (
               <label className='editable'>
                 <span aria-hidden='true'>
-                  <Emoji emoji=':pencil2:' size={16} set='apple' />
+                  <Emoji emoji='pencil2' size={16} set='apple' />
                 </span>
-                <textarea className='aesthetic-windows-95-text-input profileSummary' value={bio} aria-label='Edit your bio' onChange={onBioChange} />
+                <textarea
+                  className='profileSummary'
+                  value={bio}
+                  aria-label='Edit your bio'
+                  aria-invalid='false'
+                  onChange={onBioChange}
+                />
               </label>
               )
-            : <div className='aesthetic-windows-95-container-indent profileSummary'>{profile.bio}</div>}
+            : <section className='profileSummary'>{profile.bio}</section>}
         </div>
-        <div className='aesthetic-windows-95-tabbed-container'>
-          <div className='aesthetic-windows-95-tabbed-container-tabs'>
+        <div>
+          <nav className='tabs'>
             {tabs.map(({ path: tab, label }) => {
               return (
-                <Tab key={tab} active={tab === currentTab}>
-                  <Link to={tab}>{label ?? tab}</Link>
+                <Tab key={tab} active={tab === currentTab} onClick={() => navigate(tab)}>
+                  {label ?? tab}
                 </Tab>
               )
             })}
-          </div>
-          <div className='aesthetic-windows-95-container'>
-            <Router>
-              <Feed path='Outbox' iri={profile.collections.outbox} />
-              <Feed path='Inbox' iri={profile.collections.inbox} />
-              <Feed path='Destinations' iri={profile.collections.destinations} expandLocationPosts />
-              <Feed path='FriendsDestinations' iri={profile.collections.friendsDestinations} expandLocationPosts />
-              <Friends path='Friends' />
-              <Feed path='Avatars' iri={profile.collections.avatars} showAvatarControls={isMyProfile} />
-            </Router>
-          </div>
+          </nav>
+          <section>
+            <Routes>
+              <Route path='Outbox' element={<Feed key={profile.collections.outbox} iri={profile.collections.outbox} />} />
+              <Route path='Inbox' element={<Feed key={profile.collections.inbox} iri={profile.collections.inbox} />} />
+              <Route path='Destinations' element={<Feed key={profile.collections.destinations} iri={profile.collections.destinations} expandLocationPosts />} />
+              <Route path='FriendsDestinations' element={<Feed key={profile.collections.friendsDestinations} iri={profile.collections.friendsDestinations} expandLocationPosts />} />
+              <Route path='Friends' element={<Friends key={profile.id} />} />
+              <Route path='Avatars' element={<Feed key={profile.collections.avatars} iri={profile.collections.avatars} showAvatarControls={isMyProfile} />} />
+            </Routes>
+          </section>
         </div>
       </div>
     </Layout>

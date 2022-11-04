@@ -3,7 +3,7 @@ import ImmersHandle from '../components/ImmersHandle'
 import ProfileIcon from '../components/ProfileIcon'
 import { ImmerLink } from '../components/ImmerLink'
 import './Friends.css'
-import EmojiButton from './EmojiButton'
+import EmojiButton from '../components/EmojiButton'
 import { immersClient } from './utils/immersClient'
 
 export default function Friends () {
@@ -15,7 +15,7 @@ export default function Friends () {
     return () => immersClient.removeEventListener('immers-client-friends-update', handler)
   }, [])
   return (
-    <div className='aesthetic-windows-95-container-indent'>
+    <div>
       {friends.map(friendStatus => <Friend key={friendStatus.profile.id} {...friendStatus} />)}
     </div>
   )

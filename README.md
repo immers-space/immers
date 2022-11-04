@@ -71,6 +71,7 @@ homepage | Redirect root html requests to this url | Use `hub` url
 googleFont | Font family name from to fetch from Google Fonts for immer name header | Monoton
 backgroundColor | CSS color | #a6549d
 backgroundImage | Image file | vapor.png
+baseTheme | `'light'` or `'dark'` | Follow user `prefers-color-scheme` setting, default to light
 customCSS | Additional CSS file to load | None
 icon | Image file | vaporwave-icon.png
 imageAttributionText | Attribution for backgroundImage, if needed | Vectors by Vecteezy

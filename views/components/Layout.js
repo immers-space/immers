@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import c from 'classnames'
 import '../assets/immers.scss'
 import immersIcon from '../assets/immers_logo.png'
@@ -8,49 +8,59 @@ export default function Layout (props) {
   const title = props.title || data.name
   const attributionUrl = props.attributionUrl || data.imageAttributionUrl
   const attribution = props.attribution || data.imageAttributionText
+  useEffect(() => {
+    if (props.contentTitle) {
+      document.title = props.contentTitle
+    }
+  }, [props.contentTitle])
   return (
-    <div>
-      <div className='aesthetic-effect-crt bg' />
-      <div className='content'>
-        <h1 className='aesthetic-50-transparent-color'>{title}</h1>
-        <div className='aesthetic-windows-95-modal main-content'>
-          <div className='aesthetic-windows-95-modal-title-bar'>
-            <div className='aesthetic-windows-95-modal-title-bar-text'>
-              {props.contentTitle}
-            </div>
-            <div className='aesthetic-windows-95-modal-title-bar-controls actionButtons'>
-              {props.buttons}
-            </div>
-          </div>
-          <div className='aesthetic-windows-95-modal-content'>
-            <hr />
-            {props.children}
-          </div>
-        </div>
-        {/* balances layout with title */}
-        <h1>&nbsp;</h1>
-      </div>
+    <>
+      <div className='background-image' />
+      <header className='container'>
+        <h1>{title}</h1>
+      </header>
+      <main className={c('container', { 'with-taskbar': props.taskbar })}>
+        <article>
+          <header>
+            <nav>
+              <ul>
+                <li>
+                  <h2>
+                    {props.contentTitle}
+                  </h2>
+                </li>
+              </ul>
+              <ul>
+                {Array.isArray(props.buttons) ? props.buttons.map((btn, i) => (<li key={i}>{btn}</li>)) : <li>{props.buttons}</li>}
+              </ul>
+            </nav>
+          </header>
+          {props.children}
+        </article>
+      </main>
 
       <div className={c('attribution', { 'with-taskbar': props.taskbar })}>
         {attribution &&
-          <a className='aesthetic-green-color' href={attributionUrl}>
+          <a target='_blank' rel='nofollow noreferrer' href={attributionUrl}>
             Background: {attribution}
           </a>}
       </div>
       {props.taskbar && (
-        <div className='aesthetic-windows-95-taskbar'>
-          <div className='aesthetic-windows-95-taskbar-start'>
-            <a href={`//${data.hub}`}>
-              <img src={data.icon ?? immersIcon} className='immers-icon' /> Enter {data.name}
-            </a>
-          </div>
+        <nav className='container-fluid'>
+          <ul>
+            <li>
+              <a className='enter-button' role='button' href={`//${data.hub}`}>
+                <img src={data.icon ?? immersIcon} className='immers-icon' />Enter {data.name}
+              </a>
+            </li>
+          </ul>
           {props.taskbarButtons?.length && (
-            <div className='aesthetic-windows-95-taskbar-services'>
-              {props.taskbarButtons}
-            </div>
+            <ul className='navbar-actions'>
+              {props.taskbarButtons.map((btn, i) => <li key={i}>{btn}</li>)}
+            </ul>
           )}
-        </div>
+        </nav>
       )}
-    </div>
+    </>
   )
 }

@@ -5,6 +5,7 @@
  * activities on their behalf via access tokens granted via
  * local authorization server
  */
+const { appSettings } = require('../settings')
 const passport = require('passport')
 const login = require('connect-ensure-login')
 const nodemailer = require('nodemailer')
@@ -22,15 +23,14 @@ const { scopes } = require('../../common/scopes')
 const {
   domain,
   name,
-  hub,
+  hubs,
   smtpHost,
   smtpPort,
   smtpFrom,
   smtpUser,
   smtpPassword,
   easySecret
-} = process.env
-const hubs = hub.split(',')
+} = appSettings
 const emailCheck = require('email-validator')
 const { USER_ROLES } = require('./consts')
 const handleCheck = '^[A-Za-z0-9-]{3,32}$'

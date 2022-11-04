@@ -1,6 +1,0 @@
-dialog {
-    max-width: min-content;
-}
-dialog::backdrop {
-    background: rgba(0, 0, 0, .8);
-}

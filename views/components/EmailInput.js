@@ -1,14 +1,14 @@
 import React from 'react'
 
-export default function EmailInput () {
+export default function EmailInput ({ invalid }) {
   return (
-    <div className='form-item'>
-      <label>E-mail address:</label>
+    <label>
+      E-mail address:
       <input
-        className='aesthetic-windows-95-text-input'
         type='email' name='email'
+        aria-invalid={invalid ? 'true' : ''}
         required
       />
-    </div>
+    </label>
   )
 }
