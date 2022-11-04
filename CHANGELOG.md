@@ -2,8 +2,18 @@
 
 ### Added
 
-* Profile pages - Profile editing: Users can now edit their Display name and Bio from the web interface.
-* Profile pages - Remove avatar: Users can now remove Avatar models from their Avatar collection from the web interface (Does not delete the Avatar).
+* 🎨 Theme Editor (`/admin/theme`) - Choose from 4 base themes and then customize with css custom properties via our live editor
+* ✏️ Profile editing: Users can now edit their Display name and Bio from the web interface.
+* 🚮 Remove avatar: Users can now remove Avatar models from their Avatar collection from the web interface (Does not delete the Avatar).
+
+## Changed
+
+* Total refactor of the Web client views to use Pico.css instead of aesthetic.css
+  * **Breaking**: Many class and hierarchy changes, any existing customCSS will likely need refactoring (or replace via new theme editor)
+  * **Breaking**: Default theme is now simple and modern with automatic light and dark modes. If you liked the old theme, check out our new "Web95" theme in the theme editor
+* **Breaking**: Package-lock updated to v2, recommend npm >=7/node 16 for reliable installs.
+  * Migrated SPA routing to `react-router` to resolve the last peer-dependency conflict
+* Admin routing changed: `/admin` now lists admin views, OIDC client list moved to `/admin/oidc`
 
 ## v3.6.0 (2022-10-11)
 
