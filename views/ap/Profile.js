@@ -13,7 +13,7 @@ import LayoutLoader from '../components/LayoutLoader'
 import EmojiButton from '../components/EmojiButton'
 import { Emoji } from '../components/Emojis'
 
-const checkNameValid = displayName => /^[A-Za-z0-9-]{3,32}$/.test(displayName)
+const checkNameValid = displayName => /^[A-Za-z0-9_~ -]{3,32}$/.test(displayName)
 
 export default function Profile ({ taskbarButtons }) {
   const { actor } = useParams()
