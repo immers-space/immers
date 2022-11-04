@@ -1,7 +1,8 @@
-/* using :is to spike the specificity of :root */
-:is(:root, #root) {
+/* add html to outspecify the default light theme's :root:not([attr]) */
+html:root[data-theme="web95"] {
   --window-grey: #bfbfbf;
   --window-light-grey: #d4d4d4;
+  --window-medium-grey: #929292;
   --window-dark-grey: #3d3d3d;
   /* aesthetic colors from https://github.com/torch2424/aesthetic-css */
   --aesthetic-white: #FAFAFA;
@@ -63,7 +64,7 @@
     0.5rem 1rem 6rem rgba(27, 40, 50, 0.06),
     0 0 0 0.0625rem rgba(27, 40, 50, 0.015),
     0 -2px 1px var(--window-light-grey);
-  --article-sectioning-footer-color: var(--window-light-grey);
+  --card-sectioning-footer-color: var(--window-medium-grey);
   --icon-close: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgb(2, 2, 2)' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E");
 }
 

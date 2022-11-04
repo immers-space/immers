@@ -144,5 +144,5 @@
   --main-title-color: var(--h1-color);
   --backdrop-filter: none;
   --navbar-actions-border: var(--border-width) solid var(--secondary);
-  --article-sectioning-footer-color: var(--article-sectionning-color);
+  --card-sectioning-footer-color: var(--card-sectionning-background-color);
 }

@@ -35,9 +35,7 @@ export default function Layout (props) {
               </ul>
             </nav>
           </header>
-          <div>
-            {props.children}
-          </div>
+          {props.children}
         </article>
       </main>
 

@@ -1,6 +1,7 @@
 $semantic-root-element: '#app';
 $mobile-cutoff: 768px;
 @import "@picocss/pico/scss/pico";
+@import "./web95.css";
 
 :root {
   /** pico CSS tweaks **/
@@ -22,7 +23,7 @@ $mobile-cutoff: 768px;
   --main-title-color: var(--h1-color);
   --backdrop-filter: none;
   --navbar-actions-border: var(--border-width) solid var(--secondary);
-  --article-sectioning-footer-color: var(--article-sectionning-color);
+  --card-sectioning-footer-color: var(--card-sectionning-background-color);
 }
 
 body {
@@ -242,7 +243,7 @@ article:last-child {
 }
 
 article > footer {
-  background-color: var(--article-sectioning-footer-color);
+  background-color: var(--card-sectioning-footer-color);
 }
 
 // main ui card header doesn't need so much emphasis
