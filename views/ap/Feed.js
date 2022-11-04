@@ -20,12 +20,15 @@ export default function Feed ({ iri, ...postProps }) {
     setLoading(false)
   }, [page])
   const handleNext = () => setPage(nextPage)
+  const handleRemove = (id) => {
+    setItems(items.filter(item => item.id !== id))
+  }
   return loading
     ? <Loader />
     : (
       <div>
         <section>
-          {items.map(item => <Post key={item.id} settings={postProps} {...item} />)}
+          {items.map(item => <Post key={item.id} settings={postProps} {...item} handleRemove={handleRemove} />)}
         </section>
         {nextPage && <button className='secondary' onClick={handleNext}>Load more</button>}
       </div>

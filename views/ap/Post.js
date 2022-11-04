@@ -13,7 +13,7 @@ import { ImmersClient } from 'immers-client'
 const locationTypes = ['Arrive', 'Leave']
 const summaryWithBodyTypes = ['Offer']
 
-export default function Post ({ id, type, actor, summary, object = {}, target, published, settings = {} }) {
+export default function Post ({ id, type, actor, summary, object = {}, target, published, settings = {}, handleRemove }) {
   const { id: actorId, icon } = actor
   const { context } = object
   let body
@@ -21,7 +21,7 @@ export default function Post ({ id, type, actor, summary, object = {}, target, p
   if (locationTypes.includes(type)) {
     body = getPostBody(target, settings)
   } else {
-    body = getPostBody(object, settings, id)
+    body = getPostBody(object, settings, id, handleRemove)
   }
 
   const includeSummaryWithBody = summaryWithBodyTypes.includes(type)
@@ -63,7 +63,7 @@ export default function Post ({ id, type, actor, summary, object = {}, target, p
   return null
 }
 
-function getPostBody (object, { showAvatarControls, expandLocationPosts }, id) {
+function getPostBody (object, { showAvatarControls, expandLocationPosts }, id, handleRemove) {
   const { type, content, url } = object
   switch (type) {
     case 'Note':
@@ -73,7 +73,7 @@ function getPostBody (object, { showAvatarControls, expandLocationPosts }, id) {
     case 'Video':
       return <video className='postMedia' src={ImmersClient.URLFromProperty(url)} controls />
     case 'Model':
-      return <ModelPostBody model={object} icon={object.icon} size='medium' showControls={showAvatarControls} activityID={id} />
+      return <ModelPostBody model={object} icon={object.icon} size='medium' showControls={showAvatarControls} activityID={id} handleRemove={handleRemove} />
     case 'Place':
       if (expandLocationPosts) {
         return <PlacePostBody place={object} />
