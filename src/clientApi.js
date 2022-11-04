@@ -2,7 +2,7 @@
 const { Router } = require('express')
 const { apex } = require('./apex')
 const auth = require('./auth')
-const { domain } = process.env
+const { domain } = require('./settings').appSettings
 const router = new Router()
 // note we have to include reject here or else the query will find the previous accept and
 // the user will show up as a current friend. Clients probably want to filter the rejects before display

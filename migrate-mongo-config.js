@@ -1,12 +1,4 @@
-require('dotenv-defaults').config()
-const {
-  dbHost,
-  dbPort,
-  dbName,
-  dbString
-} = process.env
-// fallback to building string from parts for backwards compat
-const mongoURI = dbString || `mongodb://${dbHost}:${dbPort}/${dbName}`
+const { mongoURI } = require('./src/settings').appSettings
 
 const config = {
   mongodb: {

@@ -1,5 +1,5 @@
 'use strict'
-require('dotenv-defaults').config()
+const settings = require('./src/settings')
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
@@ -21,13 +21,12 @@ const media = require('./src/media')
 const AutoEncryptPromise = import('@small-tech/auto-encrypt')
 const { onShutdown } = require('node-graceful-shutdown')
 const morgan = require('morgan')
-const { debugOutput, parseHandle, parseProxyMode, apexDomain, readStaticFileSync } = require('./src/utils')
+const { debugOutput, parseHandle, apexDomain } = require('./src/utils')
 const { apex, createImmersActor, deliverWelcomeMessage, routes, onInbox, onOutbox, outboxPost } = require('./src/apex')
 const clientApi = require('./src/clientApi.js')
 const { migrate } = require('./src/migrate')
 const { scopes } = require('./common/scopes')
 const { generateMetaTags } = require('./src/openGraph')
-const settings = require('./src/settings')
 const { MongoAdapter } = require('./src/auth/openIdServerDb')
 const adminApi = require('./src/adminApi.js')
 const SocketManager = require('./src/streaming/SocketManager')
@@ -35,59 +34,26 @@ const SocketManager = require('./src/streaming/SocketManager')
 const {
   port,
   domain,
-  hub,
+  hubs,
   homepage,
   name,
-  dbHost,
-  dbPort,
-  dbName,
-  dbString,
+  mongoURI,
   sessionSecret,
   keyPath,
   certPath,
   caPath,
-  monetizationPointer,
-  googleFont,
-  backgroundColor,
-  backgroundImage,
-  baseTheme,
-  customCSS,
   icon,
-  imageAttributionText,
-  imageAttributionUrl,
   emailOptInURL,
   emailOptInParam,
   emailOptInNameParam,
   systemUserName,
   systemDisplayName,
-  welcome,
+  welcomeContent,
   proxyMode,
-  enablePublicRegistration,
   cookieName,
   loginRedirect
-} = process.env
-const welcomeContent = readStaticFileSync(welcome)
-const hubs = hub.split(',')
-const renderConfig = {
-  name,
-  domain,
-  hub: hubs,
-  homepage,
-  monetizationPointer,
-  googleFont,
-  backgroundColor,
-  backgroundImage,
-  baseTheme,
-  customCSS,
-  icon,
-  imageAttributionText,
-  imageAttributionUrl,
-  emailOptInURL,
-  enablePublicRegistration
-}
+} = settings.appSettings
 
-// fallback to building string from parts for backwards compat
-const mongoURI = dbString || `mongodb://${dbHost}:${dbPort}/${dbName}`
 const app = express()
 
 const client = new MongoClient(mongoURI)
@@ -157,7 +123,7 @@ app.route('/auth/login')
       }
       return res.redirect(redirect.href)
     }
-    const data = Object.assign({}, renderConfig)
+    const data = Object.assign({}, settings.renderConfig)
     if (req.session && req.session.handle) {
       Object.assign(data, parseHandle(req.session.handle))
       delete req.session.handle
@@ -206,7 +172,7 @@ app.post('/auth/forgot', passport.authenticate('easy'), (req, res) => {
 })
 app.route('/auth/reset')
   .get(passport.authenticate('easy'), (req, res) => {
-    res.render('dist/reset/reset.html', renderConfig)
+    res.render('dist/reset/reset.html', settings.renderConfig)
   })
   .post(auth.changePasswordAndReturn)
 /* redirect to an email opt-in form
@@ -255,7 +221,7 @@ app.post(
 app.post('/auth/user', settings.isTrue('enablePublicRegistration'), register, auth.respondRedirect)
 // complete registration started via oidc identity provider
 app.route('/auth/oidc-interstitial')
-  .get((req, res) => res.render('dist/oidc-interstitial/oidc-interstitial.html', renderConfig))
+  .get((req, res) => res.render('dist/oidc-interstitial/oidc-interstitial.html', settings.renderConfig))
   .post(auth.oidcPreRegister, register, auth.oidcPostRegister, auth.respondRedirect)
 
 /**
@@ -385,7 +351,7 @@ app.get('/ap.html', auth.publ, generateMetaTags, (req, res) => {
     loggedInUser: req.user?.username,
     ...res.locals.openGraph
   }
-  res.render('dist/ap/ap.html', Object.assign(data, renderConfig))
+  res.render('dist/ap/ap.html', Object.assign(data, settings.renderConfig))
 })
 
 // final fallback to static content
@@ -406,7 +372,7 @@ migrate(mongoURI).catch((err) => {
   if (process.env.NODE_ENV === 'production') {
     if (proxyMode) {
       server = http.createServer(app)
-      app.set('trust proxy', parseProxyMode(proxyMode))
+      app.set('trust proxy', proxyMode)
     } else {
       server = AutoEncrypt.https.createServer({ domains: [domain] }, app)
     }

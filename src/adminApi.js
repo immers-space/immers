@@ -3,10 +3,11 @@ const { Issuer } = require('openid-client')
 const { apex } = require('./apex')
 const { authdb } = require('./auth')
 const auth = require('./auth')
+const { appSettings } = require('./settings')
 const router = new Router()
 const ObjectId = require('mongodb').ObjectId
 
-const { domain } = process.env
+const { domain } = appSettings
 
 module.exports = {
   router

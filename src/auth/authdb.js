@@ -1,3 +1,4 @@
+const { appSettings } = require('../settings')
 const { ObjectId } = require('mongodb')
 const uid = require('uid-safe')
 const bcrypt = require('bcrypt')
@@ -6,9 +7,8 @@ const jwt = require('jsonwebtoken')
 const { USER_ROLES } = require('./consts')
 const { parseHandle } = require('../utils')
 
-const { domain, hub, name, adminEmail } = process.env
+const { domain, hubs, name, adminEmail } = appSettings
 
-const hubs = hub.split(',')
 const saltRounds = 10
 const tokenAge = 24 * 60 * 60 * 1000 // one day
 const anonClientPrefix = '_anonymous:'

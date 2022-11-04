@@ -1,3 +1,4 @@
+const { appSettings } = require('./settings')
 const path = require('path')
 const crypto = require('crypto')
 const express = require('express')
@@ -11,9 +12,7 @@ const auth = require('./auth')
 const { scopes } = require('../common/scopes')
 const { apex, outboxPost } = require('./apex')
 
-const { dbString, dbHost, dbPort, dbName, domain, maxUploadSize } = process.env
-// fallback to building string from parts for backwards compat
-const mongoURI = dbString || `mongodb://${dbHost}:${dbPort}/${dbName}`
+const { mongoURI, domain, maxUploadSize } = appSettings
 const router = express.Router()
 const bucketName = 'uploads'
 let bucket
