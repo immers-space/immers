@@ -3,7 +3,7 @@ const { Issuer } = require('openid-client')
 const { apex } = require('./apex')
 const { authdb } = require('./auth')
 const auth = require('./auth')
-const { appSettings } = require('./settings')
+const { appSettings, updateThemeSettings } = require('./settings')
 const router = new Router()
 const ObjectId = require('mongodb').ObjectId
 
@@ -43,6 +43,11 @@ router.get('/a/oauth-client/:id', [
 router.put('/a/oauth-client/:id', [
   auth.admn,
   updateOauthClient
+])
+
+router.put('/a/settings/theme', [
+  auth.admn,
+  putThemeSettings
 ])
 
 const clientProjection = {
@@ -108,6 +113,16 @@ async function updateOauthClient (req, res) {
     )
     return res.json({ success: true })
   } catch (err) { return res.status(500) }
+}
+
+function putThemeSettings (req, res, next) {
+  const {
+    baseTheme,
+    customTheme
+  } = req.body
+  updateThemeSettings(apex.store.db, { baseTheme, customTheme })
+    .then(() => res.sendStatus(200))
+    .catch(next)
 }
 
 /// utils ///

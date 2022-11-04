@@ -1,6 +1,8 @@
 'use strict'
 require('dotenv-defaults').config()
 const { readStaticFileSync, parseProxyMode } = require('./utils')
+const SETTINGS_COL = 'appSettings'
+const THEME_SETTING = 'theme'
 
 const {
   additionalContext,
@@ -105,6 +107,7 @@ const renderConfig = {
   backgroundImage,
   baseTheme,
   customCSS,
+  customTheme: '', // loaded from DB
   icon,
   imageAttributionText,
   imageAttributionUrl,
@@ -138,5 +141,28 @@ module.exports = {
   renderConfig,
   isTrue,
   isFalse,
-  isEqualTo
+  isEqualTo,
+  updateRenderConfigFromDb,
+  updateThemeSettings
+}
+
+async function updateRenderConfigFromDb (db) {
+  const dbTheme = await db.collection(SETTINGS_COL)
+    .findOne({ setting: THEME_SETTING })
+  if (dbTheme) {
+    Object.assign(renderConfig, dbTheme)
+  }
+}
+
+async function updateThemeSettings (db, data) {
+  const result = await db.collection(SETTINGS_COL).findOneAndUpdate(
+    { setting: THEME_SETTING },
+    { $set: data },
+    { upsert: true, returnDocument: 'after' }
+  )
+  if (!result.ok) {
+    throw new Error('Error saving settings')
+  }
+  // also update the settings in memory to affect renders immediately
+  Object.assign(renderConfig, result.value)
 }

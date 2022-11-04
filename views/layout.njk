@@ -22,7 +22,9 @@
         preferredScope: '{{ preferredScope }}'.split(' '),
         emailOptInURL: '{{ emailOptInURL }}',
         loginTab: '{{ loginTab }}',
-        enablePublicRegistration: '{{ enablePublicRegistration }}'
+        enablePublicRegistration: '{{ enablePublicRegistration }}',
+        baseTheme: '{{ baseTheme }}',
+        customTheme: '{{ customTheme }}'
       }
       {% if icon %}window._serverData.icon = '/static/{{ icon }}'{% endif %}
     </script>
@@ -71,6 +73,11 @@
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
   {% endif %}
     {% block head %}{% endblock %}
+    <style id='custom-theme'>
+      :is(:root, #root) {
+        {{ customTheme }}
+      }
+    </style>
   </head>
   <body id="body">
     {% block content %}{% endblock %}

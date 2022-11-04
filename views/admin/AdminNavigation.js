@@ -13,6 +13,7 @@ export default function AdminNavigation ({ taskbarButtons }) {
         <nav>
           <ul>
             <li><Link to='oidc'>Manage OpenID Connect Clients</Link></li>
+            <li><Link to='theme'>Edit theme</Link></li>
           </ul>
         </nav>
       </aside>

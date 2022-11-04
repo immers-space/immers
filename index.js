@@ -525,6 +525,11 @@ migrate(mongoURI).catch((err) => {
   } catch (err) {
     console.warn('Error loading plugins', err)
   }
+  try {
+    await settings.updateRenderConfigFromDb(client.db())
+  } catch (err) {
+    console.warn('Error loading app settings from db', err)
+  }
   server.listen(port, () => {
     console.log(`immers app listening on port ${port}`)
     // put back online if was offline for migration
