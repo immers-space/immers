@@ -1,3 +1,9 @@
+## Unreleased
+
+### Fixed
+
+* Properly escape custom theme string in server data to prevent rendering issue with newlines
+
 ## v4.0.0 (2022-11-04)
 
 ### Added
