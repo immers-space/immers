@@ -3,6 +3,9 @@
 ### Fixed
 
 * Enable CORS for hub domains for `GET /auth/oidc-providers`
+* Rendering of profile for users with no avatar model
+* Unable to click enter AR button on models with long names
+* Error with controlled account authorization when multiple redirectUris are registered
 
 ## v4.0.1 (2022-11-16)
 

@@ -6,14 +6,17 @@
   overflow: hidden;
 }
 
-.avatarPreview.large {
-  max-width: 500px;
-  height: 500px;
+img.avatarPreview {
+  object-fit: contain;
+}
 
+.avatarPreview.large {
+  max-width: min(500px, 90%);
+  height: 500px;
 }
 
 .avatarPreview.medium {
-  max-width: 300px;
+  max-width: min(300px, 90%);
   height: 300px;
 }
 
@@ -55,8 +58,7 @@
   opacity: 0.75;
 }
 
-@media screen and (max-width: 679px) {
-  .avatarPreview.large, .avatarPreview.medium {
-    max-width: 100vw;
-  }
+model-viewer::part(default-ar-button) {
+  top: 16px;
+  bottom: unset;
 }

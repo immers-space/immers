@@ -63,8 +63,12 @@ server.exchange(oauthJwtExchangeType, jwtBearer(
   function authorizeClientJwt (client, jwtBearer, done) {
     authdb.authorizeAccountControl(client, jwtBearer).then(({ validatedPayload, user }) => {
       const params = {}
-      const origin = new URL(client.redirectUri)
-      params.origin = validatedPayload.origin || `${origin.protocol}//${origin.host}`
+      if (validatedPayload.origin) {
+        params.origin = validatedPayload.origin
+      } else {
+        const origin = new URL(client.redirectUri[0])
+        params.origin = `${origin.protocol}//${origin.host}`
+      }
       params.issuer = `https://${domain}`
       params.scope = validatedPayload.scope.split(' ')
       authdb.createAccessToken(client, user, params, done)
