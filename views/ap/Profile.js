@@ -111,9 +111,11 @@ export default function Profile ({ taskbarButtons }) {
               <ImmersHandle id={profile.id} preferredUsername={profile.username} />
             </h4>
           </hgroup>
-          <section data-label='Avatar'>
-            <AvatarPreview icon={profile.avatarImage} avatar={profile.avatarObject} />
-          </section>
+          {profile.avatarImage && (
+            <section data-label='Avatar'>
+              <AvatarPreview icon={profile.avatarImage} avatar={profile.avatarObject} />
+            </section>
+          )}
           {isEditing
             ? (
               <label className='editable'>

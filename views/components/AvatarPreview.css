@@ -6,14 +6,17 @@
   overflow: hidden;
 }
 
-.avatarPreview.large {
-  max-width: 500px;
-  height: 500px;
+img.avatarPreview {
+  object-fit: contain;
+}
 
+.avatarPreview.large {
+  max-width: min(500px, 90%);
+  height: 500px;
 }
 
 .avatarPreview.medium {
-  max-width: 300px;
+  max-width: min(300px, 90%);
   height: 300px;
 }
 
