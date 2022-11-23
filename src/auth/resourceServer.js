@@ -69,7 +69,7 @@ module.exports = {
     clnt,
     proxyLogin
   ],
-  oidcLoginProviders,
+  oidcLoginProviders: [hubCors, oidcLoginProviders],
   /** for endpoints that behave differently for authorized requests */
   passIfNotAuthorized,
   requirePrivilege,

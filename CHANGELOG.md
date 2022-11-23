@@ -1,3 +1,9 @@
+## Unreleased
+
+### Fixed
+
+* Enable CORS for hub domains for `GET /auth/oidc-providers`
+
 ## v4.0.1 (2022-11-16)
 
 ### Fixed
