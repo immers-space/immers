@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { IntlProvider } from 'react-intl'
 import c from 'classnames'
@@ -6,16 +6,39 @@ import HandleInput from '../components/HandleInput'
 import Layout from '../components/Layout'
 import FormError from '../components/FormError'
 
+const search = new URLSearchParams(window.location.search)
+const accountMergeProvider = search.get('merge')
+const accountMergeProviderName = search.get('name')
+const approvedProvider = search.get('provider')
 const mountNode = document.getElementById('app')
+const reload = () => window.location.reload()
 ReactDOM.render(<OidcInterstitial />, mountNode)
 
 function OidcInterstitial () {
   const { domain } = window._serverData
+  const [fetching, setFetching] = useState(false)
+  let form
+  if (accountMergeProvider) {
+    form = <MergeForm {...{ fetching, setFetching }} />
+  } else if (approvedProvider) {
+    form = <ApprovedNotice />
+  } else {
+    form = <RegisterForm {...{ domain, fetching, setFetching }} />
+  }
+  return (
+    <IntlProvider locale='en' defaultLocale='en'>
+      <Layout contentTitle='Complete Registration'>
+        <div className={c({ fetching })}>{form}</div>
+      </Layout>
+    </IntlProvider>
+  )
+}
+
+function RegisterForm ({ domain, fetching, setFetching }) {
   const [username, setUsername] = useState('')
   const [takenMessage, setTakenMessage] = useState('')
-  const [fetching, setFetching] = useState(false)
   const [registrationError, setRegistrationError] = useState(false)
-  const [sessionInavlid, setSessionInvalid] = useState(false)
+  const [sessionInvalid, setSessionInvalid] = useState(false)
   const [registrationSuccess, setRegistrationSuccess] = useState(false)
 
   const handleUsername = useCallback(username => {
@@ -36,7 +59,7 @@ function OidcInterstitial () {
         },
         body: new window.URLSearchParams(new window.FormData(registrationForm))
       })
-      if (!result.ok && result.status < 500) {
+      if (!result.ok && result.status < 500 && result.status !== 409) {
         setSessionInvalid(true)
         throw new Error(await result.text())
       }
@@ -58,38 +81,80 @@ function OidcInterstitial () {
     }
   }, [setFetching, setTakenMessage, setRegistrationError, setRegistrationSuccess])
 
-  const disableSubmit = fetching || takenMessage || registrationSuccess || sessionInavlid
+  const disableSubmit = fetching || takenMessage || registrationSuccess || sessionInvalid
 
   return (
-    <IntlProvider locale='en' defaultLocale='en'>
-      <Layout contentTitle='Complete Registration'>
-        <div id='auth-oidc-interstitial' className={c({ fetching })}>
-          <p>
-            You have successfully logged in!
-            Please choose a username to complete your registration.
-          </p>
-          <form action='/auth/oidc-interstitial' method='post' onSubmit={handleSubmit}>
-            <HandleInput onChange={handleUsername} username={username} immer={domain} invalid={takenMessage} lockImmer />
-            <FormError show={takenMessage}>
-              {takenMessage}
-            </FormError>
-            <FormError show={registrationError}>
-              An error occured. Please try again.
-            </FormError>
-            <p className={c({ hidden: !sessionInavlid })}>
-              We cannot process your request, please <a href='/auth/login'>login again</a>.
-            </p>
-            <div className={c('form-item', { hidden: !registrationSuccess })}>
-              Account created. Redirecting to destination.
-            </div>
-            <div className='form-item'>
-              <span>
-                <button type='submit' name='submit' disabled={disableSubmit}>Submit</button>
-              </span>
-            </div>
-          </form>
+    <>
+      <p>
+        You have successfully logged in!
+        Please choose a username to complete your registration.
+      </p>
+      <form action='/auth/oidc-interstitial' method='post' onSubmit={handleSubmit}>
+        <HandleInput onChange={handleUsername} username={username} immer={domain} invalid={takenMessage} lockImmer />
+        <FormError show={takenMessage}>
+          {takenMessage}
+        </FormError>
+        <FormError show={registrationError}>
+          An error occured. Please try again.
+        </FormError>
+        <p className={c({ hidden: !sessionInvalid })}>
+          We cannot process your request, please <a href='/auth/login'>login again</a>.
+        </p>
+        <div className={c('form-item', { hidden: !registrationSuccess })}>
+          Account created. Redirecting to destination.
         </div>
-      </Layout>
-    </IntlProvider>
+        <div className='form-item'>
+          <span>
+            <button type='submit' name='submit' disabled={disableSubmit}>Submit</button>
+          </span>
+        </div>
+      </form>
+    </>
+  )
+}
+
+function MergeForm ({ fetching, setFetching }) {
+  const providerName = accountMergeProviderName
+    ? `${accountMergeProviderName} (${accountMergeProvider})`
+    : accountMergeProvider
+  const handleCheckAuthorized = useCallback(async () => {
+    setFetching(true)
+    const { redirect, pending } = await fetch('/auth/oidc-merge/check', {
+      headers: { Accept: 'application/json' }
+    }).then(res => res.json())
+    console.log({ redirect, pending })
+    if (redirect) {
+      window.location = redirect
+    }
+    setFetching(false)
+  }, [setFetching])
+  useEffect(() => {
+    // poll to see if approval has come in
+    const timer = setInterval(handleCheckAuthorized, 5000)
+    return () => clearInterval(timer)
+  }, [handleCheckAuthorized])
+  return (
+    <>
+      <p className='oidc-interstitial-merge-message'>
+        We found an existing account for your e-mail address
+        and sent you an e-mail to confirm you want to allow login
+        via {providerName}. Once you click the authorization link
+        in the email, this login will proceed automatically
+      </p>
+      <div class='grid'>
+        <button onClick={handleCheckAuthorized} aria-busy={fetching} disabled={fetching}>Check</button>
+        <button class='secondary' onClick={reload}>Resend</button>
+      </div>
+    </>
+  )
+}
+
+function ApprovedNotice () {
+  return (
+    <>
+      <p>
+        Login provider approved. You may close this window.
+      </p>
+    </>
   )
 }

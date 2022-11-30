@@ -24,6 +24,8 @@ module.exports = {
   authorizeServiceAccount: resourceServer.authorizeServiceAccount,
   controlledAccountLogin: resourceServer.controlledAccountLogin,
   oidcLoginProviders: resourceServer.oidcLoginProviders,
+  oidcSendProviderApprovalEmail: resourceServer.oidcSendProviderApprovalEmail,
+  oidcProcessProviderApproved: resourceServer.oidcProcessProviderApproved,
   passIfNotAuthorized: resourceServer.passIfNotAuthorized,
   requirePrivilege: resourceServer.requirePrivilege,
   userToActor: resourceServer.userToActor,
@@ -43,7 +45,8 @@ module.exports = {
   checkImmerAndRedirect: oauthClient.checkImmerAndRedirect,
   handleOAuthReturn: [oauthClient.handleOAuthReturn, resourceServer.returnTo],
   oidcPreRegister: oauthClient.oidcPreRegister,
-  oidcPostRegister: oauthClient.oidcPostRegister
+  oidcPostRegister: oauthClient.oidcPostRegister,
+  oidcPostMerge: oauthClient.oidcPostMerge
   // openId Connect server (WIP)
   /*
   oidcServerRouter: openIdServer.router,

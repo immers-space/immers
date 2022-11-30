@@ -1,3 +1,12 @@
+## Unreleased
+
+### Added
+
+* OpenID Connect account merge: allow OIDC login when an account already exists with that email
+    * Sends an email to the address to get user authorization for the new provider
+    * Displays an interstitial page explaining the situation
+    * User is logged in and proceeds to destination once the email link is clicked
+
 ## v4.0.1 (2022-11-16)
 
 ### Fixed
