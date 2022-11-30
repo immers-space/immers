@@ -10,8 +10,9 @@ const passport = require('passport')
 const login = require('connect-ensure-login')
 const nodemailer = require('nodemailer')
 const cors = require('cors')
+const easyNoPasswordLibrary = require('easy-no-password')
 // strategies for user authentication
-const EasyNoPassword = require('easy-no-password').Strategy
+const EasyNoPasswordStrategy = easyNoPasswordLibrary.Strategy
 const LocalStrategy = require('passport-local').Strategy
 const BearerStrategy = require('passport-http-bearer').Strategy
 const AnonymousStrategy = require('passport-anonymous').Strategy
@@ -31,6 +32,7 @@ const {
   smtpPassword,
   easySecret
 } = appSettings
+const easyNoPassword = easyNoPasswordLibrary(easySecret)
 const emailCheck = require('email-validator')
 const { USER_ROLES } = require('./consts')
 const handleCheck = '^[A-Za-z0-9-]{3,32}$'
@@ -70,6 +72,8 @@ module.exports = {
     proxyLogin
   ],
   oidcLoginProviders: [hubCors, oidcLoginProviders],
+  oidcSendProviderApprovalEmail,
+  oidcProcessProviderApproved,
   /** for endpoints that behave differently for authorized requests */
   passIfNotAuthorized,
   requirePrivilege,
@@ -118,7 +122,7 @@ if (process.env.NODE_ENV === 'production') {
 passport.serializeUser(authdb.serializeUser)
 passport.deserializeUser(authdb.deserializeUser)
 // login via email
-passport.use(new EasyNoPassword(
+passport.use('easy', new EasyNoPasswordStrategy(
   { secret: easySecret },
   function (req) {
     // Check if we are in "stage 1" (requesting a token) or "stage 2" (verifying a token)
@@ -141,6 +145,7 @@ passport.use(new EasyNoPassword(
         from: `"${name}" <${smtpFrom}>`,
         to: email,
         subject: `${user.username}: your ${name} password reset link`,
+        html: `${user.username}, please use this link to reset your ${name} profile password: <a href="${url}">${url}</a>`,
         text: `${user.username}, please use this link to reset your ${name} profile password: ${url}`
       })
       if (process.env.NODE_ENV !== 'production') {
@@ -238,6 +243,84 @@ function oidcLoginProviders (req, res, next) {
   authdb.getOidcLoginProviders().then(providers => {
     res.json(providers)
   }).catch(next)
+}
+
+/** User authorization request to add a new OIDC provider to existing account */
+async function oidcSendProviderApprovalEmail (req, res, next) {
+  let email, providerDomain, providerName, username
+  try {
+    ;({ email, providerDomain, providerName, username } = req.session.oidcClientState)
+  } catch {
+    const err = new Error('Invalid OpenID state: missing email or provider')
+    err.status = 403
+    return next(err)
+  }
+  try {
+    const token = await new Promise((resolve, reject) => {
+      easyNoPassword.createToken(`${username}${providerDomain}`, (err, token) => {
+        if (err) {
+          return reject(err)
+        }
+        resolve(token)
+      })
+    })
+    const search = new URLSearchParams({
+      username,
+      provider: providerDomain,
+      token
+    })
+    const url = `https://${domain}/auth/oidc-merge/approve?${search}`
+    const providerText = providerName
+      ? `${providerName} (${providerDomain})`
+      : providerDomain
+    const info = await transporter.sendMail({
+      from: `"${name}" <${smtpFrom}>`,
+      to: email,
+      subject: `${username}: your ${name} login authorization link`,
+      html: `${username}, we received a request to authorize ${providerText} to login to your ${name} account. If this was you, please use this link to approve the request: <a href="${url}">${url}</a>`,
+      text: `${username}, we received a request to authorize ${providerText} to login to your ${name} account. If this was you, please use this link to approve the request: ${url}`
+    })
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(nodemailer.getTestMessageUrl(info))
+    }
+  } catch (err) {
+    console.error(err)
+    return next(new Error('Error sending OIDC merge authorization email'))
+  }
+  next()
+}
+
+/** Process user authorization for OIDC provider */
+async function oidcProcessProviderApproved (req, res, next) {
+  const token = req.query.token
+  const username = req.query.username
+  const providerDomain = req.query.provider
+  if (!username || !providerDomain) {
+    const err = new Error('Invalid OpenID State')
+    err.status = 403
+    return next(err)
+  }
+  try {
+    const isValid = await new Promise((resolve, reject) => {
+      easyNoPassword.isValid(
+        token,
+        `${username}${providerDomain}`,
+        (error, isValid) => error ? reject(error) : resolve(isValid)
+      )
+    })
+    if (isValid) {
+      await authdb.updateUserOidcProvider(username, providerDomain, false)
+    } else {
+      console.warn(`Unauthorized oidcProcessProviderApproved attempt for provider: ${providerDomain}`)
+      const err = new Error('Invalid token')
+      err.status = 403
+      return next(err)
+    }
+  } catch (err) {
+    console.error(`Error processing oidc provider approval for ${providerDomain}`)
+    next(err)
+  }
+  next()
 }
 
 /** for endpoints that behave differently for authorized requests */

@@ -25,7 +25,8 @@ module.exports = {
   checkImmerAndRedirect,
   handleOAuthReturn,
   oidcPreRegister,
-  oidcPostRegister
+  oidcPostRegister,
+  oidcPostMerge
 }
 
 /// utils ///
@@ -172,9 +173,18 @@ async function handleOAuthReturn (req, res, next) {
            id_tokens for an email corresponding to a user in our system
            that registered via other means
         */
-        // TODO send an easyNoPassword email to get user consent to add this provider
-        // TODO render view explaining consent is needed to add new provider to existing account
-        return res.status(403).send(`Existing ${domain} user account for this email has not authorized ${providerDomain} as an identity provider`)
+        req.session.oidcClientState = {
+          authorized: true,
+          email: claims.email,
+          providerDomain,
+          providerName: savedClient.name,
+          username: user.username
+        }
+        const search = new URLSearchParams({
+          merge: providerDomain,
+          name: savedClient.name
+        })
+        return res.redirect(`/auth/oidc-merge?${search}`)
       }
       // establish login session
       req.login(user, next)
@@ -203,4 +213,30 @@ function oidcPreRegister (req, res, next) {
 function oidcPostRegister (req, res, next) {
   delete req.session.oidcClientState
   next()
+}
+
+async function oidcPostMerge (req, res, next) {
+  try {
+    const {
+      authorized,
+      providerDomain,
+      username
+    } = req.session.oidcClientState
+    if (!(authorized && username && providerDomain)) {
+      console.log('Invalid OIDC state for accout merge')
+      return res.sendStatus(401)
+    }
+    const user = await authdb.getUserByName(username)
+    if (!user.oidcProviders?.includes(providerDomain)) {
+      // still waiting for authorization email link to be clicked
+      return res.json({ pending: true })
+    }
+    delete req.session.oidcClientState
+    req.login(user, next)
+    // next in route will return to OAuth authorize endpoint, which will autogrant token now that user
+    // is logged in with local account and return them to the destination
+  } catch (err) {
+    console.warn('Error processing OIDC account merge')
+    return next(err)
+  }
 }

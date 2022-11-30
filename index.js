@@ -219,10 +219,23 @@ app.post(
 )
 // public user registration, if enabled
 app.post('/auth/user', settings.isTrue('enablePublicRegistration'), register, auth.respondRedirect)
-// complete registration started via oidc identity provider
+
+/// Steps to complete an authorized OpenID Connect registration
+// New account: choose a username
 app.route('/auth/oidc-interstitial')
   .get((req, res) => res.render('dist/oidc-interstitial/oidc-interstitial.html', settings.renderConfig))
   .post(auth.oidcPreRegister, register, auth.oidcPostRegister, auth.respondRedirect)
+// Existing account: get authorization for new login provider
+// send auth email and display explanation
+app.get('/auth/oidc-merge', auth.oidcSendProviderApprovalEmail, (req, res) => {
+  res.render('dist/oidc-interstitial/oidc-interstitial.html', settings.renderConfig)
+})
+// polled from oidc merge page to detect when authorization link is clicked
+app.get('/auth/oidc-merge/check', auth.oidcPostMerge, auth.respondRedirect)
+// process auth link from email
+app.get('/auth/oidc-merge/approve', auth.oidcProcessProviderApproved, (req, res) => {
+  res.render('dist/oidc-interstitial/oidc-interstitial.html', settings.renderConfig)
+})
 
 /**
  * @openapi

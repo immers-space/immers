@@ -248,6 +248,11 @@ const authdb = {
       .updateOne({ username }, { $set: { passwordHash } })
     return result.modifiedCount
   },
+  async updateUserOidcProvider (username, providerDomain, remove) {
+    const operator = remove ? '$pull' : '$addToSet'
+    await db.collection('users')
+      .updateOne({ username }, { [operator]: { oidcProviders: providerDomain } })
+  },
   async createClient (clientId, redirectUri, name) {
     const client = { clientId, name }
     client.redirectUri = Array.isArray(redirectUri)
