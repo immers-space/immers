@@ -228,7 +228,7 @@ async function oidcPostMerge (req, res, next) {
     }
     const user = await authdb.getUserByName(username)
     if (!user.oidcProviders?.includes(providerDomain)) {
-      // still waiting for authoriation email link to be clicked
+      // still waiting for authorization email link to be clicked
       return res.json({ pending: true })
     }
     delete req.session.oidcClientState
