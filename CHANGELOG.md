@@ -7,6 +7,10 @@
     * Displays an interstitial page explaining the situation
     * User is logged in and proceeds to destination once the email link is clicked
 
+### Fixed
+
+* Avatar changes made from profile page correctly reflected on other ActivityPub platforms (immers-client update)
+
 ## v4.0.2 (2022-11-23)
 
 ### Fixed
