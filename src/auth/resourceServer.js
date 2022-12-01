@@ -30,6 +30,8 @@ const {
   smtpFrom,
   smtpUser,
   smtpPassword,
+  smtpClient,
+  smtpKey,
   easySecret
 } = appSettings
 const easyNoPassword = easyNoPasswordLibrary(easySecret)
@@ -97,10 +99,17 @@ if (process.env.NODE_ENV === 'production') {
     host: smtpHost,
     port: smtpPort,
     secure: smtpPort === 465,
-    auth: {
-      user: smtpUser,
-      pass: smtpPassword
-    }
+    auth: smtpClient
+      ? {
+          type: 'OAuth2',
+          user: smtpUser,
+          serviceClient: smtpClient,
+          privateKey: smtpKey
+        }
+      : {
+          user: smtpUser,
+          pass: smtpPassword
+        }
   })
 } else {
   nodemailer.createTestAccount().then(testAccount => {

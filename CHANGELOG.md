@@ -3,9 +3,11 @@
 ### Added
 
 * OpenID Connect account merge: allow OIDC login when an account already exists with that email
-    * Sends an email to the address to get user authorization for the new provider
-    * Displays an interstitial page explaining the situation
-    * User is logged in and proceeds to destination once the email link is clicked
+  * Sends an email to the address to get user authorization for the new provider
+  * Displays an interstitial page explaining the situation
+  * User is logged in and proceeds to destination once the email link is clicked
+* SMTP OAuth authentication
+  * Support service acount login (2-legged OAuth) to mail service by specifying `smtpClient` and `smtpKey` evironment variables in place of `smtpPassword`
 
 ### Fixed
 

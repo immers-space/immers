@@ -58,6 +58,8 @@ smtpHost | Mail service domain (for password resets) | smtp.sendgrid.net
 smtpPort | Mail service port | 587
 smtpUser | Mail service username | apikey
 smtpPassword | Mail service password |
+smtpClient | Mail OAuth service account id (instead of password) |
+smtpKey | Mail OAuth service account private key (instead of password) |
 sessionSecret | Secret key for session cookie encryption | *Automatically generated when [using setup script](https://github.com/immers-space/immers-app#step-1---setup)*
 easySecret | Secret key for email token encryption | *Automatically generated when [using setup script](https://github.com/immers-space/immers-app#step-1---setup)*
 userFiles | Path to storage location for user-uploaded files | `uploads/`
