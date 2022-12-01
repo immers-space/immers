@@ -44,6 +44,8 @@ const {
   smtpPassword,
   smtpPort,
   smtpUser,
+  smtpClient,
+  smtpKey,
   systemDisplayName,
   systemUserName,
   welcome
@@ -91,6 +93,8 @@ const appSettings = {
   smtpPassword,
   smtpPort,
   smtpUser,
+  smtpClient,
+  smtpKey,
   systemDisplayName,
   systemUserName,
   welcomeContent
