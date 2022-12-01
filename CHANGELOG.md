@@ -12,6 +12,7 @@
 ### Fixed
 
 * Avatar changes made from profile page correctly reflected on other ActivityPub platforms (immers-client update)
+* Update activitypub-express to eliminate unindexed activty.object.object query on Update
 
 ## v4.0.2 (2022-11-23)
 
