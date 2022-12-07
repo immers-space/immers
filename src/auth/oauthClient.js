@@ -108,7 +108,7 @@ async function discoverAndRegisterClient (username, immer, requestedPath) {
     const redirect = client.authorizationUrl({
       // TODO: check issuer.scopes_supported to determine if the remote client is a full immer or just an identity provider,
       // update scope request to match
-      scope: 'openid email profile',
+      scope: 'openid email',
       code_challenge: codeChallenge,
       code_challenge_method: 'S256',
       redirect_uri: `https://${domain}/auth/return`
