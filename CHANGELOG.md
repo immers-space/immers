@@ -1,3 +1,9 @@
+## Unreleased
+
+### Fixed
+
+* Fix email unable to send when smtpPort is a string
+
 ## v4.1.0 (2022-12-01)
 
 ### Added
