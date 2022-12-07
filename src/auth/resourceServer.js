@@ -98,7 +98,7 @@ if (process.env.NODE_ENV === 'production') {
   transporter = nodemailer.createTransport({
     host: smtpHost,
     port: smtpPort,
-    secure: smtpPort === 465,
+    secure: smtpPort === 465 || smtpPort === '465',
     auth: smtpClient
       ? {
           type: 'OAuth2',
