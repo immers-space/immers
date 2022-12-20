@@ -1,8 +1,14 @@
-## v4.1.1 (2022-12-07)
+## Unreleased
 
 ### Fixed
 
 * Fix Facebook OIDC by dropping request for currently unused `profile` scope from all OIDC authorization requests
+
+
+## v4.1.1 (2022-12-07)
+
+### Fixed
+
 * Fix email unable to send when smtpPort is a string
 
 ## v4.1.0 (2022-12-01)
