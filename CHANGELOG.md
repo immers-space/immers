@@ -1,3 +1,10 @@
+## Unreleased
+
+### Fixed
+
+* Fix Facebook OIDC by dropping request for currently unused `profile` scope from all OIDC authorization requests
+
+
 ## v4.1.1 (2022-12-07)
 
 ### Fixed
