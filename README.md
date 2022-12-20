@@ -81,7 +81,8 @@ imageAttributionUrl | Attribution for backgroundImage, if needed | https://www.v
 maxUploadSize | Limit on media upload file size in Mb | 20
 monetizationPointer | [Payment pointer](https://webmonetization.org/docs/ilp-wallets/#payment-pointers) for Web Monetization on login & profile pages | Immers Space organization wallet
 port | Port number for immers sever | 8081
-smtpFrom | From address for emails | noreplay@mail.`domain`
+smtpFrom | From address for emails | noreply@mail.`domain`
+passEmailToHub | For apps that depend on user emails, this option will include the cleartext e-mail address in the initial token response (as an additional hash parameter named `email`) to the hub on registration so it can be saved and associated with the profile | `false`
 emailOptInURL | Link to an opt-in form for email updates to show on registration page | None
 emailOptInParam | Query parameter for `emailOptInURL` for the e-mail address | Use opt-in url without inserting e-mail
 emailOptInNameParam | Query parameter for `emailOptInURL` for the name | Use opt-in url without inserting name

@@ -36,6 +36,7 @@ const {
   maxUploadSize,
   monetizationPointer,
   name,
+  passEmailToHub,
   port,
   proxyMode,
   sessionSecret,
@@ -85,6 +86,7 @@ const appSettings = {
   monetizationPointer,
   mongoURI,
   name,
+  passEmailToHub: passEmailToHub === 'true',
   port,
   proxyMode: parseProxyMode(proxyMode),
   sessionSecret,
@@ -116,7 +118,8 @@ const renderConfig = {
   imageAttributionText,
   imageAttributionUrl,
   emailOptInURL,
-  enablePublicRegistration
+  enablePublicRegistration,
+  passEmailToHub: appSettings.passEmailToHub
 }
 
 const isTrue = (settingName) => {
