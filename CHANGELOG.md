@@ -1,5 +1,10 @@
 ## Unreleased
 
+### Added
+
+* When new users register on your immer, some additional data is now returned in the authorization response to your site: `isNewUser`, `provider` (their login provider if using OIDC else `email`). With immers-client >=2.14.0, this will be available from `immersClient.sessionInfo` after login ([reference](https://immers-space.github.io/immers-client/ImmersClient.html#sessionInfo)).
+* `passEmailToHub` environment config, when `true` the cleartext email is included with the above sessionInfo, and the email data safety message is omitted from the registration page.
+
 ### Fixed
 
 * Fix Facebook OIDC by dropping request for currently unused `profile` scope from all OIDC authorization requests

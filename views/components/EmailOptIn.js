@@ -1,7 +1,7 @@
 import React from 'react'
 
 export default function EmailOptIn () {
-  const { emailOptInURL } = window._serverData
+  const { emailOptInURL, passEmailToHub } = window._serverData
   const onClick = event => {
     event.preventDefault()
     const search = new URLSearchParams()
@@ -17,7 +17,7 @@ export default function EmailOptIn () {
   }
   return (
     <p className='form-footer'>
-      We don't save your e-mail, just an encrypted hash of it for password resets.{' '}
+      {!passEmailToHub && <span>We don't save your e-mail, just an encrypted hash of it for password resets.</span>}{' '}
       {emailOptInURL && (<span><a href={emailOptInURL} onClick={onClick}>Click here</a> to opt-in to our e-mail contact list.</span>)}
     </p>
   )

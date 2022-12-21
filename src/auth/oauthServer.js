@@ -27,6 +27,7 @@ module.exports = {
   authorization: [
     stashHandle,
     login.ensureLoggedIn('/auth/login'),
+    sessionToLocals,
     server.authorization(authdb.validateClient, checkIfAuthorizationDialogNeeded),
     renderAuthorizationDialog
   ],
@@ -95,15 +96,22 @@ async function registerClient (req, res, next) {
   return res.json(client)
 }
 
-function checkIfAuthorizationDialogNeeded (client, user, scope, type, req, done) {
+function checkIfAuthorizationDialogNeeded (client, user, scope, type, authRequest, locals, done) {
   // Auto-approve for home immer
   if (client.isTrusted) {
     const params = {}
-    const origin = new URL(req.redirectURI)
+    const origin = new URL(authRequest.redirectURI)
     params.origin = `${origin.protocol}//${origin.host}`
-    // express protocol does not include colon
     params.issuer = `https://${domain}`
     params.scope = ['*']
+    /**
+     * Can pass additional info to its own hub on user registration,
+     * added as params in auth response, parsed to client.sessionInfo in ImmersClient
+     */
+    if (client.clientId === `https://${domain}/o/immer`) {
+      // registrationInfo set in resourceServer->registerUser
+      params.registrationInfo = locals.registrationInfo
+    }
     return done(null, true, params)
   }
   // Otherwise ask user
@@ -125,7 +133,6 @@ function determineTokenParams (req, done) {
   const params = {}
   const origin = new URL(req.oauth2.redirectURI)
   params.origin = `${origin.protocol}//${origin.host}`
-  // express protocol does not include colon
   params.issuer = `https://${domain}`
   params.scope = req.body.scope?.split(' ') || []
   done(null, params)
@@ -141,5 +148,16 @@ function stashHandle (req, res, next) {
   if (req.query.tab && req.session) {
     req.session.loginTab = req.query.tab
   }
+  next()
+}
+
+/**
+ * oauth2orize doesn't allow access to raw request or session in callbacks,
+ * but it does allow access to request.locals
+ */
+function sessionToLocals (req, res, next) {
+  req.locals ??= {}
+  req.locals.registrationInfo = req.session.registrationInfo
+  delete req.session.registrationInfo
   next()
 }

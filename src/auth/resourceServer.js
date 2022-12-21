@@ -25,6 +25,7 @@ const {
   domain,
   name,
   hubs,
+  passEmailToHub,
   smtpHost,
   smtpPort,
   smtpFrom,
@@ -388,6 +389,14 @@ async function registerUser (req, res, next) {
     const user = await authdb.createUser(username, password, email, oidcProviders)
     if (!user) {
       throw new Error('Unable to create user')
+    }
+    req.session.registrationInfo = {
+      isNewUser: true,
+      provider: oidcProviders?.[0] || 'email'
+    }
+    if (passEmailToHub) {
+      // temporarily save cleartext email in session, it will be deleted and passed to hub with the authorization response
+      req.session.registrationInfo.email = email
     }
     req.login(user, next)
   } catch (err) { next(err) }

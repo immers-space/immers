@@ -170,7 +170,11 @@ const authdb = {
       const expiry = new Date(Date.now() + tokenAge)
       await db.collection('tokens')
         .insertOne({ token, user, clientId, expiry, tokenType, origin: ares.origin, scope: ares.scope })
-      return done(null, token, { token_type: tokenType, issuer: ares.issuer, scope: ares.scope.join(' ') })
+      const responseParams = { token_type: tokenType, issuer: ares.issuer, scope: ares.scope.join(' ') }
+      if (ares.registrationInfo) {
+        Object.assign(responseParams, ares.registrationInfo)
+      }
+      return done(null, token, responseParams)
     } catch (err) { done(err) }
   },
   async validateAccessToken (token, done) {
