@@ -70,23 +70,23 @@ async function checkImmerAndRedirect (req, res, next) {
   }
 }
 
-async function discoverAndRegisterClient (username, domain, requestedPath) {
-  domain = domain.toLowerCase()
+async function discoverAndRegisterClient (username, userDomain, requestedPath) {
+  userDomain = userDomain.toLowerCase()
   username = username.toLowerCase()
 
-  if (domain === domain.toLowerCase()) {
+  if (userDomain === domain.toLowerCase()) {
     return { result: { local: true } }
   }
 
-  let savedClient = await authdb.getRemoteClient(domain)
+  let savedClient = await authdb.getRemoteClient(userDomain)
   // attempt to discover new provider if not known
   if (!savedClient) {
     // try OpenId Connect Discovery first
     try {
       // else discover and register new client
-      const issuer = await Issuer.webfinger(`acct:${username}@${domain}`)
+      const issuer = await Issuer.webfinger(`acct:${username}@${userDomain}`)
       if (!issuer.registration_endpoint) {
-        throw new Error(`${domain} does not support dynamic client registration`)
+        throw new Error(`${userDomain} does not support dynamic client registration`)
       }
       const client = await issuer.Client.register({
         client_name: name,
@@ -97,12 +97,12 @@ async function discoverAndRegisterClient (username, domain, requestedPath) {
         // grant_types: [],
       })
       savedClient = await authdb
-        .saveRemoteClient(domain, CLIENT_TYPES.OIDC, issuer, client)
+        .saveRemoteClient(userDomain, CLIENT_TYPES.OIDC, issuer, client)
     } catch (err) {
       console.error(err)
     }
     // fallback to immers legacy discovery, error out if not available
-    const client = await request(`https://${domain}/auth/client`, {
+    const client = await request(`https://${userDomain}/auth/client`, {
       method: 'POST',
       body: {
         name,
@@ -112,7 +112,7 @@ async function discoverAndRegisterClient (username, domain, requestedPath) {
       json: true
     })
     savedClient = await authdb
-      .saveRemoteClient(domain, CLIENT_TYPES.IMMERS, null, client)
+      .saveRemoteClient(userDomain, CLIENT_TYPES.IMMERS, null, client)
   }
 
   // authorize with the retreived or newly registered provider
@@ -121,7 +121,7 @@ async function discoverAndRegisterClient (username, domain, requestedPath) {
       const issuer = new Issuer(savedClient.issuer)
       const client = new issuer.Client(savedClient.client)
       const codeVerifier = generators.codeVerifier()
-      const oidcClientState = { codeVerifier, providerDomain: domain }
+      const oidcClientState = { codeVerifier, providerDomain: userDomain }
       const codeChallenge = generators.codeChallenge(codeVerifier)
       const redirect = client.authorizationUrl({
         // TODO: check issuer.scopes_supported to determine if the remote client is a full immer or just an identity provider,
@@ -144,10 +144,10 @@ async function discoverAndRegisterClient (username, domain, requestedPath) {
         * so users are sent home to login and authorize the destination immer as a client,
         * then come back the same room on the desination with their token
         */
-      const url = new URL(`https://${domain}${requestedPath || '/'}`)
+      const url = new URL(`https://${userDomain}${requestedPath || '/'}`)
       const search = new URLSearchParams(url.search)
       // handle may or may not be included depending on path here, ensure it is
-      search.set('me', `${username}[${domain}]`)
+      search.set('me', `${username}[${userDomain}]`)
       url.search = search.toString()
       return { result: { redirect: url.toString() } }
     }
