@@ -11,9 +11,10 @@ module.exports = {
    * @param {import('mongodb').MongoClient} client
    */
   async up (db, client) {
-    const immerClients = await db.collection(REMOTES).find({}).project({ _id: -1 }).toArray()
-    const oidcClients = await db.collection(OIDC_REMOTES).find({}).project({ _id: -1 }).toArray()
+    const immerClients = await db.collection(REMOTES).find({}).project({ _id: 0 }).toArray()
+    const oidcClients = await db.collection(OIDC_REMOTES).find({}).project({ _id: 0 }).toArray()
     const remoteClients = []
+    let anyDomainConflicts = false
     immerClients.forEach(immerClient => {
       const { domain, ...client } = immerClient
       remoteClients.push({
@@ -25,6 +26,7 @@ module.exports = {
     oidcClients.forEach(oidcClient => {
       oidcClient.type = CLIENT_TYPES.OIDC
       if (remoteClients.find(client => client.domain === oidcClient.domain)) {
+        anyDomainConflicts = true
         console.warn('Could not migrate OIDC client due to duplicate domain', JSON.stringify(oidcClient))
         return
       }
@@ -39,8 +41,13 @@ module.exports = {
           unique: true
         })
         await db.collection(NEW_REMOTES).insertMany(remoteClients)
-        await db.collection(REMOTES).drop()
-        await db.collection(OIDC_REMOTES).drop()
+
+        await dropIfExists(db.collection(REMOTES))
+        if (anyDomainConflicts) {
+          console.warn(`Not dropping ${OIDC_REMOTES} collection as some clients could not be migrated.`)
+        } else {
+          await dropIfExists(db.collection(OIDC_REMOTES))
+        }
       })
     } finally {
       await session.endSession()
@@ -48,9 +55,10 @@ module.exports = {
   },
 
   async down (db, client) {
-    const remoteClients = await db.collection(NEW_REMOTES).find({}).project({ _id: -1 }).toArray()
+    const remoteClients = await db.collection(NEW_REMOTES).find({}).project({ _id: 0 }).toArray()
     const remotes = []
     const oidcRemoteClients = []
+    let anyNewClientTypes = false
     remoteClients.forEach(remoteClient => {
       switch (remoteClient.type) {
         case CLIENT_TYPES.IMMERS: {
@@ -67,6 +75,7 @@ module.exports = {
           break
         }
         default:
+          anyNewClientTypes = true
           console.warn('cannot migrate unsupported client type', JSON.stringify(remoteClient))
       }
     })
@@ -85,10 +94,25 @@ module.exports = {
         })
         await db.collection(REMOTES).insertMany(remotes)
         await db.collection(OIDC_REMOTES).insertMany(oidcRemoteClients)
-        await db.collection(NEW_REMOTES).drop()
+        if (anyNewClientTypes) {
+          console.warn(`Not dropping ${NEW_REMOTES} as some clients could not be migrated`)
+        } else {
+          await dropIfExists(db.collection(NEW_REMOTES))
+        }
       })
     } finally {
       await session.endSession()
     }
   }
+}
+
+/**
+ * @param {import('mongodb').Collection} col
+ */
+function dropIfExists (col) {
+  return col.drop().catch(err => {
+    if (!err.message.match(/ns not found/)) {
+      throw err
+    }
+  })
 }
