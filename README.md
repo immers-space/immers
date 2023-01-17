@@ -89,7 +89,6 @@ emailOptInNameParam | Query parameter for `emailOptInURL` for the name | Use opt
 systemUserName | Username for a "Service" type actor representing the Immer, enables welcome messages and [Mastodon secure mode](https://docs.joinmastodon.org/spec/activitypub/#secure-mode) compatibility | none (does not create service actor)
 systemDisplayName | Sets the display name for the service actor | none
 welcome | HTML file for a message that will be delivered from the system user to new user's inboxes (requires `systemUserName`) | none (does not send message)
-keyPath, certPath, caPath | Local development only. Relative paths to certificate files | None
 proxyMode | Enable use behind an SSL-terminating proxy or load balancer, serves over http instead of https and sets Express `trust proxy` setting to the value of `proxyMode` (e.g. `1`, [other options](https://expressjs.com/en/guide/behind-proxies.html)) | none (serves over https with AutoEncrypt)
 enablePublicRegistration | Allow new user self-registration | true
 enableClientRegistration | Allow new remote immers servers to register - if this is `false`, users will not be able to login with their accounts from other servers unless that server is already registered | true
@@ -175,18 +174,12 @@ git clone https://github.com/immers-space/immers.git
 cd immers
 npm ci
 ```
-* Install a self-signed certificate
-```
-mkdir certs
-sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/server.key -out certs/server.cert
-sudo chown $USER certs/*
-```
 * Install [mongodb](https://docs.mongodb.com/manual/installation/)
 * Run immer with `npm run dev:server` 
 
 hubs
 
-* Clone and install our fork - **Must use Node 14.x / NPM 6.x**
+* Clone and install our fork - **Recommend Node 16 / NPM >=8**
 ```
 git clone https://github.com/immers-space/hubs.git
 cd hubs

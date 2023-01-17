@@ -30,6 +30,7 @@ const { generateMetaTags } = require('./src/openGraph')
 const { MongoAdapter } = require('./src/auth/openIdServerDb')
 const adminApi = require('./src/adminApi.js')
 const SocketManager = require('./src/streaming/SocketManager')
+const { createSelfSignedCertificate } = require('./src/cryptoUtils')
 
 const {
   port,
@@ -39,9 +40,6 @@ const {
   name,
   mongoURI,
   sessionSecret,
-  keyPath,
-  certPath,
-  caPath,
   icon,
   emailOptInURL,
   emailOptInParam,
@@ -195,6 +193,7 @@ app.get('/auth/optin', (req, res) => {
   res.redirect(url)
 })
 app.get('/auth/return', auth.handleOAuthReturn)
+app.post('/auth/acs', auth.handleSamlReturn)
 
 async function registerActor (req, res, next) {
   const preferredUsername = req.body.username
@@ -371,11 +370,6 @@ app.get('/ap.html', auth.publ, generateMetaTags, (req, res) => {
 // useful for immers + static site combo so they don't have to include /static in all page urls
 app.use('/', express.static('static-ext'))
 
-const sslOptions = {
-  key: keyPath && fs.readFileSync(path.join(__dirname, keyPath)),
-  cert: certPath && fs.readFileSync(path.join(__dirname, certPath)),
-  ca: caPath && fs.readFileSync(path.join(__dirname, caPath))
-}
 migrate(mongoURI).catch((err) => {
   console.error('Unable to apply migrations: ', err.message)
   process.exit(1)
@@ -390,7 +384,8 @@ migrate(mongoURI).catch((err) => {
       server = AutoEncrypt.https.createServer({ domains: [domain] }, app)
     }
   } else {
-    server = https.createServer(sslOptions, app)
+    const { certificate, privateKey } = await createSelfSignedCertificate()
+    server = https.createServer({ cert: certificate, key: privateKey }, app)
   }
 
   // streaming updates

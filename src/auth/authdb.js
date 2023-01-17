@@ -2,21 +2,25 @@ const { appSettings } = require('../settings')
 const { ObjectId } = require('mongodb')
 const uid = require('uid-safe')
 const bcrypt = require('bcrypt')
-const crypto = require('crypto')
 const jwt = require('jsonwebtoken')
 const { USER_ROLES } = require('./consts')
 const { parseHandle } = require('../utils')
+const { hashEmail } = require('../cryptoUtils')
 
 const { domain, hubs, name, adminEmail } = appSettings
 
 const saltRounds = 10
 const tokenAge = 24 * 60 * 60 * 1000 // one day
 const anonClientPrefix = '_anonymous:'
-function hashEmail (email) {
-  return crypto.createHash('sha256').update(email.toLowerCase()).digest('base64')
-}
+
+/** @type {import('mongodb').Db} */
 let db
 const authdb = {
+  /**
+   * Initialize auth database: creates needed indices, promote admins,
+   * update local client
+   * @param {import('mongodb').Db} connection Connected mongo database
+   */
   async setup (connection) {
     db = connection
     // token expiration via record deletion
@@ -267,27 +271,34 @@ const authdb = {
     return client
   },
   getRemoteClient (domain) {
-    return db.collection('remotes').findOne({ domain })
+    return db.collection('remoteClients').findOne({ domain })
   },
-  async saveRemoteClient (domain, client) {
-    const result = await db.collection('remotes').insertOne({
-      domain,
-      clientId: client.clientId,
-      redirectUri: client.redirectUri
-    })
-    if (!result.acknowledged) { throw new Error('Error saving remove client') }
-  },
-  /// OpenID Connect clients for other servers
-  oidcGetRemoteClient (domain) {
-    return db.collection('oidcRemoteClients').findOne({ domain })
-  },
-  async oidcSaveRemoteClient (domain, issuer, client, metadata) {
-    const result = await db.collection('oidcRemoteClients').insertOne({
+  /**
+   * Save a client from another immer or service that can access this server's resource server
+   * @param {string} domain host value of the provider url
+   * @param {('immers'|'oidc'|'saml')} type client type
+   * @param {object} issuer data describing the provider (varies by type)
+   * @param {object} client data describing this server's client (e.g. id & key, vaires by type)
+   * @param {{ [name]: string, [buttonIcon]: string, [buttonLabel]: string, [showButton]: boolean }} [metadata] data for UI representations
+   * @returns {Promise<object>} created/updated client report
+   */
+  async saveRemoteClient (domain, type, issuer, client, metadata = {}) {
+    const data = {
       ...metadata,
       domain,
+      type,
       issuer: issuer.metadata,
       client: client.metadata
-    })
+    }
+    const result = await db.collection('remoteClients').insertOne(data)
+    if (!result.acknowledged) { throw new Error('Error saving remove client') }
+    return data
+  },
+  async updateRemoteClient (id, update) {
+    const result = await db.collection('remoteClients').updateOne(
+      { _id: ObjectId(id) },
+      { $set: update }
+    )
     if (!result.acknowledged) { throw new Error('Error saving remove client') }
   },
   async getOidcLoginProviders () {

@@ -60,7 +60,7 @@ const clientProjection = {
 }
 
 async function getOauthClients (req, res) {
-  const oidcRemoteClients = await apex.store.db.collection('oidcRemoteClients')
+  const oidcRemoteClients = await apex.store.db.collection('remoteClients')
     .find({}, { projection: clientProjection })
     .toArray()
   res.json(oidcRemoteClients.map(toFrontEndClientFormat))
@@ -74,15 +74,15 @@ async function postOauthClient (req, res) {
     return res.json({ success: false, step: 'discovery', error: err.toString() })
   }
   try {
-    const { domain: providerDomain, issuer, client, metadata } = clientData
-    await authdb.oidcSaveRemoteClient(providerDomain, issuer, client, metadata)
+    const { domain: providerDomain, type, issuer, client, metadata } = clientData
+    await authdb.saveRemoteClient(providerDomain, type, issuer, client, metadata)
     return res.json({ success: true })
   } catch (err) { return res.status(500) }
 }
 
 async function deleteOauthClient (req, res) {
   try {
-    await apex.store.db.collection('oidcRemoteClients').deleteOne({
+    await apex.store.db.collection('remoteClients').deleteOne({
       _id: ObjectId(req.body.id)
     })
     return res.json({ success: true })
@@ -90,7 +90,7 @@ async function deleteOauthClient (req, res) {
 }
 
 async function getOauthClient (req, res) {
-  const oidcRemoteClients = await apex.store.db.collection('oidcRemoteClients')
+  const oidcRemoteClients = await apex.store.db.collection('remoteClients')
     .findOne({ _id: ObjectId(req.params.id) }, { projection: clientProjection })
   res.json(toFrontEndClientFormat(oidcRemoteClients))
 }
@@ -107,7 +107,7 @@ async function updateOauthClient (req, res) {
     if (req.body.clientSecret) {
       update['client.client_secret'] = req.body.clientSecret
     }
-    await apex.store.db.collection('oidcRemoteClients').updateOne(
+    await apex.store.db.collection('remoteClients').updateOne(
       { _id: ObjectId(req.params.id) },
       { $set: update }
     )

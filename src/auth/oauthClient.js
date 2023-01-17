@@ -5,12 +5,14 @@
  * requesting access tokens from their immers' authorization server
  * in order to accesss their account and post activities on their behalf
  */
-const { appSettings } = require('../settings')
 const request = require('request-promise-native')
 const { Issuer, generators } = require('openid-client')
+const saml = require('samlify')
+const { appSettings } = require('../settings')
 const authdb = require('./authdb')
 const { scopes } = require('../../common/scopes')
 const { parseHandle } = require('../utils')
+const { CLIENT_TYPES } = require('./consts')
 
 const {
   domain,
@@ -68,31 +70,25 @@ async function checkImmerAndRedirect (req, res, next) {
   }
 }
 
-async function discoverAndRegisterClient (username, immer, requestedPath) {
-  immer = immer.toLowerCase()
+async function discoverAndRegisterClient (username, domain, requestedPath) {
+  domain = domain.toLowerCase()
   username = username.toLowerCase()
 
-  if (immer === domain.toLowerCase()) {
+  if (domain === domain.toLowerCase()) {
     return { result: { local: true } }
   }
 
-  // OpenId Connect Discovery
-  try {
-    let issuer
-    let client
-    // check if client already saved
-    const clientMetadata = await authdb.oidcGetRemoteClient(immer)
-    if (clientMetadata) {
-      console.info(`loaded existing oidc client for ${immer}`)
-      issuer = new Issuer(clientMetadata.issuer)
-      client = new issuer.Client(clientMetadata.client)
-    } else {
+  let savedClient = await authdb.getRemoteClient(domain)
+  // attempt to discover new provider if not known
+  if (!savedClient) {
+    // try OpenId Connect Discovery first
+    try {
       // else discover and register new client
-      issuer = await Issuer.webfinger(`acct:${username}@${immer}`)
+      const issuer = await Issuer.webfinger(`acct:${username}@${domain}`)
       if (!issuer.registration_endpoint) {
-        throw new Error(`${immer} does not support dynamic client registration`)
+        throw new Error(`${domain} does not support dynamic client registration`)
       }
-      client = await issuer.Client.register({
+      const client = await issuer.Client.register({
         client_name: name,
         logo_uri: `https://${domain}/static/${icon}`,
         client_uri: `https://${domain}`,
@@ -100,28 +96,13 @@ async function discoverAndRegisterClient (username, immer, requestedPath) {
         // response_types: [],
         // grant_types: [],
       })
-      await authdb.oidcSaveRemoteClient(immer, issuer, client)
+      savedClient = await authdb
+        .saveRemoteClient(domain, CLIENT_TYPES.OIDC, issuer, client)
+    } catch (err) {
+      console.error(err)
     }
-    const codeVerifier = generators.codeVerifier()
-    const oidcClientState = { codeVerifier, providerDomain: immer }
-    const codeChallenge = generators.codeChallenge(codeVerifier)
-    const redirect = client.authorizationUrl({
-      // TODO: check issuer.scopes_supported to determine if the remote client is a full immer or just an identity provider,
-      // update scope request to match
-      scope: 'openid email',
-      code_challenge: codeChallenge,
-      code_challenge_method: 'S256',
-      redirect_uri: `https://${domain}/auth/return`
-    })
-    return { result: { redirect }, oidcClientState }
-  } catch (err) {
-    console.error(err)
-  }
-
-  // legacy immers discovery
-  let client = await authdb.getRemoteClient(immer)
-  if (!client) {
-    client = await request(`https://${immer}/auth/client`, {
+    // fallback to immers legacy discovery, error out if not available
+    const client = await request(`https://${domain}/auth/client`, {
       method: 'POST',
       body: {
         name,
@@ -130,25 +111,54 @@ async function discoverAndRegisterClient (username, immer, requestedPath) {
       },
       json: true
     })
-    await authdb.saveRemoteClient(immer, client)
+    savedClient = await authdb
+      .saveRemoteClient(domain, CLIENT_TYPES.IMMERS, null, client)
   }
-  /* returnTo is /auth/authorize with client_id and redirect_uri for the destination immer
-    * so users are sent home to login and authorize the destination immer as a client,
-    * then come back the same room on the desination with their token
-    */
-  const url = new URL(`https://${immer}${requestedPath || '/'}`)
-  const search = new URLSearchParams(url.search)
-  // handle may or may not be included depending on path here, ensure it is
-  search.set('me', `${username}[${immer}]`)
-  url.search = search.toString()
-  return { result: { redirect: url.toString() } }
+
+  // authorize with the retreived or newly registered provider
+  switch (savedClient.type) {
+    case CLIENT_TYPES.OIDC: {
+      const issuer = new Issuer(savedClient.issuer)
+      const client = new issuer.Client(savedClient.client)
+      const codeVerifier = generators.codeVerifier()
+      const oidcClientState = { codeVerifier, providerDomain: domain }
+      const codeChallenge = generators.codeChallenge(codeVerifier)
+      const redirect = client.authorizationUrl({
+        // TODO: check issuer.scopes_supported to determine if the remote client is a full immer or just an identity provider,
+        // update scope request to match
+        scope: 'openid email',
+        code_challenge: codeChallenge,
+        code_challenge_method: 'S256',
+        redirect_uri: `https://${domain}/auth/return`
+      })
+      return { result: { redirect }, oidcClientState }
+    }
+    case CLIENT_TYPES.SAML: {
+      const idp = saml.IdentityProvider(savedClient.issuer)
+      const sp = saml.ServiceProvider(savedClient.client)
+      const { id, context } = await sp.createLoginRequest(idp, 'redirect')
+      return { result: { redirect: context } }
+    }
+    case CLIENT_TYPES.IMMERS: {
+      /* requestedPath is /auth/authorize with client_id and redirect_uri for the destination immer
+        * so users are sent home to login and authorize the destination immer as a client,
+        * then come back the same room on the desination with their token
+        */
+      const url = new URL(`https://${domain}${requestedPath || '/'}`)
+      const search = new URLSearchParams(url.search)
+      // handle may or may not be included depending on path here, ensure it is
+      search.set('me', `${username}[${domain}]`)
+      url.search = search.toString()
+      return { result: { redirect: url.toString() } }
+    }
+  }
 }
 
 async function handleOAuthReturn (req, res, next) {
   try {
     const { codeVerifier, providerDomain } = req.session.oidcClientState
     delete req.session.oidcClientState
-    const savedClient = await authdb.oidcGetRemoteClient(providerDomain)
+    const savedClient = await authdb.getRemoteClient(providerDomain)
     const issuer = new Issuer(savedClient.issuer)
     const client = new issuer.Client(savedClient.client)
     const params = client.callbackParams(req)
