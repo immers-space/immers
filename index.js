@@ -194,6 +194,7 @@ app.get('/auth/optin', (req, res) => {
 })
 app.get('/auth/return', auth.handleOAuthReturn)
 app.post('/auth/acs', auth.handleSamlReturn)
+app.get('/auth/saml-metadata', auth.samlProviderMetadata)
 
 async function registerActor (req, res, next) {
   const preferredUsername = req.body.username
