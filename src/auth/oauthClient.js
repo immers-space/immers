@@ -187,7 +187,7 @@ async function handleOAuthReturn (req, res, next) {
         return res.redirect(`/auth/oidc-merge?${search}`)
       }
       // establish login session
-      req.login(user, next)
+      req.login(user, { keepSessionInfo: true }, next)
       // next in route will return to OAuth authorize endpoint, which will autogrant token now that user
       // is logged in with local account and return them to the destination
     }

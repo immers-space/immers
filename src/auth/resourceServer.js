@@ -181,8 +181,7 @@ passport.use(new AnonymousStrategy())
 /// utils ///
 /** Terminate login session */
 function logout (req, res, next) {
-  req.logout()
-  next()
+  req.logout(next)
 }
 /**
  * Get a login session cookie for a controlled account,
@@ -398,7 +397,7 @@ async function registerUser (req, res, next) {
       // temporarily save cleartext email in session, it will be deleted and passed to hub with the authorization response
       req.session.registrationInfo.email = email
     }
-    req.login(user, next)
+    req.login(user, { keepSessionInfo: true }, next)
   } catch (err) { next(err) }
 }
 
