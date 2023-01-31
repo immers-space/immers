@@ -6,7 +6,7 @@ const multer = require('multer')
 const cors = require('cors')
 const overlaps = require('overlaps')
 const { GridFSBucket, ObjectId } = require('mongodb')
-const { GridFsStorage } = require('multer-gridfs-storage')
+const { GridFsStorage } = require('@immers-space/multer-gridfs-storage')
 
 const auth = require('./auth')
 const { scopes } = require('../common/scopes')

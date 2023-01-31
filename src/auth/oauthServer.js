@@ -5,13 +5,13 @@
  * granting access tokens if authorized
  */
 const { appSettings, renderConfig } = require('../settings')
-const oauth2orize = require('oauth2orize')
+const oauth2orize = require('@immers-space/oauth2orize')
 const passport = require('passport')
 const login = require('connect-ensure-login')
 // strategies for OAuth client authentication
 const CustomStrategy = require('passport-custom').Strategy
 // additional OAuth exchange protocols
-const jwtBearer = require('oauth2orize-jwt-bearer').Exchange
+const jwtBearer = require('@immers-space/oauth2orize-jwt-bearer').Exchange
 
 const authdb = require('./authdb')
 const { clnt } = require('./resourceServer')
