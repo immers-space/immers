@@ -32,6 +32,10 @@ module.exports = {
       }
       remoteClients.push(oidcClient)
     })
+    if (!remoteClients.length) {
+      // no work to do
+      return
+    }
     const session = client.startSession()
     try {
       await session.withTransaction(async () => {
@@ -92,8 +96,12 @@ module.exports = {
         }, {
           unique: true
         })
-        await db.collection(REMOTES).insertMany(remotes)
-        await db.collection(OIDC_REMOTES).insertMany(oidcRemoteClients)
+        if (remotes.length) {
+          await db.collection(REMOTES).insertMany(remotes)
+        }
+        if (oidcRemoteClients.length) {
+          await db.collection(OIDC_REMOTES).insertMany(oidcRemoteClients)
+        }
         if (anyNewClientTypes) {
           console.warn(`Not dropping ${NEW_REMOTES} as some clients could not be migrated`)
         } else {
