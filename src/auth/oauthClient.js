@@ -253,7 +253,7 @@ async function handleSsoLogin (req, res, next) {
     // otherwise, login returning user
     // next in route will return to OAuth authorize endpoint, which will autogrant token now that user
     // is logged in with local account and return them to the destination
-    req.login(user, next)
+    req.login(user, { keepSessionInfo: true }, next)
   } catch (err) {
     next(err)
   }
