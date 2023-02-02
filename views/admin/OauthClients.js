@@ -25,10 +25,11 @@ export default function OauthClients ({ onEdit, onAdd }) {
       })
   }
 
-  function Client ({ _id, name, domain }) {
+  function Client ({ _id, name, domain, type }) {
     return (
       <>
         <div><strong>{name}</strong> - <em>({domain})</em></div>
+        <div className='clients-grid-type'>{type}</div>
         <EmojiButton emoji='bomb' title='Delete' onClick={() => deleteClient(_id, name)} />
         <EmojiButton emoji='pencil2' title='Edit' onClick={() => editClient(_id)} />
       </>
@@ -60,13 +61,19 @@ export default function OauthClients ({ onEdit, onAdd }) {
 
   return (
     <div>
-      <h3>OpenID Connect Clients</h3>
+      <hgroup>
+        <h3>Identity Provider Clients</h3>
+        <h4>
+          These providers are authorized to provide user identity for login to your immer.
+          This includes other immers, OpenID Connect, and SAML.
+        </h4>
+      </hgroup>
       <section>
         <div className='grid clients-grid'>
           {items.map(item => <Client key={item._id} {...item} />)}
         </div>
       </section>
-      <button onClick={onAdd}>Add OpenID Connect Client</button>
+      <button onClick={onAdd}>Add Provider</button>
     </div>
   )
 }

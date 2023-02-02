@@ -2,21 +2,28 @@ const { appSettings } = require('../settings')
 const { ObjectId } = require('mongodb')
 const uid = require('uid-safe')
 const bcrypt = require('bcrypt')
-const crypto = require('crypto')
 const jwt = require('jsonwebtoken')
+const saml = require('samlify')
 const { USER_ROLES } = require('./consts')
 const { parseHandle } = require('../utils')
+const { hashEmail, createSelfSignedCertificate } = require('../cryptoUtils')
 
 const { domain, hubs, name, adminEmail } = appSettings
 
 const saltRounds = 10
 const tokenAge = 24 * 60 * 60 * 1000 // one day
 const anonClientPrefix = '_anonymous:'
-function hashEmail (email) {
-  return crypto.createHash('sha256').update(email.toLowerCase()).digest('base64')
-}
+const AUTH_SETTINGS_COL = 'authSettings'
+const SAML_PROVIDER_SETTING = 'samlProvider'
+
+/** @type {import('mongodb').Db} */
 let db
 const authdb = {
+  /**
+   * Initialize auth database: creates needed indices, promote admins,
+   * update local client
+   * @param {import('mongodb').Db} connection Connected mongo database
+   */
   async setup (connection) {
     db = connection
     // token expiration via record deletion
@@ -31,12 +38,7 @@ const authdb = {
     }, {
       unique: true
     })
-    await db.collection('remotes').createIndex({
-      domain: 1
-    }, {
-      unique: true
-    })
-    await db.collection('oidcRemoteClients').createIndex({
+    await db.collection('remoteClients').createIndex({
       domain: 1
     }, {
       unique: true
@@ -77,6 +79,37 @@ const authdb = {
       if (adminGrant.value) {
         console.log(`Granted admin access to ${adminGrant.value.username}, ${adminEmail}`)
       }
+    }
+
+    // setup SAML service provider
+    if (!await authdb.getSamlServiceProvider()) {
+      console.log('No SAML SP found. Generating new SP')
+      const { certificate, privateKey } = await createSelfSignedCertificate(domain)
+      db.collection(AUTH_SETTINGS_COL).insertOne({
+        entityID: `https://${domain}/auth/saml-metadata`,
+        setting: SAML_PROVIDER_SETTING,
+        authnRequestsSigned: false,
+        wantAssertionsSigned: true,
+        wantMessageSigned: true,
+        signatureConfig: {
+          prefix: 'ds',
+          location: {
+            reference: '/samlp:Response/saml:Issuer',
+            action: 'after'
+          }
+        },
+        wantLogoutResponseSigned: true,
+        wantLogoutRequestSigned: true,
+        signingCert: certificate,
+        privateKey,
+        encryptCert: certificate,
+        encPrivateKey: privateKey,
+        isAssertionEncrypted: true,
+        assertionConsumerService: [{
+          Binding: saml.Constants.namespace.binding.post,
+          Location: `https://${domain}/auth/acs`
+        }]
+      })
     }
   },
   // passport / oauth2orize methods
@@ -267,35 +300,48 @@ const authdb = {
     return client
   },
   getRemoteClient (domain) {
-    return db.collection('remotes').findOne({ domain })
+    return db.collection('remoteClients').findOne({ domain })
   },
-  async saveRemoteClient (domain, client) {
-    const result = await db.collection('remotes').insertOne({
-      domain,
-      clientId: client.clientId,
-      redirectUri: client.redirectUri
-    })
-    if (!result.acknowledged) { throw new Error('Error saving remove client') }
-  },
-  /// OpenID Connect clients for other servers
-  oidcGetRemoteClient (domain) {
-    return db.collection('oidcRemoteClients').findOne({ domain })
-  },
-  async oidcSaveRemoteClient (domain, issuer, client, metadata) {
-    const result = await db.collection('oidcRemoteClients').insertOne({
+  /**
+   * Save a client from another immer or service that can access this server's resource server
+   * @param {string} domain host value of the provider url
+   * @param {('immers'|'oidc'|'saml')} type client type
+   * @param {object} issuer data describing the provider (varies by type)
+   * @param {object} client data describing this server's client (e.g. id & key, varies by type)
+   * @param {{ [name]: string, [buttonIcon]: string, [buttonLabel]: string, [showButton]: boolean }} [metadata] data for UI representations
+   * @returns {Promise<object>} created/updated client report
+   */
+  async saveRemoteClient (domain, type, issuer, client, metadata = {}) {
+    const data = {
       ...metadata,
       domain,
-      issuer: issuer.metadata,
-      client: client.metadata
-    })
+      type,
+      issuer,
+      client
+    }
+    const result = await db.collection('remoteClients').insertOne(data)
+    if (!result.acknowledged) { throw new Error('Error saving remove client') }
+    return data
+  },
+  async updateRemoteClient (id, update) {
+    const result = await db.collection('remoteClients').updateOne(
+      { _id: ObjectId(id) },
+      { $set: update }
+    )
     if (!result.acknowledged) { throw new Error('Error saving remove client') }
   },
   async getOidcLoginProviders () {
-    return db.collection('oidcRemoteClients')
+    return db.collection('remoteClients')
       .find({ showButton: true }, { projection: { _id: 0, domain: 1, buttonIcon: 1, buttonLabel: 1 } })
       .toArray()
+  },
+  async getSamlServiceProvider (includePrivate) {
+    const projection = includePrivate
+      ? { _id: 0 }
+      : { _id: 0, privateKey: 0, encPrivateKey: 0 }
+    return db.collection(AUTH_SETTINGS_COL)
+      .findOne({ setting: SAML_PROVIDER_SETTING }, { projection })
   }
-
 }
 
 module.exports = authdb

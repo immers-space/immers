@@ -1,4 +1,8 @@
 .clients-grid {
-    grid-template-columns: 1fr repeat(2, 35px);
+    grid-template-columns: 1fr 100px repeat(2, 35px);
     row-gap: var(--spacing);
+}
+
+.clients-grid-type {
+  text-transform: uppercase;
 }

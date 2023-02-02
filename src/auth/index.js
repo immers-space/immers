@@ -44,9 +44,11 @@ module.exports = {
   checkImmer: oauthClient.checkImmer,
   checkImmerAndRedirect: oauthClient.checkImmerAndRedirect,
   handleOAuthReturn: [oauthClient.handleOAuthReturn, resourceServer.returnTo],
+  handleSamlReturn: [oauthClient.handleSamlReturn, resourceServer.returnTo],
   oidcPreRegister: oauthClient.oidcPreRegister,
   oidcPostRegister: oauthClient.oidcPostRegister,
-  oidcPostMerge: oauthClient.oidcPostMerge
+  oidcPostMerge: oauthClient.oidcPostMerge,
+  samlProviderMetadata: oauthClient.samlServiceProviderMetadata
   // openId Connect server (WIP)
   /*
   oidcServerRouter: openIdServer.router,

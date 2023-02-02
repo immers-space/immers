@@ -3,3 +3,8 @@ module.exports.USER_ROLES = {
   ADMIN: 'admin',
   USER: 'user'
 }
+module.exports.CLIENT_TYPES = {
+  IMMERS: 'immers',
+  OIDC: 'oidc',
+  SAML: 'saml'
+}
