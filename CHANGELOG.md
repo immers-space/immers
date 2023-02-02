@@ -1,5 +1,19 @@
 ## Unreleased
 
+**Includes migration**: It's reversible with failsafes to avoid data loss, but backup that database before applying just to be safe
+
+### Added
+
+* Added support for login via SAML. SAML clients can be added/edited alongside OIDC clients at `/admin/oidc`
+* Added instructions and guidance for OIDC and SAML client setup in the add client screen at `/admin/oidc`
+* Add OAuth2 clients from other immers to the listing at `/admin/oidc`
+
+### Changed
+
+* Remote clients / identity providers data restructured to all reside in same collection
+* Admin api methods updated to new data structyre
+* Local dev will now generate self-signed certs automatically, removed obsolete env vars for specifying cert location
+
 ### Security
 
 * Package updates to resolve all npm audit findings. Includes breaking change to passtportjs with code migrations
