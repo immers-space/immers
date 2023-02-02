@@ -1,3 +1,9 @@
+## Unreleased
+
+### Security
+
+* Package updates to resolve all npm audit findings. Includes breaking change to passtportjs with code migrations
+
 ## v4.2.0 (2022-12-21)
 
 ### Added
