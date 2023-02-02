@@ -30,7 +30,7 @@ const { generateMetaTags } = require('./src/openGraph')
 const { MongoAdapter } = require('./src/auth/openIdServerDb')
 const adminApi = require('./src/adminApi.js')
 const SocketManager = require('./src/streaming/SocketManager')
-const { createSelfSignedCertificate } = require('./src/cryptoUtils')
+const { getLocalDevCertificate } = require('./src/cryptoUtils')
 
 const {
   port,
@@ -386,7 +386,7 @@ migrate(mongoURI).catch((err) => {
       server = AutoEncrypt.https.createServer({ domains: [domain] }, app)
     }
   } else {
-    const { certificate, privateKey } = await createSelfSignedCertificate()
+    const { certificate, privateKey } = await getLocalDevCertificate()
     server = https.createServer({ cert: certificate, key: privateKey }, app)
   }
 

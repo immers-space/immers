@@ -1,9 +1,26 @@
 const crypto = require('crypto')
 const x509 = require('@peculiar/x509')
+const { mkdir, readFile, writeFile } = require('fs/promises')
+const path = require('path')
 
 module.exports = {
   createSelfSignedCertificate,
+  getLocalDevCertificate,
   hashEmail
+}
+
+async function getLocalDevCertificate () {
+  try {
+    const certificate = await readFile(path.join(process.cwd(), 'certs', 'certificate.pem'))
+    const privateKey = await readFile(path.join(process.cwd(), 'certs', 'pivateKey.pem'))
+    return { certificate, privateKey }
+  } catch {
+    const { certificate, privateKey } = await createSelfSignedCertificate()
+    await mkdir(path.join(process.cwd(), 'certs'), { recursive: true })
+    await writeFile(path.join(process.cwd(), 'certs', 'certificate.pem'), certificate)
+    await writeFile(path.join(process.cwd(), 'certs', 'pivateKey.pem'), privateKey)
+    return { certificate, privateKey }
+  }
 }
 
 function hashEmail (email) {
