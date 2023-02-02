@@ -1,4 +1,4 @@
-## Unreleased
+## v5.0.0 (2023-02-02)
 
 **Includes migration**: It's reversible with failsafes to avoid data loss, but backup that database before applying just to be safe
 
