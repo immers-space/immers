@@ -390,7 +390,7 @@ function SamlInputs ({ type, clientState, isEditing, error, handleInput }) {
           />
           URL Link
         </label>
-        {/* <label>
+        <label>
           <input
             type='radio'
             name='metadataFormat'
@@ -401,7 +401,7 @@ function SamlInputs ({ type, clientState, isEditing, error, handleInput }) {
             onChange={handleInput}
           />
           XML File
-        </label> */}
+        </label>
         <label>
           <input
             type='radio'
@@ -481,9 +481,6 @@ function SamlInputs ({ type, clientState, isEditing, error, handleInput }) {
           <option value='encrypt-then-sign'>Encrypt, then sign</option>
         </select>
       </label>
-      {/*     metadata: response.data,
-messageSigningOrder: 'encrypt-then-sign',
-wantLogoutRequestSigned: true */}
     </>
   )
 }
