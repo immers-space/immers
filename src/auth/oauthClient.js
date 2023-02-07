@@ -294,7 +294,7 @@ async function oidcPostMerge (req, res, next) {
       return res.json({ pending: true })
     }
     delete req.session.oidcClientState
-    req.login(user, next)
+    req.login(user, { keepSessionInfo: true }, next)
     // next in route will return to OAuth authorize endpoint, which will autogrant token now that user
     // is logged in with local account and return them to the destination
   } catch (err) {

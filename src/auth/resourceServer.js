@@ -205,7 +205,7 @@ async function proxyLogin (req, res, next) {
     return res.status(403).send('insufficient scope')
   }
   // create a login session and set-cookie header
-  req.login(user, (err) => {
+  req.login(user, { keepSessionInfo: true }, (err) => {
     if (err) {
       return next(err)
     }
