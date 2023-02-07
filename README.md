@@ -202,6 +202,8 @@ If working on immers server web client, run both `npm run dev:client` and `npm r
 3. Build new docker image: `npm run build:image`
 4. Login to docker hub: `docker login -u your_user_name` (if needed)
 5. Publish new docker image: `npm run publish:image`
+6. Sync tag to github: `git push --follow-tags`
+7. Cut a github release and autogenerate the notes
 
 ## Creator Members
 
