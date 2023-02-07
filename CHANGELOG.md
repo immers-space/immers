@@ -1,3 +1,9 @@
+## Unreleased
+
+### Fixed
+
+* Fixed SSO logins through the account merge flow (with approval e-mail) failing to redirect properly and not completing the login
+
 ## v5.0.0 (2023-02-02)
 
 **Includes migration**: It's reversible with failsafes to avoid data loss, but backup that database before applying just to be safe
