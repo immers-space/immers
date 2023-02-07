@@ -403,6 +403,8 @@ migrate(mongoURI).catch((err) => {
     }
   })
   io.use(function (socket, next) {
+    // keepSessionInfo not needed here because use of callback
+    // overrides default behavior that would call req.login
     passport.authenticate('bearer', function (err, user, info) {
       if (err) { return next(err) }
       if (!user) { return next(new Error('Not authorized')) }
