@@ -1,3 +1,10 @@
+## Unreleased
+
+### Fixed
+
+* Update undici nested dependency for audit fix
+* Additional logging for SSO requests to help debug
+
 ## v5.0.1 (2023-02-07)
 
 ### Fixed
