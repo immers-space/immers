@@ -137,6 +137,7 @@ async function discoverAndRegisterClient (username, userDomain, requestedPath) {
         code_challenge_method: 'S256',
         redirect_uri: `https://${domain}/auth/return`
       })
+      console.log(`SSO: OIDC. Redirecting to: ${redirect}`)
       return { result: { redirect }, oidcClientState }
     }
     case CLIENT_TYPES.SAML: {
@@ -145,6 +146,7 @@ async function discoverAndRegisterClient (username, userDomain, requestedPath) {
       // awkward api for RelayState - will change in future samlify version
       sp.entitySetting.relayState = userDomain
       const { context } = await sp.createLoginRequest(idp, 'redirect')
+      console.log(`SSO: SAML. Redirecting to: ${context}`)
       return { result: { redirect: context } }
     }
     case CLIENT_TYPES.IMMERS: {
@@ -157,6 +159,7 @@ async function discoverAndRegisterClient (username, userDomain, requestedPath) {
       // handle may or may not be included depending on path here, ensure it is
       search.set('me', `${username}[${userDomain}]`)
       url.search = search.toString()
+      console.log(`SSO: Immers. Redirecting to: ${url}`)
       return { result: { redirect: url.toString() } }
     }
   }
@@ -217,7 +220,10 @@ async function parseSamlReturn (req, res, next) {
     }
     throw new Error('SAML response missing email')
   } catch (err) {
-    console.error('Error processing saml client callback')
+    console.error(
+      'SSO: Error processing saml client callback',
+      `\nBody: ${JSON.stringify(req.body)}`
+    )
     return next(err)
   }
 }
