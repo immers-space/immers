@@ -18,6 +18,7 @@ const { CLIENT_TYPES } = require('./consts')
 const {
   domain,
   name,
+  passEmailToHub,
   hubs,
   icon
 } = appSettings
@@ -257,6 +258,14 @@ async function handleSsoLogin (req, res, next) {
       return res.redirect(`/auth/oidc-merge?${search}`)
     }
     // otherwise, login returning user
+    req.session.registrationInfo = {
+      isNewUser: false,
+      provider: providerDomain
+    }
+    if (passEmailToHub) {
+      // temporarily save cleartext email in session, it will be deleted and passed to hub with the authorization response
+      req.session.registrationInfo.email = email
+    }
     // next in route will return to OAuth authorize endpoint, which will autogrant token now that user
     // is logged in with local account and return them to the destination
     req.login(user, { keepSessionInfo: true }, next)
