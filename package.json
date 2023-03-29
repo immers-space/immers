@@ -1,6 +1,6 @@
 {
   "name": "immers",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "ActivityPub server for the metaverse",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
