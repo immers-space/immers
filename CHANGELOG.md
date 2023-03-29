@@ -1,3 +1,13 @@
+## Unreleased
+
+### Fixed
+
+* When using SSO with passEmailToHub, email will now be passed whenever it is available
+(i.e. when logging in again via SSO) instead of just on initial login. This can help with
+recovery from bad SSO states - just force a logout from the immer
+(with `POST /auth/logout` or with `logout(true)` from immers-client >=2.16.0)
+and login again.
+
 ## v5.0.2 (2023-02-28)
 
 ### Fixed
