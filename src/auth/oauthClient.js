@@ -145,7 +145,7 @@ async function discoverAndRegisterClient (username, userDomain, requestedPath) {
       const idp = saml.IdentityProvider(savedClient.issuer)
       const sp = saml.ServiceProvider(await authdb.getSamlServiceProvider(true))
       // awkward api for RelayState - will change in future samlify version
-      sp.entitySetting.relayState = userDomain
+      sp.entitySetting.relayState = encodeRelayState(userDomain, requestedPath)
       const { context } = await sp.createLoginRequest(idp, 'redirect')
       console.log(`SSO: SAML. Redirecting to: ${context}`)
       return { result: { redirect: context } }
@@ -200,14 +200,17 @@ async function parseOAuthReturn (req, res, next) {
 
 async function parseSamlReturn (req, res, next) {
   try {
-    const providerDomain = req.body.RelayState
-    if (!providerDomain) {
+    if (!req.body.RelayState) {
       throw new Error('Assertion response missing RelayState')
     }
+    const [providerDomain, returnTo] = decodeRelayState(req.body.RelayState)
     const savedClient = await authdb.getRemoteClient(providerDomain)
-    if (!savedClient) {
-      throw new Error(`Invalid RelayState: ${providerDomain}`)
+    if (!savedClient || !returnTo) {
+      throw new Error(`Invalid RelayState: ${req.body.RelayState}`)
     }
+    // restore the session data, which may have been lost when the response
+    // was POSTed from another domain, starting a new session
+    req.session.returnTo = returnTo
     const idp = saml.IdentityProvider(savedClient.issuer)
     const sp = saml.ServiceProvider(await authdb.getSamlServiceProvider(true))
     const { extract } = await sp.parseLoginResponse(idp, 'post', req)
@@ -325,4 +328,13 @@ async function samlServiceProviderMetadata (req, res, next) {
   } catch (err) {
     next(err)
   }
+}
+
+/// non-exported utils ///
+function encodeRelayState (domain, returnTo) {
+  return `${domain}|${returnTo}`
+}
+
+function decodeRelayState (relayState) {
+  return relayState?.split?.('|') ?? []
 }

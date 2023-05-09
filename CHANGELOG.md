@@ -1,3 +1,9 @@
+## Unreleased
+
+### Fixed
+
+* Fix SAML SSO intermittently not redirecting properly in Chrome, leaving popup open after login and failing to return token to opener
+
 ## v5.0.3 (2023-03-29)
 
 ### Fixed
