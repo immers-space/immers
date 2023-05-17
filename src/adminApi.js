@@ -190,7 +190,7 @@ async function processClientFromFrontEnd (data) {
     cleanProviderDomain = new URL(providerOriginOrDisdoveryUrl).host
   } else if (type === CLIENT_TYPES.SAML) {
     const { isAssertionEncrypted, wantLogoutRequestSigned, messageSigningOrder } = data
-    const metadata = data.metadata ?? await request(data.domain)
+    const metadata = data.metadata || await request(data.domain)
     issuer = { metadata, isAssertionEncrypted, wantLogoutRequestSigned, messageSigningOrder }
     const testIdP = new saml.IdentityProvider(issuer)
     cleanProviderDomain = new URL(testIdP.entityMeta.getEntityID()).host
