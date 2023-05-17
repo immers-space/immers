@@ -175,6 +175,9 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
           } else if (response.step === 'discovery') {
             setError('discovery')
             console.error(response.error)
+          } else if (response.step === 'domain') {
+            setError('domain')
+            console.error(response.error)
           } else {
             throw new Error(response.error)
           }
@@ -286,6 +289,12 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
               <>
                 <FormError show>We couldn't process that OpenId Connect Provider</FormError>
                 <p>Double check the domain or try putting the full discovery document url instead of the domain.</p>
+              </>
+
+            )}
+            {error === 'domain' && (
+              <>
+                <FormError show>Another provider has already been registered for this domain</FormError>
               </>
 
             )}

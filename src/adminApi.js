@@ -84,7 +84,12 @@ async function postOauthClient (req, res) {
     const { domain: providerDomain, type, issuer, client, metadata } = clientData
     await authdb.saveRemoteClient(providerDomain, type, issuer, client, metadata)
     return res.json({ success: true })
-  } catch (err) { return res.sendStatus(500) }
+  } catch (err) {
+    if (err.name === 'MongoServerError' && err.code === 11000) {
+      return res.json({ success: false, step: 'domain', error: `Provider domain, ${clientData.domain}, already registered` })
+    }
+    return res.sendStatus(500)
+  }
 }
 
 async function deleteOauthClient (req, res) {
