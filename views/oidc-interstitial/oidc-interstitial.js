@@ -74,7 +74,10 @@ function RegisterForm ({ domain, fetching, setFetching }) {
       } else if (redirect) {
         // successfully registered & logged in
         setRegistrationSuccess(true)
-        window.setTimeout(() => { window.location = redirect }, 2000)
+        window.setTimeout(
+          () => { window.location = redirect },
+          showLoader ? 0 : 2000
+        )
       } else {
         throw new Error(error)
       }

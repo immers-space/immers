@@ -339,7 +339,7 @@ async function samlServiceProviderMetadata (req, res, next) {
 
 /// non-exported utils ///
 function encodeRelayState (domain, returnTo) {
-  return `${domain}|${returnTo}`
+  return `${domain}|${returnTo ?? ''}`
 }
 
 function decodeRelayState (relayState) {
