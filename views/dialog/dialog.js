@@ -1,5 +1,5 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import Layout from '../components/Layout'
 import './dialog.css'
 import { scopes, roles } from '../../common/scopes'
@@ -89,7 +89,7 @@ class Dialog extends React.Component {
 }
 
 const mountNode = document.getElementById('app')
-ReactDOM.render(
+createRoot(mountNode).render(
   <Layout contentTitle='Authorization request'>
     <Dialog />
-  </Layout>, mountNode)
+  </Layout>)

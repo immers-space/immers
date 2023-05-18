@@ -133,7 +133,7 @@ async function discoverAndRegisterClient (username, userDomain, requestedPath) {
       const redirect = client.authorizationUrl({
         // TODO: check issuer.scopes_supported to determine if the remote client is a full immer or just an identity provider,
         // update scope request to match
-        scope: 'openid email',
+        scope: 'openid email profile',
         code_challenge: codeChallenge,
         code_challenge_method: 'S256',
         redirect_uri: `https://${domain}/auth/return`
@@ -145,7 +145,7 @@ async function discoverAndRegisterClient (username, userDomain, requestedPath) {
       const idp = saml.IdentityProvider(savedClient.issuer)
       const sp = saml.ServiceProvider(await authdb.getSamlServiceProvider(true))
       // awkward api for RelayState - will change in future samlify version
-      sp.entitySetting.relayState = userDomain
+      sp.entitySetting.relayState = encodeRelayState(userDomain, requestedPath)
       const { context } = await sp.createLoginRequest(idp, 'redirect')
       console.log(`SSO: SAML. Redirecting to: ${context}`)
       return { result: { redirect: context } }
@@ -178,16 +178,21 @@ async function parseOAuthReturn (req, res, next) {
       .callback(`https://${domain}/auth/return`, params, { code_verifier: codeVerifier })
     const scopesGranted = tokenSet.scope?.split(' ') || []
     const claims = tokenSet.claims()
+    const userinfo = await client.userinfo(tokenSet.access_token)
+      .catch(err => {
+        console.warn('OIDC: error fetching userinfo', err)
+        return {}
+      })
     if (scopesGranted.includes(scopes.viewProfile)) {
       // TODO provider is an immer, pass access_token back to hub (I think maybe ?redirect_uri of req.session.returnTo)
-      const userinfo = await client.userinfo(tokenSet.access_token)
       console.log('userinfo %j', userinfo)
       res.sendStatus(501)
     } else if (claims.email) {
       res.locals.ssoState = {
         providerDomain,
         providerName: savedClient.name,
-        email: claims.email
+        email: claims.email,
+        proposedUsername: interpolateUsernameTemplate(savedClient, userinfo)
       }
       return next()
     }
@@ -200,14 +205,17 @@ async function parseOAuthReturn (req, res, next) {
 
 async function parseSamlReturn (req, res, next) {
   try {
-    const providerDomain = req.body.RelayState
-    if (!providerDomain) {
+    if (!req.body.RelayState) {
       throw new Error('Assertion response missing RelayState')
     }
+    const [providerDomain, returnTo] = decodeRelayState(req.body.RelayState)
     const savedClient = await authdb.getRemoteClient(providerDomain)
-    if (!savedClient) {
-      throw new Error(`Invalid RelayState: ${providerDomain}`)
+    if (!savedClient || !returnTo) {
+      throw new Error(`Invalid RelayState: ${req.body.RelayState}`)
     }
+    // restore the session data, which may have been lost when the response
+    // was POSTed from another domain, starting a new session
+    req.session.returnTo = returnTo
     const idp = saml.IdentityProvider(savedClient.issuer)
     const sp = saml.ServiceProvider(await authdb.getSamlServiceProvider(true))
     const { extract } = await sp.parseLoginResponse(idp, 'post', req)
@@ -215,7 +223,8 @@ async function parseSamlReturn (req, res, next) {
       res.locals.ssoState = {
         providerDomain,
         providerName: savedClient.name,
-        email: extract.attributes.email
+        email: extract.attributes.email,
+        proposedUsername: interpolateUsernameTemplate(savedClient, extract.attributes)
       }
       return next()
     }
@@ -232,12 +241,13 @@ async function parseSamlReturn (req, res, next) {
 // find/create local account for identity provider login
 async function handleSsoLogin (req, res, next) {
   try {
-    const { email, providerDomain, providerName } = res.locals.ssoState
+    const { email, providerDomain, providerName, proposedUsername } = res.locals.ssoState
     const user = await authdb.getUserByEmail(email)
     if (!user) {
       req.session.oidcClientState = { email, providerDomain }
-      // render page to select username
-      return res.redirect('/auth/oidc-interstitial')
+      const query = proposedUsername ? '?' + new URLSearchParams({ username: proposedUsername }).toString() : ''
+      // render page to select username, will auto-submit if proposed username is available
+      return res.redirect(`/auth/oidc-interstitial${query}`)
     } else if (!user.oidcProviders?.includes(providerDomain)) {
       /* because we allow dynamic client registration, we must take
          care to rule out a malicious provider granting fraudulent
@@ -325,4 +335,29 @@ async function samlServiceProviderMetadata (req, res, next) {
   } catch (err) {
     next(err)
   }
+}
+
+/// non-exported utils ///
+function encodeRelayState (domain, returnTo) {
+  return `${domain}|${returnTo ?? ''}`
+}
+
+function decodeRelayState (relayState) {
+  return relayState?.split?.('|') ?? []
+}
+
+function interpolateUsernameTemplate (client, ssoData) {
+  if (!client.usernameTemplate) {
+    return
+  }
+  const username = client
+    .usernameTemplate
+    .replace(/\{(\w+)\}/g, (_, key) => ssoData[key] ?? '')
+  console.log(
+    'Generated username from template %s and data %j: %s',
+    client.usernameTemplate,
+    ssoData,
+    username
+  )
+  return username
 }

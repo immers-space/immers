@@ -88,7 +88,7 @@ async function registerClient (req, res, next) {
   try {
     client = await authdb.createClient(req.body.clientId, req.body.redirectUri, req.body.name)
   } catch (err) {
-    if (err.name === 'MongoError' && err.code === 11000) {
+    if (err.name === 'MongoServerError' && err.code === 11000) {
       return res.status(409).send('Client already registered')
     }
     next(err)

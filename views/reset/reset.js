@@ -1,5 +1,5 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import Layout from '../components/Layout'
 import PasswordInput from '../components/PasswordInput'
 
@@ -18,7 +18,7 @@ class Reset extends React.Component {
 }
 
 const mountNode = document.getElementById('app')
-ReactDOM.render(
+createRoot(mountNode).render(
   <Layout contentTitle='Password reset'>
     <Reset />
-  </Layout>, mountNode)
+  </Layout>)

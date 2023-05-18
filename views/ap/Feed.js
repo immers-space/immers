@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { immersClient } from './utils/immersClient'
+import { useAsyncEffect } from './utils/useAsyncEffect'
 import Loader from '../components/Loader'
 import Post from './Post'
 
@@ -9,7 +10,7 @@ export default function Feed ({ iri, ...postProps }) {
   const [nextPage, setNextPage] = useState(undefined)
   const [items, setItems] = useState([])
 
-  useEffect(async () => {
+  useAsyncEffect(async () => {
     const collectionPage = await immersClient.activities.getObject(page)
     if (!collectionPage.orderedItems && collectionPage.first) {
       setPage(collectionPage.first)

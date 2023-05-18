@@ -63,7 +63,8 @@ const clientProjection = {
   'issuer.messageSigningOrder': 1,
   showButton: 1,
   buttonIcon: 1,
-  buttonLabel: 1
+  buttonLabel: 1,
+  usernameTemplate: 1
 }
 
 async function getOauthClients (req, res) {
@@ -84,7 +85,12 @@ async function postOauthClient (req, res) {
     const { domain: providerDomain, type, issuer, client, metadata } = clientData
     await authdb.saveRemoteClient(providerDomain, type, issuer, client, metadata)
     return res.json({ success: true })
-  } catch (err) { return res.sendStatus(500) }
+  } catch (err) {
+    if (err.name === 'MongoServerError' && err.code === 11000) {
+      return res.json({ success: false, step: 'domain', error: `Provider domain, ${clientData.domain}, already registered` })
+    }
+    return res.sendStatus(500)
+  }
 }
 
 async function deleteOauthClient (req, res) {
@@ -108,7 +114,8 @@ async function updateOauthClient (req, res) {
       name: req.body.name,
       showButton: req.body.showButton,
       buttonIcon: req.body.buttonIcon,
-      buttonLabel: req.body.buttonLabel
+      buttonLabel: req.body.buttonLabel,
+      usernameTemplate: req.body.usernameTemplate
     }
     // OIDC updates
     if (req.body.clientId) {
@@ -147,8 +154,7 @@ function putThemeSettings (req, res, next) {
 
 /// utils ///
 function toFrontEndClientFormat (dbClient) {
-  // TODO
-  const { _id, type, name, domain: providerDomain, showButton, buttonIcon, buttonLabel, client, issuer } = dbClient
+  const { _id, type, name, domain: providerDomain, showButton, buttonIcon, buttonLabel, client, issuer, usernameTemplate } = dbClient
   return {
     _id,
     type,
@@ -157,6 +163,7 @@ function toFrontEndClientFormat (dbClient) {
     showButton,
     buttonIcon,
     buttonLabel,
+    usernameTemplate,
     clientId: client?.client_id,
     isAssertionEncrypted: issuer?.isAssertionEncrypted,
     wantLogoutRequestSigned: issuer?.wantLogoutRequestSigned,
@@ -165,8 +172,8 @@ function toFrontEndClientFormat (dbClient) {
 }
 
 async function processClientFromFrontEnd (data) {
-  const { type, name, domain: providerDomain, showButton, buttonIcon, buttonLabel } = data
-  const metadata = { name, showButton, buttonIcon, buttonLabel }
+  const { type, name, domain: providerDomain, showButton, buttonIcon, buttonLabel, usernameTemplate } = data
+  const metadata = { name, showButton, buttonIcon, buttonLabel, usernameTemplate }
   let cleanProviderDomain
   let issuer
   let client
@@ -185,7 +192,7 @@ async function processClientFromFrontEnd (data) {
     cleanProviderDomain = new URL(providerOriginOrDisdoveryUrl).host
   } else if (type === CLIENT_TYPES.SAML) {
     const { isAssertionEncrypted, wantLogoutRequestSigned, messageSigningOrder } = data
-    const metadata = data.metadata ?? await request(data.domain)
+    const metadata = data.metadata || await request(data.domain)
     issuer = { metadata, isAssertionEncrypted, wantLogoutRequestSigned, messageSigningOrder }
     const testIdP = new saml.IdentityProvider(issuer)
     cleanProviderDomain = new URL(testIdP.entityMeta.getEntityID()).host
