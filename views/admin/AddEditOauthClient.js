@@ -528,7 +528,7 @@ function ImmersInputs ({ type, clientState, isEditing, error, handleInput }) {
 function UsernameTemplate ({ usernameTemplate, handleInput, type }) {
   return (
     <>
-      <label htmlFor="usernameTemplate">
+      <label htmlFor='usernameTemplate'>
         Optional Username Template:
       </label>
       <input
@@ -543,15 +543,18 @@ function UsernameTemplate ({ usernameTemplate, handleInput, type }) {
       <small>
         Automatically set Immers handle using data from SSO provider.
         If you don't provide this or the resulting username is not available, new users will be prompted to select their own username.
-        Use <code>&#123;&#125;</code> to indicate variables to use from user info.{" "}
-        {type === "oidc" && <>
-          For the list of available variables, refer to
-          the <a href="https://openid.net/specs/openid-connect-basic-1_0-28.html#StandardClaims" target="_blank" rel="noreferrer">
-            standard OpenId Connect profile claims</a>.
-        </>}
-        {type === "saml" && <>
-          For the list of available attributes, check with your SAML provider.
-        </>}
+        Use <code>&#123;&#125;</code> to indicate variables to use from user info.{' '}
+        {type === 'oidc' && (
+          <>
+            For the list of available variables, refer to the {' '}
+            <a href='https://openid.net/specs/openid-connect-basic-1_0-28.html#StandardClaims' target='_blank' rel='noreferrer'>
+              standard OpenId Connect profile claims
+            </a>.
+          </>
+        )}
+        {type === 'saml' && (
+          <>For the list of available attributes, check with your SAML provider.</>
+        )}
       </small>
     </>
 
