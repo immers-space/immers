@@ -133,7 +133,7 @@ async function discoverAndRegisterClient (username, userDomain, requestedPath) {
       const redirect = client.authorizationUrl({
         // TODO: check issuer.scopes_supported to determine if the remote client is a full immer or just an identity provider,
         // update scope request to match
-        scope: 'openid email',
+        scope: 'openid email profile',
         code_challenge: codeChallenge,
         code_challenge_method: 'S256',
         redirect_uri: `https://${domain}/auth/return`
@@ -178,16 +178,21 @@ async function parseOAuthReturn (req, res, next) {
       .callback(`https://${domain}/auth/return`, params, { code_verifier: codeVerifier })
     const scopesGranted = tokenSet.scope?.split(' ') || []
     const claims = tokenSet.claims()
+    const userinfo = await client.userinfo(tokenSet.access_token)
+      .catch(err => {
+        console.warn('OIDC: error fetching userinfo', err)
+        return {}
+      })
     if (scopesGranted.includes(scopes.viewProfile)) {
       // TODO provider is an immer, pass access_token back to hub (I think maybe ?redirect_uri of req.session.returnTo)
-      const userinfo = await client.userinfo(tokenSet.access_token)
       console.log('userinfo %j', userinfo)
       res.sendStatus(501)
     } else if (claims.email) {
       res.locals.ssoState = {
         providerDomain,
         providerName: savedClient.name,
-        email: claims.email
+        email: claims.email,
+        proposedUsername: interpolateUsernameTemplate(savedClient, userinfo)
       }
       return next()
     }
@@ -218,7 +223,8 @@ async function parseSamlReturn (req, res, next) {
       res.locals.ssoState = {
         providerDomain,
         providerName: savedClient.name,
-        email: extract.attributes.email
+        email: extract.attributes.email,
+        proposedUsername: interpolateUsernameTemplate(savedClient, extract.attributes)
       }
       return next()
     }
@@ -235,12 +241,13 @@ async function parseSamlReturn (req, res, next) {
 // find/create local account for identity provider login
 async function handleSsoLogin (req, res, next) {
   try {
-    const { email, providerDomain, providerName } = res.locals.ssoState
+    const { email, providerDomain, providerName, proposedUsername } = res.locals.ssoState
     const user = await authdb.getUserByEmail(email)
     if (!user) {
       req.session.oidcClientState = { email, providerDomain }
-      // render page to select username
-      return res.redirect('/auth/oidc-interstitial')
+      const query = proposedUsername ? '?' + new URLSearchParams({ username: proposedUsername }).toString() : ''
+      // render page to select username, will auto-submit if proposed username is available
+      return res.redirect(`/auth/oidc-interstitial${query}`)
     } else if (!user.oidcProviders?.includes(providerDomain)) {
       /* because we allow dynamic client registration, we must take
          care to rule out a malicious provider granting fraudulent
@@ -337,4 +344,20 @@ function encodeRelayState (domain, returnTo) {
 
 function decodeRelayState (relayState) {
   return relayState?.split?.('|') ?? []
+}
+
+function interpolateUsernameTemplate (client, ssoData) {
+  if (!client.usernameTemplate) {
+    return
+  }
+  const username = client
+    .usernameTemplate
+    .replace(/\{(\w+)\}/g, (_, key) => ssoData[key] ?? '')
+  console.log(
+    'Generated username from template %s and data %j: %s',
+    client.usernameTemplate,
+    ssoData,
+    username
+  )
+  return username
 }

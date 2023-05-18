@@ -1,15 +1,17 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { IntlProvider } from 'react-intl'
 import c from 'classnames'
 import HandleInput from '../components/HandleInput'
 import Layout from '../components/Layout'
 import FormError from '../components/FormError'
+import Loader from '../components/Loader'
 
 const search = new URLSearchParams(window.location.search)
 const accountMergeProvider = search.get('merge')
 const accountMergeProviderName = search.get('name')
 const approvedProvider = search.get('provider')
+const proposedUsername = search.get('username')
 const mountNode = document.getElementById('app')
 const reload = () => window.location.reload()
 ReactDOM.render(<OidcInterstitial />, mountNode)
@@ -35,11 +37,13 @@ function OidcInterstitial () {
 }
 
 function RegisterForm ({ domain, fetching, setFetching }) {
-  const [username, setUsername] = useState('')
+  const formEl = useRef()
+  const [username, setUsername] = useState(proposedUsername ?? '')
   const [takenMessage, setTakenMessage] = useState('')
   const [registrationError, setRegistrationError] = useState(false)
   const [sessionInvalid, setSessionInvalid] = useState(false)
   const [registrationSuccess, setRegistrationSuccess] = useState(false)
+  const [showLoader, setShowLoader] = useState(true)
 
   const handleUsername = useCallback(username => {
     setUsername(username)
@@ -66,6 +70,7 @@ function RegisterForm ({ domain, fetching, setFetching }) {
       const { taken, error, redirect } = await result.json()
       if (taken) {
         setTakenMessage(error)
+        setShowLoader(false)
       } else if (redirect) {
         // successfully registered & logged in
         setRegistrationSuccess(true)
@@ -76,20 +81,32 @@ function RegisterForm ({ domain, fetching, setFetching }) {
     } catch (err) {
       console.log(err.message)
       setRegistrationError(true)
+      setShowLoader(false)
     } finally {
       setFetching(false)
     }
   }, [setFetching, setTakenMessage, setRegistrationError, setRegistrationSuccess])
+  useEffect(() => {
+    // auto-submit form when page loads if username prefilled
+    if (proposedUsername) {
+      formEl.current.dispatchEvent(
+        new Event('submit', { bubbles: true, cancelable: true })
+      )
+    } else {
+      setShowLoader(false)
+    }
+  }, [])
 
   const disableSubmit = fetching || takenMessage || registrationSuccess || sessionInvalid
 
   return (
     <>
-      <p>
+      {showLoader && <Loader />}
+      <p className={c({ none: showLoader })}>
         You have successfully logged in!
         Please choose a username to complete your registration.
       </p>
-      <form action='/auth/oidc-interstitial' method='post' onSubmit={handleSubmit}>
+      <form className={c({ none: showLoader })} action='/auth/oidc-interstitial' method='post' onSubmit={handleSubmit} ref={formEl}>
         <HandleInput onChange={handleUsername} username={username} immer={domain} invalid={takenMessage} lockImmer />
         <FormError show={takenMessage}>
           {takenMessage}
@@ -105,7 +122,7 @@ function RegisterForm ({ domain, fetching, setFetching }) {
         </div>
         <div className='form-item'>
           <span>
-            <button type='submit' name='submit' disabled={disableSubmit}>Submit</button>
+            <button type='submit' disabled={disableSubmit}>Submit</button>
           </span>
         </div>
       </form>

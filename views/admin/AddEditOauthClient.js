@@ -14,6 +14,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
   const [isAssertionEncrypted, setIsAssertionEncrypted] = useState(false)
   const [wantLogoutRequestSigned, setWantLogoutRequestSigned] = useState(false)
   const [messageSigningOrder, setMessageSigningOrder] = useState('sign-then-encrypt')
+  const [usernameTemplate, setUsernameTemplate] = useState('')
   const [showButton, setShowButton] = useState(false)
   const [buttonIcon, setButtonIcon] = useState('')
   const [buttonLabel, setButtonLabel] = useState('')
@@ -34,6 +35,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
           setType(response.type)
           setDomain(response.domain)
           setName(response.name ?? '')
+          setUsernameTemplate(response.usernameTemplate ?? '')
           setShowButton(response.showButton ?? false)
           setButtonIcon(response.buttonIcon ?? '')
           setButtonLabel(response.buttonLabel ?? '')
@@ -48,6 +50,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
       setType('oidc')
       setName('')
       setDomain('')
+      setUsernameTemplate('')
       setClientId('')
       setClientSecret('')
       setIsAssertionEncrypted(false)
@@ -75,6 +78,9 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
         break
       case 'clientSecret':
         setClientSecret(e.target.value)
+        break
+      case 'usernameTemplate':
+        setUsernameTemplate(e.target.value)
         break
       case 'showButton':
         setShowButton(e.target.checked)
@@ -129,7 +135,7 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
     if (!token) {
       return
     }
-    const body = { type, name, domain, showButton, buttonIcon, buttonLabel }
+    const body = { type, name, domain, showButton, buttonIcon, buttonLabel, usernameTemplate }
     switch (type) {
       case 'oidc':
         Object.assign(body, { clientId, clientSecret })
@@ -246,6 +252,11 @@ export default function AddEditOauthClient ({ showClientList, editId }) {
                 handleInput={handleInput}
               />
             )}
+            <UsernameTemplate
+              type={type}
+              usernameTemplate={usernameTemplate}
+              handleInput={handleInput}
+            />
             <fieldset className='outline'>
               <legend>Optional Login Button</legend>
               <label>
@@ -511,5 +522,38 @@ function ImmersInputs ({ type, clientState, isEditing, error, handleInput }) {
         />
       </label>
     </>
+  )
+}
+
+function UsernameTemplate ({ usernameTemplate, handleInput, type }) {
+  return (
+    <>
+      <label htmlFor="usernameTemplate">
+        Optional Username Template:
+      </label>
+      <input
+        onChange={handleInput}
+        id='usernameTemplate'
+        type='text' inputMode='text' name='usernameTemplate'
+        placeholder='{firstName}-{lastName}'
+        pattern='(?:[A-Za-z0-9-\{\}]{3,32})?'
+        title='Letters, numbers, spaces, &amp; dashes only, between 3 and 32 characters'
+        value={usernameTemplate}
+      />
+      <small>
+        Automatically set Immers handle using data from SSO provider.
+        If you don't provide this or the resulting username is not available, new users will be prompted to select their own username.
+        Use <code>&#123;&#125;</code> to indicate variables to use from user info.{" "}
+        {type === "oidc" && <>
+          For the list of available variables, refer to
+          the <a href="https://openid.net/specs/openid-connect-basic-1_0-28.html#StandardClaims" target="_blank" rel="noreferrer">
+            standard OpenId Connect profile claims</a>.
+        </>}
+        {type === "saml" && <>
+          For the list of available attributes, check with your SAML provider.
+        </>}
+      </small>
+    </>
+
   )
 }
