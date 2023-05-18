@@ -12,6 +12,17 @@ Setting available in Admin UI for adding/editing identity provider clients, `/ad
 * Fix URL Link option for SAML client metadata entry not working
 * Fix duplicate local client registration handling
 
+### Chore
+
+* Updated dependencies
+* Dependencies not able to be updated:
+  * @small-tech/auto-encrypt@4 - requires node at >=18
+  * migrate-monogo@9 - poorly documented changes; no clear benefit to update
+  * mongodb@5 - multiple peer dependencies still requiring v4
+  * oidc-provider@8 - not currently in use, skipped for now
+  * parse-domain@6 - changed to ESM only, would require refactor for async import
+  * request - no patch released yet for GHSA-p8p7-x288-28g6
+
 ## v5.0.3 (2023-03-29)
 
 ### Fixed

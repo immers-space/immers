@@ -8,6 +8,7 @@ import ImmersHandle from '../components/ImmersHandle'
 import Friends from './Friends'
 import { AvatarPreview } from '../components/AvatarPreview'
 import { immersClient, useProfile } from './utils/immersClient'
+import { useAsyncEffect } from './utils/useAsyncEffect'
 import { ImmersClient } from 'immers-client'
 import LayoutLoader from '../components/LayoutLoader'
 import EmojiButton from '../components/EmojiButton'
@@ -59,7 +60,7 @@ export default function Profile ({ taskbarButtons }) {
   }
   const { params: { currentTab } } = useMatch('/u/:actor/:currentTab') || { params: {} }
 
-  useEffect(async () => {
+  useAsyncEffect(async () => {
     if (isMyProfile) {
       setProfile(myProfile)
       return

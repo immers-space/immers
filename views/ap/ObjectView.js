@@ -1,5 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { immersClient } from './utils/immersClient'
+import { useAsyncEffect } from './utils/useAsyncEffect'
 import ServerDataContext from './ServerDataContext'
 import Layout from '../components/Layout'
 import Post from './Post'
@@ -12,7 +13,7 @@ export default function ObjectView ({ taskbarButtons }) {
   const { objectId } = useParams()
   const { isInIframe } = useContext(ServerDataContext)
   const [activity, setActivity] = useState()
-  useEffect(async () => {
+  useAsyncEffect(async () => {
     const object = await immersClient.activities.getObject(window.location.href)
     const mockActivity = {
       ...object,

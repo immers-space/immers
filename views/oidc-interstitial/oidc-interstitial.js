@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import { IntlProvider } from 'react-intl'
 import c from 'classnames'
 import HandleInput from '../components/HandleInput'
@@ -14,7 +14,7 @@ const approvedProvider = search.get('provider')
 const proposedUsername = search.get('username')
 const mountNode = document.getElementById('app')
 const reload = () => window.location.reload()
-ReactDOM.render(<OidcInterstitial />, mountNode)
+createRoot(mountNode).render(<OidcInterstitial />)
 
 function OidcInterstitial () {
   const { domain } = window._serverData

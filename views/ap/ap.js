@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import { Routes, Route, BrowserRouter } from 'react-router-dom'
 import Profile from './Profile'
 import { IntlProvider } from 'react-intl'
@@ -13,7 +13,7 @@ import { immersClient } from './utils/immersClient'
 import LayoutLoader from '../components/LayoutLoader'
 
 const mountNode = document.getElementById('app')
-ReactDOM.render(<Root />, mountNode)
+createRoot(mountNode).render(<Root />)
 
 function inIframe () {
   try {
