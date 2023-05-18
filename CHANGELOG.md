@@ -1,8 +1,16 @@
 ## Unreleased
 
+### Added
+
+* SSO login username templates: streamline new user registration via SAML/OIDC by
+automatically selecting username using user profile data from the identity provider.
+Setting available in Admin UI for adding/editing identity provider clients, `/admin/oidc`
 ### Fixed
 
 * Fix SAML SSO intermittently not redirecting properly in Chrome, leaving popup open after login and failing to return token to opener
+* Add user feedback when an SSO client cannot be added due to duplicate domain conflict
+* Fix URL Link option for SAML client metadata entry not working
+* Fix duplicate local client registration handling
 
 ## v5.0.3 (2023-03-29)
 
