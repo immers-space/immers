@@ -1,5 +1,5 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import Tab from '../components/Tab'
 import c from 'classnames'
 import FormError from '../components/FormError'
@@ -415,7 +415,7 @@ class Login extends React.Component {
 }
 
 const mountNode = document.getElementById('app')
-ReactDOM.render(
+createRoot(mountNode).render(
   <Layout contentTitle='Login to your immers profile'>
     <Login />
-  </Layout>, mountNode)
+  </Layout>)

@@ -58,6 +58,8 @@ smtpHost | Mail service domain (for password resets) | smtp.sendgrid.net
 smtpPort | Mail service port | 587
 smtpUser | Mail service username | apikey
 smtpPassword | Mail service password |
+smtpClient | Mail OAuth service account id (instead of password) |
+smtpKey | Mail OAuth service account private key (instead of password) |
 sessionSecret | Secret key for session cookie encryption | *Automatically generated when [using setup script](https://github.com/immers-space/immers-app#step-1---setup)*
 easySecret | Secret key for email token encryption | *Automatically generated when [using setup script](https://github.com/immers-space/immers-app#step-1---setup)*
 userFiles | Path to storage location for user-uploaded files | `uploads/`
@@ -79,14 +81,14 @@ imageAttributionUrl | Attribution for backgroundImage, if needed | https://www.v
 maxUploadSize | Limit on media upload file size in Mb | 20
 monetizationPointer | [Payment pointer](https://webmonetization.org/docs/ilp-wallets/#payment-pointers) for Web Monetization on login & profile pages | Immers Space organization wallet
 port | Port number for immers sever | 8081
-smtpFrom | From address for emails | noreplay@mail.`domain`
+smtpFrom | From address for emails | noreply@mail.`domain`
+passEmailToHub | For apps that depend on user emails, this option will include the cleartext e-mail address in the initial token response (as an additional hash parameter named `email`) to the hub on registration so it can be saved and associated with the profile | `false`
 emailOptInURL | Link to an opt-in form for email updates to show on registration page | None
 emailOptInParam | Query parameter for `emailOptInURL` for the e-mail address | Use opt-in url without inserting e-mail
 emailOptInNameParam | Query parameter for `emailOptInURL` for the name | Use opt-in url without inserting name
 systemUserName | Username for a "Service" type actor representing the Immer, enables welcome messages and [Mastodon secure mode](https://docs.joinmastodon.org/spec/activitypub/#secure-mode) compatibility | none (does not create service actor)
 systemDisplayName | Sets the display name for the service actor | none
 welcome | HTML file for a message that will be delivered from the system user to new user's inboxes (requires `systemUserName`) | none (does not send message)
-keyPath, certPath, caPath | Local development only. Relative paths to certificate files | None
 proxyMode | Enable use behind an SSL-terminating proxy or load balancer, serves over http instead of https and sets Express `trust proxy` setting to the value of `proxyMode` (e.g. `1`, [other options](https://expressjs.com/en/guide/behind-proxies.html)) | none (serves over https with AutoEncrypt)
 enablePublicRegistration | Allow new user self-registration | true
 enableClientRegistration | Allow new remote immers servers to register - if this is `false`, users will not be able to login with their accounts from other servers unless that server is already registered | true
@@ -172,18 +174,12 @@ git clone https://github.com/immers-space/immers.git
 cd immers
 npm ci
 ```
-* Install a self-signed certificate
-```
-mkdir certs
-sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/server.key -out certs/server.cert
-sudo chown $USER certs/*
-```
 * Install [mongodb](https://docs.mongodb.com/manual/installation/)
 * Run immer with `npm run dev:server` 
 
 hubs
 
-* Clone and install our fork - **Must use Node 14.x / NPM 6.x**
+* Clone and install our fork - **Recommend Node 16 / NPM >=8**
 ```
 git clone https://github.com/immers-space/hubs.git
 cd hubs
@@ -206,6 +202,8 @@ If working on immers server web client, run both `npm run dev:client` and `npm r
 3. Build new docker image: `npm run build:image`
 4. Login to docker hub: `docker login -u your_user_name` (if needed)
 5. Publish new docker image: `npm run publish:image`
+6. Sync tag to github: `git push --follow-tags`
+7. Cut a github release and autogenerate the notes
 
 ## Creator Members
 

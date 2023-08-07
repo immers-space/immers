@@ -10,8 +10,6 @@ const {
   backgroundColor,
   backgroundImage,
   baseTheme,
-  caPath,
-  certPath,
   cookieName,
   customCSS,
   dbHost,
@@ -31,11 +29,11 @@ const {
   icon,
   imageAttributionText,
   imageAttributionUrl,
-  keyPath,
   loginRedirect,
   maxUploadSize,
   monetizationPointer,
   name,
+  passEmailToHub,
   port,
   proxyMode,
   sessionSecret,
@@ -44,6 +42,8 @@ const {
   smtpPassword,
   smtpPort,
   smtpUser,
+  smtpClient,
+  smtpKey,
   systemDisplayName,
   systemUserName,
   welcome
@@ -60,8 +60,6 @@ const appSettings = {
   backgroundColor,
   backgroundImage,
   baseTheme,
-  caPath,
-  certPath,
   cookieName,
   customCSS,
   domain,
@@ -77,12 +75,12 @@ const appSettings = {
   icon,
   imageAttributionText,
   imageAttributionUrl,
-  keyPath,
   loginRedirect,
   maxUploadSize,
   monetizationPointer,
   mongoURI,
   name,
+  passEmailToHub: passEmailToHub === 'true',
   port,
   proxyMode: parseProxyMode(proxyMode),
   sessionSecret,
@@ -91,6 +89,8 @@ const appSettings = {
   smtpPassword,
   smtpPort,
   smtpUser,
+  smtpClient,
+  smtpKey,
   systemDisplayName,
   systemUserName,
   welcomeContent
@@ -112,7 +112,8 @@ const renderConfig = {
   imageAttributionText,
   imageAttributionUrl,
   emailOptInURL,
-  enablePublicRegistration
+  enablePublicRegistration,
+  passEmailToHub: appSettings.passEmailToHub
 }
 
 const isTrue = (settingName) => {

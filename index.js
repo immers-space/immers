@@ -30,6 +30,7 @@ const { generateMetaTags } = require('./src/openGraph')
 const { MongoAdapter } = require('./src/auth/openIdServerDb')
 const adminApi = require('./src/adminApi.js')
 const SocketManager = require('./src/streaming/SocketManager')
+const { getLocalDevCertificate } = require('./src/cryptoUtils')
 
 const {
   port,
@@ -39,9 +40,6 @@ const {
   name,
   mongoURI,
   sessionSecret,
-  keyPath,
-  certPath,
-  caPath,
   icon,
   emailOptInURL,
   emailOptInParam,
@@ -136,7 +134,8 @@ app.route('/auth/login')
   })
   .post(passport.authenticate('local', {
     successReturnToOrRedirect: '/',
-    failureRedirect: '/auth/login?passwordfail'
+    failureRedirect: '/auth/login?passwordfail',
+    keepSessionInfo: true
   }))
 
 /**
@@ -167,11 +166,11 @@ app.post('/auth/logout', auth.logout, (req, res) => {
 })
 app.post('/auth/client', settings.isTrue('enableClientRegistration'), auth.registerClient)
 
-app.post('/auth/forgot', passport.authenticate('easy'), (req, res) => {
+app.post('/auth/forgot', passport.authenticate('easy', { keepSessionInfo: true }), (req, res) => {
   return res.json({ emailed: true })
 })
 app.route('/auth/reset')
-  .get(passport.authenticate('easy'), (req, res) => {
+  .get(passport.authenticate('easy', { keepSessionInfo: true }), (req, res) => {
     res.render('dist/reset/reset.html', settings.renderConfig)
   })
   .post(auth.changePasswordAndReturn)
@@ -195,6 +194,8 @@ app.get('/auth/optin', (req, res) => {
   res.redirect(url)
 })
 app.get('/auth/return', auth.handleOAuthReturn)
+app.post('/auth/acs', auth.handleSamlReturn)
+app.get('/auth/saml-metadata', auth.samlProviderMetadata)
 
 async function registerActor (req, res, next) {
   const preferredUsername = req.body.username
@@ -208,7 +209,7 @@ async function registerActor (req, res, next) {
 }
 
 // user registration
-const register = [auth.validateNewUser, auth.logout, registerActor, auth.registerUser]
+const register = [auth.validateNewUser, registerActor, auth.registerUser]
 // authorized service account user regisration
 app.post(
   '/auth/user',
@@ -219,10 +220,23 @@ app.post(
 )
 // public user registration, if enabled
 app.post('/auth/user', settings.isTrue('enablePublicRegistration'), register, auth.respondRedirect)
-// complete registration started via oidc identity provider
+
+/// Steps to complete an authorized OpenID Connect registration
+// New account: choose a username
 app.route('/auth/oidc-interstitial')
   .get((req, res) => res.render('dist/oidc-interstitial/oidc-interstitial.html', settings.renderConfig))
   .post(auth.oidcPreRegister, register, auth.oidcPostRegister, auth.respondRedirect)
+// Existing account: get authorization for new login provider
+// send auth email and display explanation
+app.get('/auth/oidc-merge', auth.oidcSendProviderApprovalEmail, (req, res) => {
+  res.render('dist/oidc-interstitial/oidc-interstitial.html', settings.renderConfig)
+})
+// polled from oidc merge page to detect when authorization link is clicked
+app.get('/auth/oidc-merge/check', auth.oidcPostMerge, auth.respondRedirect)
+// process auth link from email
+app.get('/auth/oidc-merge/approve', auth.oidcProcessProviderApproved, (req, res) => {
+  res.render('dist/oidc-interstitial/oidc-interstitial.html', settings.renderConfig)
+})
 
 /**
  * @openapi
@@ -358,11 +372,6 @@ app.get('/ap.html', auth.publ, generateMetaTags, (req, res) => {
 // useful for immers + static site combo so they don't have to include /static in all page urls
 app.use('/', express.static('static-ext'))
 
-const sslOptions = {
-  key: keyPath && fs.readFileSync(path.join(__dirname, keyPath)),
-  cert: certPath && fs.readFileSync(path.join(__dirname, certPath)),
-  ca: caPath && fs.readFileSync(path.join(__dirname, caPath))
-}
 migrate(mongoURI).catch((err) => {
   console.error('Unable to apply migrations: ', err.message)
   process.exit(1)
@@ -377,7 +386,8 @@ migrate(mongoURI).catch((err) => {
       server = AutoEncrypt.https.createServer({ domains: [domain] }, app)
     }
   } else {
-    server = https.createServer(sslOptions, app)
+    const { certificate, privateKey } = await getLocalDevCertificate()
+    server = https.createServer({ cert: certificate, key: privateKey }, app)
   }
 
   // streaming updates
@@ -393,6 +403,8 @@ migrate(mongoURI).catch((err) => {
     }
   })
   io.use(function (socket, next) {
+    // keepSessionInfo not needed here because use of callback
+    // overrides default behavior that would call req.login
     passport.authenticate('bearer', function (err, user, info) {
       if (err) { return next(err) }
       if (!user) { return next(new Error('Not authorized')) }

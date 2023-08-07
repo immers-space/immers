@@ -1,4 +1,121 @@
-## Unreleased
+## v5.1.0 (2023-05-18)
+
+### Added
+
+* SSO login username templates: streamline new user registration via SAML/OIDC by
+automatically selecting username using user profile data from the identity provider.
+Setting available in Admin UI for adding/editing identity provider clients, `/admin/oidc`
+### Fixed
+
+* Fix SAML SSO intermittently not redirecting properly in Chrome, leaving popup open after login and failing to return token to opener
+* Add user feedback when an SSO client cannot be added due to duplicate domain conflict
+* Fix URL Link option for SAML client metadata entry not working
+* Fix duplicate local client registration handling
+
+### Chore
+
+* Updated dependencies
+* Dependencies not able to be updated:
+  * @small-tech/auto-encrypt@4 - requires node at >=18
+  * migrate-monogo@9 - poorly documented changes; no clear benefit to update
+  * mongodb@5 - multiple peer dependencies still requiring v4
+  * oidc-provider@8 - not currently in use, skipped for now
+  * parse-domain@6 - changed to ESM only, would require refactor for async import
+  * request - no patch released yet for GHSA-p8p7-x288-28g6
+
+## v5.0.3 (2023-03-29)
+
+### Fixed
+
+* When using SSO with passEmailToHub, email will now be passed whenever it is available
+(i.e. when logging in again via SSO) instead of just on initial login. This can help with
+recovery from bad SSO states - just force a logout from the immer
+(with `POST /auth/logout` or with `logout(true)` from immers-client >=2.16.0)
+and login again.
+
+## v5.0.2 (2023-02-28)
+
+### Fixed
+
+* Update undici nested dependency for audit fix
+* Additional logging for SSO requests to help debug
+
+## v5.0.1 (2023-02-07)
+
+### Fixed
+
+* Fixed SSO logins through the account merge flow (with approval e-mail) failing to redirect properly and not completing the login
+
+## v5.0.0 (2023-02-02)
+
+**Includes migration**: It's reversible with failsafes to avoid data loss, but backup that database before applying just to be safe
+
+### Added
+
+* Added support for login via SAML. SAML clients can be added/edited alongside OIDC clients at `/admin/oidc`
+* Added instructions and guidance for OIDC and SAML client setup in the add client screen at `/admin/oidc`
+* Add OAuth2 clients from other immers to the listing at `/admin/oidc`
+
+### Changed
+
+* Remote clients / identity providers data restructured to all reside in same collection
+* Admin api methods updated to new data structyre
+* Local dev will now generate self-signed certs automatically, removed obsolete env vars for specifying cert location
+
+### Security
+
+* Package updates to resolve all npm audit findings. Includes breaking change to passtportjs with code migrations
+
+## v4.2.0 (2022-12-21)
+
+### Added
+
+* When new users register on your immer, some additional data is now returned in the authorization response to your site: `isNewUser`, `provider` (their login provider if using OIDC else `email`). With immers-client >=2.14.0, this will be available from `immersClient.sessionInfo` after login ([reference](https://immers-space.github.io/immers-client/ImmersClient.html#sessionInfo)).
+* `passEmailToHub` environment config, when `true` the cleartext email is included with the above sessionInfo, and the email data safety message is omitted from the registration page.
+
+### Fixed
+
+* Fix Facebook OIDC by dropping request for currently unused `profile` scope from all OIDC authorization requests
+
+
+## v4.1.1 (2022-12-07)
+
+### Fixed
+
+* Fix email unable to send when smtpPort is a string
+
+## v4.1.0 (2022-12-01)
+
+### Added
+
+* OpenID Connect account merge: allow OIDC login when an account already exists with that email
+  * Sends an email to the address to get user authorization for the new provider
+  * Displays an interstitial page explaining the situation
+  * User is logged in and proceeds to destination once the email link is clicked
+* SMTP OAuth authentication
+  * Support service acount login (2-legged OAuth) to mail service by specifying `smtpClient` and `smtpKey` evironment variables in place of `smtpPassword`
+
+### Fixed
+
+* Avatar changes made from profile page correctly reflected on other ActivityPub platforms (immers-client update)
+* Update activitypub-express to eliminate unindexed activty.object.object query on Update
+
+## v4.0.2 (2022-11-23)
+
+### Fixed
+
+* Enable CORS for hub domains for `GET /auth/oidc-providers`
+* Rendering of profile for users with no avatar model
+* Unable to click enter AR button on models with long names
+* Error with controlled account authorization when multiple redirectUris are registered
+
+## v4.0.1 (2022-11-16)
+
+### Fixed
+
+* Properly escape custom theme string in server data to prevent rendering issue with newlines
+
+## v4.0.0 (2022-11-04)
 
 ### Added
 
@@ -7,14 +124,19 @@
 * 🚮 Remove avatar: Users can now remove Avatar models from their Avatar collection from the web interface (Does not delete the Avatar).
 * 🗑️ Delete posts: Users can delete messages from their Outbox from the web interface
 
-## Changed
+### Changed
 
 * Total refactor of the Web client views to use Pico.css instead of aesthetic.css
   * **Breaking**: Many class and hierarchy changes, any existing customCSS will likely need refactoring (or replace via new theme editor)
   * **Breaking**: Default theme is now simple and modern with automatic light and dark modes. If you liked the old theme, check out our new "Web95" theme in the theme editor
 * **Breaking**: Package-lock updated to v2, recommend npm >=7/node 16 for reliable installs.
   * Migrated SPA routing to `react-router` to resolve the last peer-dependency conflict
+  * Dockerfile updated to build from Node 16
 * Admin routing changed: `/admin` now lists admin views, OIDC client list moved to `/admin/oidc`
+
+### Fixed
+
+* Fixed the timestamp post link not working for posts from other servers
 
 ## v3.6.0 (2022-10-11)
 

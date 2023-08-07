@@ -20,11 +20,12 @@
         transactionId: '{{ transactionId }}',
         loggedInUser: '{{ loggedInUser }}',
         preferredScope: '{{ preferredScope }}'.split(' '),
+        passEmailToHub: {{ passEmailToHub }},
         emailOptInURL: '{{ emailOptInURL }}',
         loginTab: '{{ loginTab }}',
         enablePublicRegistration: '{{ enablePublicRegistration }}',
         baseTheme: '{{ baseTheme }}',
-        customTheme: '{{ customTheme }}'
+        customTheme: `{{ customTheme }}`
       }
       {% if icon %}window._serverData.icon = '/static/{{ icon }}'{% endif %}
     </script>

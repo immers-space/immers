@@ -14,7 +14,7 @@ import { ImmersClient } from 'immers-client'
 const locationTypes = ['Arrive', 'Leave']
 const summaryWithBodyTypes = ['Offer']
 
-export default function Post ({ id, type, actor, summary, object = {}, target, published, settings = {} }) {
+export default function Post ({ id, type, actor, summary, object = {}, target, published, settings = {}, handleRemove }) {
   const { id: actorId, icon } = actor
   const { context } = object
   let body
@@ -22,7 +22,7 @@ export default function Post ({ id, type, actor, summary, object = {}, target, p
   if (locationTypes.includes(type)) {
     body = getPostBody(target, settings)
   } else {
-    body = getPostBody(object, settings, id)
+    body = getPostBody(object, settings, id, handleRemove)
   }
 
   const includeSummaryWithBody = summaryWithBodyTypes.includes(type)
@@ -64,7 +64,7 @@ export default function Post ({ id, type, actor, summary, object = {}, target, p
   return null
 }
 
-function getPostBody (object, { showAvatarControls, expandLocationPosts }, id) {
+function getPostBody (object, { showAvatarControls, expandLocationPosts }, id, handleRemove) {
   const { type, content, url } = object
   switch (type) {
     case 'Note':
@@ -74,7 +74,7 @@ function getPostBody (object, { showAvatarControls, expandLocationPosts }, id) {
     case 'Video':
       return <video className='postMedia' src={ImmersClient.URLFromProperty(url)} controls />
     case 'Model':
-      return <ModelPostBody model={object} icon={object.icon} size='medium' showControls={showAvatarControls} activityID={id} />
+      return <ModelPostBody model={object} icon={object.icon} size='medium' showControls={showAvatarControls} activityID={id} handleRemove={handleRemove} />
     case 'Place':
       if (expandLocationPosts) {
         return <PlacePostBody place={object} />
@@ -87,14 +87,14 @@ function getPostBody (object, { showAvatarControls, expandLocationPosts }, id) {
 function Timestamp ({ published, id }) {
   let timestamp
   try {
-    timestamp = new Date(published)
+    const date = new Date(published)
+    timestamp = <FormattedRelativeTime updateIntervalInSeconds={10} value={(date - Date.now()) / 1000} />
   } catch (ignore) {}
+  const url = new URL(id)
   if (published && timestamp) {
-    return (
-      <Link className='muted timestamp' to={new URL(id).pathname}>
-        <FormattedRelativeTime updateIntervalInSeconds={10} value={(timestamp - Date.now()) / 1000} />
-      </Link>
-    )
+    return url.origin === window.location.origin
+      ? <Link className='muted timestamp' to={new URL(id).pathname}>{timestamp}</Link>
+      : <a className='muted timestamp' href={id}>{timestamp}</a>
   }
   return null
 }

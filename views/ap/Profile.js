@@ -8,12 +8,13 @@ import ImmersHandle from '../components/ImmersHandle'
 import Friends from './Friends'
 import { AvatarPreview } from '../components/AvatarPreview'
 import { immersClient, useProfile } from './utils/immersClient'
+import { useAsyncEffect } from './utils/useAsyncEffect'
 import { ImmersClient } from 'immers-client'
 import LayoutLoader from '../components/LayoutLoader'
 import EmojiButton from '../components/EmojiButton'
 import { Emoji } from '../components/Emojis'
 
-const checkNameValid = displayName => /^[A-Za-z0-9-]{3,32}$/.test(displayName)
+const checkNameValid = displayName => /^[A-Za-z0-9_~ -]{3,32}$/.test(displayName)
 
 export default function Profile ({ taskbarButtons }) {
   const { actor } = useParams()
@@ -59,7 +60,7 @@ export default function Profile ({ taskbarButtons }) {
   }
   const { params: { currentTab } } = useMatch('/u/:actor/:currentTab') || { params: {} }
 
-  useEffect(async () => {
+  useAsyncEffect(async () => {
     if (isMyProfile) {
       setProfile(myProfile)
       return
@@ -111,9 +112,11 @@ export default function Profile ({ taskbarButtons }) {
               <ImmersHandle id={profile.id} preferredUsername={profile.username} />
             </h4>
           </hgroup>
-          <section data-label='Avatar'>
-            <AvatarPreview icon={profile.avatarImage} avatar={profile.avatarObject} />
-          </section>
+          {profile.avatarImage && (
+            <section data-label='Avatar'>
+              <AvatarPreview icon={profile.avatarImage} avatar={profile.avatarObject} />
+            </section>
+          )}
           {isEditing
             ? (
               <label className='editable'>

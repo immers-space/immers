@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { immersClient } from './utils/immersClient'
+import { useAsyncEffect } from './utils/useAsyncEffect'
 import Loader from '../components/Loader'
 import Post from './Post'
 
@@ -9,7 +10,7 @@ export default function Feed ({ iri, ...postProps }) {
   const [nextPage, setNextPage] = useState(undefined)
   const [items, setItems] = useState([])
 
-  useEffect(async () => {
+  useAsyncEffect(async () => {
     const collectionPage = await immersClient.activities.getObject(page)
     if (!collectionPage.orderedItems && collectionPage.first) {
       setPage(collectionPage.first)
@@ -20,12 +21,15 @@ export default function Feed ({ iri, ...postProps }) {
     setLoading(false)
   }, [page])
   const handleNext = () => setPage(nextPage)
+  const handleRemove = (id) => {
+    setItems(items.filter(item => item.id !== id))
+  }
   return loading
     ? <Loader />
     : (
       <div>
         <section>
-          {items.map(item => <Post key={item.id} settings={postProps} {...item} />)}
+          {items.map(item => <Post key={item.id} settings={postProps} {...item} handleRemove={handleRemove} />)}
         </section>
         {nextPage && <button className='secondary' onClick={handleNext}>Load more</button>}
       </div>
