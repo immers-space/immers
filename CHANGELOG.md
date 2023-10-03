@@ -3,7 +3,6 @@
 ### Added
 * node 18 support
 
-
 ## v5.1.1 (2023-10-03)
 
 ### Fixed
