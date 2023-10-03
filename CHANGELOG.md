@@ -1,3 +1,9 @@
+## Unreleased
+
+### Fixed
+* Update activitypub-express to address Mastodon and Hubzilla compatability issues
+* Updated dependencies
+
 ## v5.1.0 (2023-05-18)
 
 ### Added
