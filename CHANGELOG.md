@@ -1,4 +1,6 @@
-## Unreleased
+## v6.0.0 (2023-10-04)
+
+**Breaking**: Dockerfile updated to build from Node 18
 
 ### Added
 * node 18 support
