@@ -1,3 +1,14 @@
+## Unreleased
+
+### Added
+* node 18 support
+
+## v5.1.1 (2023-10-03)
+
+### Fixed
+* Update activitypub-express to address Mastodon and Hubzilla compatability issues
+* Updated dependencies
+
 ## v5.1.0 (2023-05-18)
 
 ### Added
