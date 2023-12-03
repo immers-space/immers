@@ -1,0 +1,47 @@
+## Run this to boot two immers servers for testing federation/reciprocal identity
+## In order to work, you must edit your hosts file to point immer1 and immer2 to localhost, eg:
+# 127.0.0.1      localhost immer1 immer2
+## Afterwards, start this docker compose:
+# docker-compose -f docker-compose.federation.test.yml up --build -V
+## And access the immers at https://immer1:8081 and https://immer2:8082
+
+version: "3.8"
+
+services:
+  immer1:
+    build: ../.
+    restart: unless-stopped
+    ports:
+      - 8081:8081
+    env_file: '../.env'
+    environment:
+      domain: 'immer1:8081'
+      name: 'Immer No. 1'
+      dbString: 'mongodb://mongodb:27017/immers-fed1'
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
+    depends_on:
+      - mongodb
+    volumes:
+      - ../certs:/usr/src/immers/certs
+  immer2:
+    build: ../.
+    restart: unless-stopped
+    ports:
+      - 8082:8082
+    env_file: '../.env'
+    environment:
+      port: 8082
+      domain: 'immer2:8082'
+      name: 'Immer No. 2'
+      dbString: 'mongodb://mongodb:27017/immers-fed2'
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
+    depends_on:
+      - mongodb
+    volumes:
+      - ../certs:/usr/src/immers/certs
+
+  mongodb:
+    image: mongo:5
+    restart: unless-stopped
+    volumes:
+      - /data/db
