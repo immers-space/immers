@@ -352,7 +352,10 @@ function interpolateUsernameTemplate (client, ssoData) {
   }
   const username = client
     .usernameTemplate
+    // replace template items, e.g. {firstName} -> data.firstName
     .replace(/\{(\w+)\}/g, (_, key) => ssoData[key] ?? '')
+    // strip any characters not allowed in username
+    .replace(/[^A-Za-z0-9-]/g, '')
   console.log(
     'Generated username from template %s and data %j: %s',
     client.usernameTemplate,
