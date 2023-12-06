@@ -1,3 +1,8 @@
+## Unreleased
+
+### Fixed
+* Udpated custom identity provider username template interpolation to strip out any restricted characters to ensure the generated username is valid
+
 ## v6.0.0 (2023-10-04)
 
 **Breaking**: Dockerfile updated to build from Node 18
