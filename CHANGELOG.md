@@ -1,7 +1,7 @@
-## Unreleased
+## v6.0.1 (2023-12-06)
 
 ### Fixed
-* Udpated custom identity provider username template interpolation to strip out any restricted characters to ensure the generated username is valid
+* Updated custom identity provider username template interpolation to strip out any restricted characters to ensure the generated username is valid
 
 ## v6.0.0 (2023-10-04)
 
