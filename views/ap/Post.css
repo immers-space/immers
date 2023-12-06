@@ -25,6 +25,7 @@
   overflow-wrap: break-word;
   overflow: hidden;
   margin-bottom: 0;
+  min-height: 36px;
 }
 
 .postBody .centered {

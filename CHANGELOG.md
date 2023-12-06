@@ -140,6 +140,7 @@ and login again.
 * 🎨 Theme Editor (`/admin/theme`) - Choose from 4 base themes and then customize with css custom properties via our live editor
 * ✏️ Profile editing: Users can now edit their Display name and Bio from the web interface.
 * 🚮 Remove avatar: Users can now remove Avatar models from their Avatar collection from the web interface (Does not delete the Avatar).
+* 🗑️ Delete posts: Users can delete messages from their Outbox from the web interface
 
 ### Changed
 

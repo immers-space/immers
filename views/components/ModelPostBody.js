@@ -37,10 +37,11 @@ export default function ModelPostBody ({ model, showControls, activityID, handle
       {isOpened && (
         <DialogModal
           title='Remove avatar'
+          description='Remove this avatar from your collection? The original will not be deleted.'
+          actionVerb='Remove'
           isOpened={isOpened}
           onProceed={onProceed}
           onClose={onClose}
-          description='Remove this avatar from your collection? The original will not be deleted.'
         >
           <AvatarPreview avatar={model} {...props} />
         </DialogModal>)}

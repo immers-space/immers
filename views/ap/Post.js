@@ -5,6 +5,7 @@ import ProfileIcon from '../components/ProfileIcon'
 import SanitizedHTML from '../components/SanitizedHTML'
 import './Post.css'
 import { Link } from 'react-router-dom'
+import NotePostBody from '../components/NotePostBody'
 import ModelPostBody from '../components/ModelPostBody'
 import PlacePostBody from '../components/PlacePostBody'
 import { handleImmerLink, ImmerLink } from '../components/ImmerLink'
@@ -67,7 +68,7 @@ function getPostBody (object, { showAvatarControls, expandLocationPosts }, id, h
   const { type, content, url } = object
   switch (type) {
     case 'Note':
-      return <SanitizedHTML html={content} />
+      return <NotePostBody html={content} activityId={id} />
     case 'Image':
       return <img className='postMedia' src={ImmersClient.URLFromProperty(url)} />
     case 'Video':

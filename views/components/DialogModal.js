@@ -2,10 +2,11 @@ import React, { useEffect, useRef } from 'react'
 
 const DialogModal = ({
   title,
+  description,
+  actionVerb,
   isOpened,
   onProceed,
   onClose,
-  description,
   children
 }) => {
   const ref = useRef(null)
@@ -40,7 +41,7 @@ const DialogModal = ({
         </section>
         <footer>
           <a role='button' href='#cancel' className='secondary' onClick={onClose}>Cancel</a>
-          <a role='button' href='#remove' onClick={proceedAndClose}>Remove</a>
+          <a role='button' href='#remove' onClick={proceedAndClose}>{actionVerb}</a>
         </footer>
       </article>
     </dialog>
