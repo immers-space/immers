@@ -26,7 +26,7 @@ export default class HandleInput extends React.Component {
             id='username'
             type='text' inputMode='email' name='username'
             placeholder='username'
-            required pattern='^[A-Za-z0-9-]{3,32}$'
+            required pattern='[A-Za-z0-9\-]{3,32}'
             autoCapitalize='off' autoCorrect='off' spellCheck='false'
             title='Letters, numbers, &amp; dashes only, between 3 and 32 characters'
             value={this.state.username}

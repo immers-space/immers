@@ -91,7 +91,7 @@ function RegisterForm ({ domain, fetching, setFetching }) {
   }, [setFetching, setTakenMessage, setRegistrationError, setRegistrationSuccess])
   useEffect(() => {
     // auto-submit form when page loads if username prefilled
-    if (proposedUsername) {
+    if (proposedUsername && formEl.current.reportValidity()) {
       formEl.current.dispatchEvent(
         new Event('submit', { bubbles: true, cancelable: true })
       )
