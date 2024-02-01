@@ -1,3 +1,8 @@
+## v6.0.2 (2023-02-01)
+
+### Fixed
+* Fixed an issue with SSO automatic username generation where generated usernames could be too long to be valid and would lock up the interstitial form preventing the selection of a shorter one.
+
 ## v6.0.1 (2023-12-06)
 
 ### Fixed
