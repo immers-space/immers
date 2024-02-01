@@ -356,6 +356,8 @@ function interpolateUsernameTemplate (client, ssoData) {
     .replace(/\{(\w+)\}/g, (_, key) => ssoData[key] ?? '')
     // strip any characters not allowed in username
     .replace(/[^A-Za-z0-9-]/g, '')
+    // limit to max username length
+    .substring(0, 32)
   console.log(
     'Generated username from template %s and data %j: %s',
     client.usernameTemplate,
