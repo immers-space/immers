@@ -34,7 +34,7 @@
     "@authenio/samlify-node-xmllint": "^2.0.0",
     "@peculiar/x509": "^1.9.2",
     "@small-tech/auto-encrypt": "^3.1.0",
-    "activitypub-express": "^4.4.1",
+    "activitypub-express": "^4.4.2",
     "aesthetic-css": "^1.0.1",
     "bcrypt": "^5.0.1",
     "connect-ensure-login": "^0.1.1",

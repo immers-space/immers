@@ -1,3 +1,10 @@
+## Unreleased
+
+### Fixed
+* DB performance improvements:
+  * Bump activitypub-express for caching of nodeinfo user counts to improve DB performance
+  * Add missing index for token validation
+
 ## v6.0.2 (2023-02-01)
 
 ### Fixed
