@@ -33,6 +33,12 @@ const authdb = {
       name: 'tokens-ttl',
       expireAfterSeconds: 0
     })
+    // token check
+    await db.collection('tokens').createIndex({
+      token: 1
+    }, {
+      name: 'tokens-primary'
+    })
     await db.collection('clients').createIndex({
       clientId: 1
     }, {
