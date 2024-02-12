@@ -1,11 +1,11 @@
-## Unreleased
+## v6.0.3 (2024-02-12)
 
 ### Fixed
 * DB performance improvements:
   * Bump activitypub-express for caching of nodeinfo user counts to improve DB performance
   * Add missing index for token validation
 
-## v6.0.2 (2023-02-01)
+## v6.0.2 (2024-02-01)
 
 ### Fixed
 * Fixed an issue with SSO automatic username generation where generated usernames could be too long to be valid and would lock up the interstitial form preventing the selection of a shorter one.
